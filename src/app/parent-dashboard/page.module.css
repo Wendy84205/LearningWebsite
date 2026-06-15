@@ -1,0 +1,499 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--surface, #fcf8f2);
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-body, system-ui);
+}
+
+/* Abstract Background Blobs */
+.blob1 {
+  position: absolute;
+  top: -10%;
+  left: -5%;
+  width: 256px;
+  height: 256px;
+  border-radius: 50%;
+  background-color: var(--primary-fixed, #e8f0fe);
+  opacity: 0.15;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.blob2 {
+  position: absolute;
+  bottom: -10%;
+  right: -5%;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background-color: var(--secondary-fixed, #fff9db);
+  opacity: 0.15;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+/* Header */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 48px;
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid var(--outline-variant, #e0e0e0);
+  box-shadow: 0 4px 16px rgba(0, 96, 172, 0.05);
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.backBtn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--primary-container, #d0e4ff);
+  color: var(--on-primary-container, #001d34);
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+  text-decoration: none;
+}
+
+.backBtn:hover {
+  transform: scale(1.1);
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 950;
+  color: var(--primary, #0060ac);
+}
+
+.email {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--on-surface-variant, #49454f);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Content */
+.content {
+  flex: 1;
+  padding: 32px;
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  z-index: 10;
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 16px;
+    gap: 24px;
+  }
+}
+
+.loading {
+  text-align: center;
+  padding: 60px;
+  color: var(--on-surface-variant, #49454f);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.empty {
+  text-align: center;
+  padding: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  color: var(--on-surface-variant, #49454f);
+}
+
+/* Profiles Selector */
+.profileRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.profileTab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 20px;
+  background-color: #ffffff;
+  border: 2px solid var(--outline-variant, #e0e0e0);
+  color: var(--on-surface-variant, #49454f);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 15px;
+}
+
+.profileTab:hover {
+  border-color: var(--primary, #0060ac);
+  color: var(--primary, #0060ac);
+}
+
+.profileTabActive {
+  background-color: var(--primary, #0060ac);
+  color: white;
+  border-color: var(--primary, #0060ac);
+  box-shadow: 0 4px 12px rgba(0, 93, 167, 0.2);
+}
+
+/* Dashboard Panel */
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Summary Cards Grid */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .summaryGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.summaryCard {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  background-color: #ffffff;
+  border: 2px solid var(--outline-variant, #e0e0e0);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.summaryIcon {
+  font-size: 32px;
+}
+
+.summaryVal {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--primary, #0060ac);
+}
+
+.summaryLabel {
+  font-size: 13px;
+  color: #78909c;
+  font-weight: 700;
+}
+
+/* Overall Progress Section */
+.progressSection {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: #ffffff;
+  border: 2px solid var(--outline-variant, #e0e0e0);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 800;
+  font-size: 16px;
+  color: #37474f;
+}
+
+.progressPct {
+  color: var(--primary, #0060ac);
+  font-weight: 900;
+}
+
+.levelInfo {
+  font-size: 13px;
+  color: #78909c;
+  font-weight: 600;
+}
+
+/* Worlds Progress Section */
+.worldsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 900;
+  color: #37474f;
+}
+
+.worldsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .worldsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.worldProgressCard {
+  background-color: #ffffff;
+  border: 2px solid var(--outline-variant, #e0e0e0);
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  transition: transform 0.2s;
+}
+
+.worldProgressCard:hover {
+  transform: translateY(-2px);
+}
+
+.worldProgressLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.worldProgressTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.worldCardIcon {
+  font-size: 28px;
+}
+
+.worldCardName {
+  font-size: 16px;
+  font-weight: 900;
+  color: #37474f;
+}
+
+.worldProgressBarContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.miniProgressTrack {
+  flex: 1;
+  height: 8px;
+  background-color: #eceff1;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.miniProgressFill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.worldCardProgressText {
+  font-size: 12px;
+  font-weight: 800;
+  color: #78909c;
+  white-space: nowrap;
+}
+
+.worldProgressRight {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.worldCardMedal {
+  font-size: 36px;
+}
+
+.worldCardMedalLocked {
+  font-size: 32px;
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+
+.medalLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: #90a4ae;
+}
+
+.medalLabelCompleted {
+  color: #d97706;
+}
+
+/* Focus Recommendation Box */
+.focusRecBox {
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border: 2px solid #f59e0b;
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.1);
+  margin-bottom: 8px;
+}
+
+@media (max-width: 600px) {
+  .focusRecBox {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.focusRecIcon {
+  font-size: 40px;
+  background-color: white;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  flex-shrink: 0;
+}
+
+.focusRecBody {
+  flex: 1;
+}
+
+.focusRecBadge {
+  display: inline-block;
+  background-color: #d97706;
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 4px 12px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.focusRecTitle {
+  font-size: 18px;
+  font-weight: 900;
+  color: #78350f;
+  margin-bottom: 6px;
+}
+
+.focusRecDesc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #92400e;
+}
+
+/* Recommendations Segment */
+.recsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.recsTitle {
+  font-size: 20px;
+  font-weight: 900;
+  color: #37474f;
+}
+
+.recsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.recCard {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: #ffffff;
+  border: 2px solid var(--outline-variant, #e0e0e0);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+}
+
+@media (max-width: 600px) {
+  .recCard {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 12px;
+  }
+}
+
+.recIcon {
+  font-size: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.recBody {
+  flex: 1;
+}
+
+.recTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: #37474f;
+  margin-bottom: 4px;
+}
+
+.recDesc {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #546e7a;
+}

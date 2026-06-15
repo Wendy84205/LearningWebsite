@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+model Parent {
+  id        String         @id @default(uuid())
+  email     String         @unique
+  password  String
+  createdAt DateTime       @default(now())
+  profiles  ChildProfile[]
+}
+
+model ChildProfile {
+  id                  String           @id @default(uuid())
+  name                String
+  grade               String
+  avatar              String
+  mascotId            Int?
+  mascotName          String?
+  mascotImage         String?
+  equippedAccessories String           @default("") // Comma-separated (e.g. "hat,scarf")
+  parentId            String
+  createdAt           DateTime         @default(now())
+  parent              Parent           @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  progress            NurseryProgress?
+}
+
+model NurseryProgress {
+  id              String       @id @default(uuid())
+  currentLevel    Int          @default(3)
+  completedLevels String       @default("") // Comma-separated (e.g. "1,2")
+  stars           Int          @default(0)
+  streak          Int          @default(0)
+  updatedAt       DateTime     @updatedAt
+  profileId       String       @unique
+  profile         ChildProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
