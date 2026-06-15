@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { getQuestionsForGame, WORLDS } from '@/lib/grade1-data'
+import { getGradeData } from '@/lib/data'
 import styles from './page.module.css'
 
 function GameContent() {
@@ -11,7 +11,10 @@ function GameContent() {
   const worldId = parseInt(searchParams.get('world') || '3', 10)
   const levelId = parseInt(searchParams.get('level') || '1', 10)
   const isBoss = searchParams.get('boss') === 'true'
-  const currentWorld = WORLDS.find(w => w.id === worldId) || WORLDS[2]
+  const gradeSlug = searchParams.get('grade') || 'lop-1'
+  const gradeData = getGradeData(gradeSlug)
+  const WORLDS = gradeData.WORLDS
+  const currentWorld = WORLDS.find(w => w.id === worldId) || WORLDS[0]
 
   const [pairs, setPairs] = useState([])
   const [leftCards, setLeftCards] = useState([])
@@ -24,30 +27,38 @@ function GameContent() {
 
   // Khởi tạo cặp thẻ dựa trên World và Level
   useEffect(() => {
-    const pList = getQuestionsForGame(worldId, levelId, isBoss)
-    const leftShuffled = [...pList]
-    const rightShuffled = [...pList]
-    
-    // Shuffle helper đơn giản tại chỗ
-    const shuffleArray = (arr) => {
-      const a = [...arr]
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]]
-      }
-      return a
-    }
+    fetch(`/api/questions?grade=${gradeSlug}&world=${worldId}&level=${levelId}&boss=${isBoss}`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const pList = data
+          const leftShuffled = [...pList]
+          const rightShuffled = [...pList]
+          
+          // Shuffle helper đơn giản tại chỗ
+          const shuffleArray = (arr) => {
+            const a = [...arr]
+            for (let i = a.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [a[i], a[j]] = [a[j], a[i]]
+            }
+            return a
+          }
 
-    const shufL = shuffleArray(leftShuffled)
-    const shufR = shuffleArray(rightShuffled)
+          const shufL = shuffleArray(leftShuffled)
+          const shufR = shuffleArray(rightShuffled)
 
-    setTimeout(() => {
-      setPairs(pList)
-      setLeftCards(shufL)
-      setRightCards(shufR)
-      setLoading(false)
-    }, 0)
-  }, [worldId, levelId, isBoss])
+          setPairs(pList)
+          setLeftCards(shufL)
+          setRightCards(shufR)
+        }
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error(err)
+        setLoading(false)
+      })
+  }, [gradeSlug, worldId, levelId, isBoss])
 
   // Hàm chọn và ghép cặp trực tiếp khi click (thay cho useEffect)
   const handleCardSelect = (col, idx) => {
@@ -151,7 +162,7 @@ function GameContent() {
 
       {/* Header */}
       <header className={styles.header}>
-        <Link href="/nursery-map" className={styles.closeBtn}>✕</Link>
+        <Link href={`/learning/${gradeSlug}/map`} className={styles.closeBtn}>✕</Link>
         <div className={styles.progressWrap}>
           <div className={styles.progressContainer}>
             <div className={styles.progressFill} style={{ width: `${progress}%` }} />

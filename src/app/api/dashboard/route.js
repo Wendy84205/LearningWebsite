@@ -25,7 +25,7 @@ export async function GET(request) {
     }
 
     const profiles = parent.profiles.map(profile => {
-      const summary = buildProgressSummary(profile.progress)
+      const summary = buildProgressSummary(profile.progress, profile.grade)
 
       return {
         id: profile.id,

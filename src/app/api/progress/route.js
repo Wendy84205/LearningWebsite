@@ -47,12 +47,12 @@ export async function POST(request) {
     })
     if (!profile) return Response.json({ error: 'Profile not found' }, { status: 404 })
 
-    const current = profile.progress || await prisma.nurseryProgress.create({
+    const current = profile.progress || await prisma.progress.create({
       data: { profileId, currentLevel: 1 },
     })
 
-    const completedArr = parseCompletedLevels(current.completedLevels)
-    const normalizedCompletedLevel = normalizeCompletedLevelToken(completedLevel)
+    const completedArr = parseCompletedLevels(current.completedLevels, profile.grade)
+    const normalizedCompletedLevel = normalizeCompletedLevelToken(completedLevel, profile.grade)
 
     if (completedLevel && !normalizedCompletedLevel) {
       return Response.json({ error: 'Invalid completedLevel' }, { status: 400 })
@@ -62,13 +62,13 @@ export async function POST(request) {
       completedArr.push(normalizedCompletedLevel)
     }
 
-    const completedPosition = getNormalLevelPosition(normalizedCompletedLevel)
+    const completedPosition = getNormalLevelPosition(normalizedCompletedLevel, profile.grade)
     const nextLevel = completedPosition
       ? Math.max(current.currentLevel || 1, completedPosition + 1)
       : current.currentLevel
     const earnedStars = Number.isFinite(Number(starsEarned)) ? Number(starsEarned) : 0
 
-    const updated = await prisma.nurseryProgress.update({
+    const updated = await prisma.progress.update({
       where: { profileId },
       data: {
         completedLevels: completedArr.join(','),

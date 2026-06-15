@@ -62,10 +62,10 @@ export async function POST(request) {
       })
     } else {
       profile = await prisma.childProfile.create({
-        data: { name, grade: grade || 'Mầm non', avatar: avatar || '🐱', parentId },
+        data: { name, grade: grade || 'Lớp 1', avatar: avatar || '🐱', parentId },
       })
       // Create initial progress record
-      await prisma.nurseryProgress.create({
+      await prisma.progress.create({
         data: { profileId: profile.id, currentLevel: 1 },
       })
     }

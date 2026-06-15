@@ -114,6 +114,38 @@ export const WORLDS = [
   }
 ]
 
+const findWorld = (id) => WORLDS.find(world => world.id === id)
+
+findWorld(1)?.levels.push(
+  { id: 4, title: "Số đến 20", desc: "Đọc, đếm, viết và so sánh các số trong phạm vi 20", stages: 5, game: "/game-choose-1-of-2?world=1&level=4" },
+  { id: 5, title: "Số đến 100", desc: "Nhận biết chục, đơn vị và thứ tự số đến 100", stages: 5, game: "/game-choose-1-of-2?world=1&level=5" },
+  { id: 6, title: "Hình học quanh em", desc: "Nhận biết hình vuông, tròn, tam giác, chữ nhật và khối quen thuộc", stages: 5, game: "/game-choose-1-of-2?world=1&level=6" }
+)
+
+findWorld(2)?.levels.push(
+  { id: 5, title: "Dấu thanh", desc: "Nghe và phân biệt thanh ngang, huyền, sắc, hỏi, ngã, nặng", stages: 6, game: "/game-listen-and-select?world=2&level=5" },
+  { id: 6, title: "Vần cơ bản", desc: "Nhận biết vần an, at, en, em, ong, inh trong tiếng quen thuộc", stages: 6, game: "/game-listen-and-select?world=2&level=6" },
+  { id: 7, title: "Câu ngắn", desc: "Nghe hiểu câu ngắn về gia đình, lớp học và đồ vật", stages: 6, game: "/game-listen-and-select?world=2&level=7" }
+)
+
+findWorld(3)?.levels.push(
+  { id: 4, title: "Ghép số & lượng", desc: "Ghép số với nhóm đồ vật tương ứng", stages: 5, game: "/game-simple-matching?world=3&level=4" },
+  { id: 5, title: "Ghép hình học", desc: "Ghép hình khối với đồ vật quen thuộc trong đời sống", stages: 5, game: "/game-simple-matching?world=3&level=5" },
+  { id: 6, title: "Ghép câu & ý nghĩa", desc: "Ghép câu ngắn với hình ảnh hoặc hành động phù hợp", stages: 5, game: "/game-simple-matching?world=3&level=6" }
+)
+
+findWorld(4)?.levels.push(
+  { id: 6, title: "Cộng trừ đến 100", desc: "Tính nhẩm cộng trừ không nhớ trong phạm vi 100", stages: 5, game: "/game-choose-1-of-2?world=4&level=6" },
+  { id: 7, title: "Đo độ dài", desc: "So sánh dài ngắn và đọc số đo xăng-ti-mét đơn giản", stages: 5, game: "/game-choose-1-of-2?world=4&level=7" },
+  { id: 8, title: "Thời gian & tuần lễ", desc: "Nhận biết hôm qua, hôm nay, ngày mai, giờ đúng và ngày trong tuần", stages: 5, game: "/game-choose-1-of-2?world=4&level=8" }
+)
+
+findWorld(5)?.levels.push(
+  { id: 7, title: "Cộng đồng quanh em", desc: "Nhận biết nghề nghiệp, nơi công cộng và cách ứng xử lịch sự", stages: 5, game: "/game-choose-1-of-2?world=5&level=7" },
+  { id: 8, title: "Thời tiết & mùa", desc: "Quan sát nắng, mưa, nóng, lạnh và chọn trang phục phù hợp", stages: 5, game: "/game-choose-1-of-2?world=5&level=8" },
+  { id: 9, title: "Bảo vệ môi trường", desc: "Giữ vệ sinh, tiết kiệm nước và chăm sóc cây xanh", stages: 5, game: "/game-choose-1-of-2?world=5&level=9" }
+)
+
 // Định nghĩa MAP_LEVELS cũ để tương thích ngược nếu cần
 export const MAP_LEVELS = WORLDS.map(w => ({
   id: w.id,
@@ -305,6 +337,102 @@ export const MATCHING_PAIRS_ALL = [
   { id: 22, left: "🎒 Ba lô", right: "📐 Thước kẻ", subject: "Tự nhiên", topic: "Đồ dùng", world: 3, level: 3 },
   { id: 23, left: "🎨 Bảng màu", right: "🖌️ Cây cọ vẽ", subject: "Tự nhiên", topic: "Đồ dùng", world: 3, level: 3 }
 ]
+
+CHOOSE_QUESTIONS.push(
+  { q: "Sau số 12 là số nào?", options: ["13", "11"], correct: 0, emoji: "🔢", subject: "Toán", topic: "Số đến 20", world: 1, level: 4 },
+  { q: "Số nào gồm 1 chục và 5 đơn vị?", options: ["15", "51"], correct: 0, emoji: "🧮", subject: "Toán", topic: "Số đến 20", world: 1, level: 4 },
+  { q: "Số nào lớn hơn?", options: ["18", "14"], correct: 0, emoji: "🔢", subject: "Toán", topic: "Số đến 20", world: 1, level: 4 },
+  { q: "Số nào nhỏ hơn?", options: ["16", "19"], correct: 0, emoji: "🔢", subject: "Toán", topic: "Số đến 20", world: 1, level: 4 },
+  { q: "Đếm thêm 1 từ 19 ta được số nào?", options: ["20", "18"], correct: 0, emoji: "🔢", subject: "Toán", topic: "Số đến 20", world: 1, level: 4 },
+  { q: "Số 17 gồm mấy chục và mấy đơn vị?", options: ["1 chục 7 đơn vị", "7 chục 1 đơn vị"], correct: 0, emoji: "🧮", subject: "Toán", topic: "Số đến 20", world: 1, level: 4 },
+  { q: "Số 42 gồm mấy chục và mấy đơn vị?", options: ["4 chục 2 đơn vị", "2 chục 4 đơn vị"], correct: 0, emoji: "🧮", subject: "Toán", topic: "Số đến 100", world: 1, level: 5 },
+  { q: "Số nào lớn hơn?", options: ["68", "59"], correct: 0, emoji: "🔢", subject: "Toán", topic: "Số đến 100", world: 1, level: 5 },
+  { q: "Số liền sau của 79 là số nào?", options: ["80", "78"], correct: 0, emoji: "🔢", subject: "Toán", topic: "Số đến 100", world: 1, level: 5 },
+  { q: "Số liền trước của 50 là số nào?", options: ["49", "51"], correct: 0, emoji: "🔢", subject: "Toán", topic: "Số đến 100", world: 1, level: 5 },
+  { q: "Số nào có 7 chục và 3 đơn vị?", options: ["73", "37"], correct: 0, emoji: "🧮", subject: "Toán", topic: "Số đến 100", world: 1, level: 5 },
+  { q: "Trong các số sau, số nào bé hơn?", options: ["24", "42"], correct: 0, emoji: "🔢", subject: "Toán", topic: "Số đến 100", world: 1, level: 5 },
+  { q: "Bánh xe thường có dạng hình gì?", options: ["Hình tròn", "Hình tam giác"], correct: 0, emoji: "⭕", subject: "Toán", topic: "Hình học", world: 1, level: 6 },
+  { q: "Mặt bàn học thường gần giống hình gì?", options: ["Hình chữ nhật", "Hình tròn"], correct: 0, emoji: "▭", subject: "Toán", topic: "Hình học", world: 1, level: 6 },
+  { q: "Biển báo nguy hiểm thường có dạng hình gì?", options: ["Hình tam giác", "Hình vuông"], correct: 0, emoji: "🔺", subject: "Toán", topic: "Hình học", world: 1, level: 6 },
+  { q: "Viên xúc xắc gần giống khối nào?", options: ["Khối lập phương", "Khối cầu"], correct: 0, emoji: "🎲", subject: "Toán", topic: "Hình học", world: 1, level: 6 },
+  { q: "Quả bóng gần giống khối nào?", options: ["Khối cầu", "Khối hộp chữ nhật"], correct: 0, emoji: "⚽", subject: "Toán", topic: "Hình học", world: 1, level: 6 },
+  { q: "Khung ảnh có 4 cạnh bằng nhau thường là hình gì?", options: ["Hình vuông", "Hình tròn"], correct: 0, emoji: "⬛", subject: "Toán", topic: "Hình học", world: 1, level: 6 },
+  { q: "30 + 20 = ?", options: ["50", "40"], correct: 0, emoji: "➕", subject: "Toán", topic: "Cộng trừ đến 100", world: 4, level: 6 },
+  { q: "45 + 3 = ?", options: ["48", "75"], correct: 0, emoji: "➕", subject: "Toán", topic: "Cộng trừ đến 100", world: 4, level: 6 },
+  { q: "60 - 20 = ?", options: ["40", "80"], correct: 0, emoji: "➖", subject: "Toán", topic: "Cộng trừ đến 100", world: 4, level: 6 },
+  { q: "78 - 5 = ?", options: ["73", "83"], correct: 0, emoji: "➖", subject: "Toán", topic: "Cộng trừ đến 100", world: 4, level: 6 },
+  { q: "52 + 6 = ?", options: ["58", "56"], correct: 0, emoji: "➕", subject: "Toán", topic: "Cộng trừ đến 100", world: 4, level: 6 },
+  { q: "90 - 30 = ?", options: ["60", "70"], correct: 0, emoji: "➖", subject: "Toán", topic: "Cộng trừ đến 100", world: 4, level: 6 },
+  { q: "Cái bút dài 12 cm, cái tẩy dài 4 cm. Vật nào dài hơn?", options: ["Cái bút", "Cái tẩy"], correct: 0, emoji: "📏", subject: "Toán", topic: "Đo độ dài", world: 4, level: 7 },
+  { q: "Đơn vị xăng-ti-mét viết tắt là gì?", options: ["cm", "kg"], correct: 0, emoji: "📏", subject: "Toán", topic: "Đo độ dài", world: 4, level: 7 },
+  { q: "Sợi dây 8 cm và que tính 10 cm. Vật nào ngắn hơn?", options: ["Sợi dây", "Que tính"], correct: 0, emoji: "📏", subject: "Toán", topic: "Đo độ dài", world: 4, level: 7 },
+  { q: "Muốn đo chiều dài quyển vở, em dùng gì?", options: ["Thước kẻ", "Cốc nước"], correct: 0, emoji: "📐", subject: "Toán", topic: "Đo độ dài", world: 4, level: 7 },
+  { q: "5 cm và 7 cm, số đo nào dài hơn?", options: ["7 cm", "5 cm"], correct: 0, emoji: "📏", subject: "Toán", topic: "Đo độ dài", world: 4, level: 7 },
+  { q: "Hai đoạn thẳng cùng dài 6 cm thì chúng như thế nào?", options: ["Dài bằng nhau", "Một đoạn dài hơn"], correct: 0, emoji: "📏", subject: "Toán", topic: "Đo độ dài", world: 4, level: 7 },
+  { q: "Sau thứ Hai là thứ mấy?", options: ["Thứ Ba", "Chủ nhật"], correct: 0, emoji: "📅", subject: "Toán", topic: "Thời gian", world: 4, level: 8 },
+  { q: "Một tuần có mấy ngày?", options: ["7 ngày", "5 ngày"], correct: 0, emoji: "📅", subject: "Toán", topic: "Thời gian", world: 4, level: 8 },
+  { q: "Kim dài của đồng hồ chỉ số 12, kim ngắn chỉ số 7 là mấy giờ?", options: ["7 giờ", "12 giờ"], correct: 0, emoji: "🕖", subject: "Toán", topic: "Thời gian", world: 4, level: 8 },
+  { q: "Hôm nay là thứ Sáu, ngày mai là thứ mấy?", options: ["Thứ Bảy", "Thứ Năm"], correct: 0, emoji: "📅", subject: "Toán", topic: "Thời gian", world: 4, level: 8 },
+  { q: "Buổi sáng em thường làm gì?", options: ["Thức dậy đi học", "Đi ngủ qua đêm"], correct: 0, emoji: "🌤️", subject: "Toán", topic: "Thời gian", world: 4, level: 8 },
+  { q: "Đồng hồ chỉ đúng 3 giờ thì kim ngắn chỉ số mấy?", options: ["3", "6"], correct: 0, emoji: "🕒", subject: "Toán", topic: "Thời gian", world: 4, level: 8 },
+  { q: "Người chữa bệnh cho mọi người là ai?", options: ["Bác sĩ", "Người bán bánh"], correct: 0, emoji: "👩‍⚕️", subject: "Tự nhiên", topic: "Cộng đồng", world: 5, level: 7 },
+  { q: "Khi đến thư viện, em nên làm gì?", options: ["Nói nhỏ và giữ trật tự", "Chạy nhảy thật to"], correct: 0, emoji: "📚", subject: "Tự nhiên", topic: "Cộng đồng", world: 5, level: 7 },
+  { q: "Người giữ gìn an toàn giao thông là ai?", options: ["Chú công an", "Cầu thủ bóng đá"], correct: 0, emoji: "👮", subject: "Tự nhiên", topic: "Cộng đồng", world: 5, level: 7 },
+  { q: "Khi gặp người lớn tuổi, em nên làm gì?", options: ["Chào hỏi lễ phép", "Quay đi không nói gì"], correct: 0, emoji: "🙇", subject: "Tự nhiên", topic: "Cộng đồng", world: 5, level: 7 },
+  { q: "Ở công viên, em nên bỏ rác vào đâu?", options: ["Thùng rác", "Bãi cỏ"], correct: 0, emoji: "🗑️", subject: "Tự nhiên", topic: "Cộng đồng", world: 5, level: 7 },
+  { q: "Trời mưa, em nên mang theo gì?", options: ["Áo mưa hoặc ô", "Kính râm đi biển"], correct: 0, emoji: "🌧️", subject: "Tự nhiên", topic: "Thời tiết", world: 5, level: 8 },
+  { q: "Trời nắng gắt, em nên làm gì khi ra ngoài?", options: ["Đội mũ", "Không cần che nắng"], correct: 0, emoji: "☀️", subject: "Tự nhiên", topic: "Thời tiết", world: 5, level: 8 },
+  { q: "Khi trời lạnh, em nên mặc gì?", options: ["Áo ấm", "Áo mỏng đi biển"], correct: 0, emoji: "🧥", subject: "Tự nhiên", topic: "Thời tiết", world: 5, level: 8 },
+  { q: "Dấu hiệu nào cho biết trời sắp mưa?", options: ["Mây đen kéo đến", "Trời trong xanh mãi"], correct: 0, emoji: "☁️", subject: "Tự nhiên", topic: "Thời tiết", world: 5, level: 8 },
+  { q: "Sau cơn mưa, đường có thể như thế nào?", options: ["Trơn ướt", "Luôn khô ráo"], correct: 0, emoji: "🌧️", subject: "Tự nhiên", topic: "Thời tiết", world: 5, level: 8 },
+  { q: "Để lớp học sạch đẹp, em cần làm gì?", options: ["Bỏ rác đúng nơi", "Xé giấy vứt xuống sàn"], correct: 0, emoji: "🧹", subject: "Tự nhiên", topic: "Môi trường", world: 5, level: 9 },
+  { q: "Khi đánh răng, để tiết kiệm nước em nên làm gì?", options: ["Khóa vòi khi không dùng", "Mở vòi liên tục"], correct: 0, emoji: "🚰", subject: "Tự nhiên", topic: "Môi trường", world: 5, level: 9 },
+  { q: "Cây xanh cần gì để lớn lên?", options: ["Nước, ánh sáng và chăm sóc", "Rác bẩn"], correct: 0, emoji: "🌱", subject: "Tự nhiên", topic: "Môi trường", world: 5, level: 9 },
+  { q: "Việc nào giúp bảo vệ môi trường?", options: ["Trồng và chăm sóc cây", "Bẻ cành cây"], correct: 0, emoji: "🌳", subject: "Tự nhiên", topic: "Môi trường", world: 5, level: 9 },
+  { q: "Pin cũ và đồ sắc nhọn nên để ở đâu?", options: ["Nơi thu gom an toàn", "Trong hộp đồ chơi"], correct: 0, emoji: "♻️", subject: "Tự nhiên", topic: "Môi trường", world: 5, level: 9 }
+)
+
+LISTEN_QUESTIONS.push(
+  { word: "ma", options: ["ma", "má", "mà", "mạ"], correct: 0, subject: "Tiếng Việt", topic: "Dấu thanh", world: 2, level: 5 },
+  { word: "má", options: ["ma", "má", "mà", "mả"], correct: 1, subject: "Tiếng Việt", topic: "Dấu thanh", world: 2, level: 5 },
+  { word: "mà", options: ["má", "mà", "mã", "mạ"], correct: 1, subject: "Tiếng Việt", topic: "Dấu thanh", world: 2, level: 5 },
+  { word: "mả", options: ["mả", "mã", "ma", "má"], correct: 0, subject: "Tiếng Việt", topic: "Dấu thanh", world: 2, level: 5 },
+  { word: "mã", options: ["mà", "mạ", "mã", "ma"], correct: 2, subject: "Tiếng Việt", topic: "Dấu thanh", world: 2, level: 5 },
+  { word: "mạ", options: ["má", "mạ", "mả", "mã"], correct: 1, subject: "Tiếng Việt", topic: "Dấu thanh", world: 2, level: 5 },
+  { word: "bàn", options: ["bàn", "bát", "bên", "bông"], correct: 0, subject: "Tiếng Việt", topic: "Vần cơ bản", world: 2, level: 6 },
+  { word: "mắt", options: ["mẹ", "mắt", "mông", "minh"], correct: 1, subject: "Tiếng Việt", topic: "Vần cơ bản", world: 2, level: 6 },
+  { word: "sen", options: ["sam", "sen", "sông", "sinh"], correct: 1, subject: "Tiếng Việt", topic: "Vần cơ bản", world: 2, level: 6 },
+  { word: "kem", options: ["kim", "kem", "cong", "can"], correct: 1, subject: "Tiếng Việt", topic: "Vần cơ bản", world: 2, level: 6 },
+  { word: "bông", options: ["bên", "bông", "ban", "bát"], correct: 1, subject: "Tiếng Việt", topic: "Vần cơ bản", world: 2, level: 6 },
+  { word: "xinh", options: ["xanh", "xong", "xinh", "xem"], correct: 2, subject: "Tiếng Việt", topic: "Vần cơ bản", world: 2, level: 6 },
+  { word: "Bé đi học.", options: ["👧🎒 Bé đi học", "🐟 Cá đang bơi", "🍎 Quả táo", "🌧️ Trời mưa"], correct: 0, subject: "Tiếng Việt", topic: "Câu ngắn", world: 2, level: 7 },
+  { word: "Mẹ bế em.", options: ["👩‍🍼 Mẹ bế em", "🚌 Xe buýt", "🐔 Con gà", "📚 Quyển sách"], correct: 0, subject: "Tiếng Việt", topic: "Câu ngắn", world: 2, level: 7 },
+  { word: "Con mèo nằm ngủ.", options: ["🐱💤 Mèo ngủ", "🐶 Chó chạy", "👧 Bé đọc sách", "🌳 Cây xanh"], correct: 0, subject: "Tiếng Việt", topic: "Câu ngắn", world: 2, level: 7 },
+  { word: "Bố đọc sách.", options: ["👨📖 Bố đọc sách", "👩 Nấu cơm", "🚲 Đi xe", "🌧️ Mưa rơi"], correct: 0, subject: "Tiếng Việt", topic: "Câu ngắn", world: 2, level: 7 },
+  { word: "Bạn Lan vẽ hoa.", options: ["👧🎨 Vẽ hoa", "👦 Đá bóng", "🐟 Bơi dưới nước", "🍌 Ăn chuối"], correct: 0, subject: "Tiếng Việt", topic: "Câu ngắn", world: 2, level: 7 },
+  { word: "Cả lớp hát vui.", options: ["👧👦🎵 Cả lớp hát", "🏥 Bệnh viện", "🚦 Đèn đỏ", "🧹 Quét nhà"], correct: 0, subject: "Tiếng Việt", topic: "Câu ngắn", world: 2, level: 7 }
+)
+
+MATCHING_PAIRS_ALL.push(
+  { id: 24, left: "1", right: "🍎", subject: "Toán", topic: "Số và lượng", world: 3, level: 4 },
+  { id: 25, left: "2", right: "⭐⭐", subject: "Toán", topic: "Số và lượng", world: 3, level: 4 },
+  { id: 26, left: "3", right: "🐟🐟🐟", subject: "Toán", topic: "Số và lượng", world: 3, level: 4 },
+  { id: 27, left: "4", right: "🌸🌸🌸🌸", subject: "Toán", topic: "Số và lượng", world: 3, level: 4 },
+  { id: 28, left: "5", right: "✏️✏️✏️✏️✏️", subject: "Toán", topic: "Số và lượng", world: 3, level: 4 },
+  { id: 29, left: "6", right: "🍬🍬🍬🍬🍬🍬", subject: "Toán", topic: "Số và lượng", world: 3, level: 4 },
+  { id: 30, left: "⭕ Hình tròn", right: "⚽ Quả bóng", subject: "Toán", topic: "Hình học", world: 3, level: 5 },
+  { id: 31, left: "⬛ Hình vuông", right: "🪟 Ô cửa vuông", subject: "Toán", topic: "Hình học", world: 3, level: 5 },
+  { id: 32, left: "🔺 Hình tam giác", right: "⚠️ Biển báo", subject: "Toán", topic: "Hình học", world: 3, level: 5 },
+  { id: 33, left: "▭ Hình chữ nhật", right: "📘 Quyển sách", subject: "Toán", topic: "Hình học", world: 3, level: 5 },
+  { id: 34, left: "🎲 Khối lập phương", right: "Xúc xắc", subject: "Toán", topic: "Hình học", world: 3, level: 5 },
+  { id: 35, left: "🥫 Khối trụ", right: "Lon sữa", subject: "Toán", topic: "Hình học", world: 3, level: 5 },
+  { id: 36, left: "Bé chào cô.", right: "🙋‍♀️ Chào hỏi", subject: "Tiếng Việt", topic: "Câu và ý", world: 3, level: 6 },
+  { id: 37, left: "Em rửa tay.", right: "🧼 Giữ sạch", subject: "Tiếng Việt", topic: "Câu và ý", world: 3, level: 6 },
+  { id: 38, left: "Bạn đọc sách.", right: "📖 Học bài", subject: "Tiếng Việt", topic: "Câu và ý", world: 3, level: 6 },
+  { id: 39, left: "Mẹ tưới cây.", right: "🌱 Chăm cây", subject: "Tiếng Việt", topic: "Câu và ý", world: 3, level: 6 },
+  { id: 40, left: "Bố nấu cơm.", right: "🍚 Chuẩn bị bữa ăn", subject: "Tiếng Việt", topic: "Câu và ý", world: 3, level: 6 },
+  { id: 41, left: "Em bỏ rác.", right: "🗑️ Đúng nơi", subject: "Tiếng Việt", topic: "Câu và ý", world: 3, level: 6 }
+)
 
 // ─── UTILITIES ────────────────────────────────────────────────────────────────
 /** Xáo trộn mảng (Fisher-Yates) */

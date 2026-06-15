@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
 
 const AVATARS = ['🐱', '🐶', '🐭', '🐹', '🐰', '🦊', '🐸', '🐼', '🐨', '🐯', '🦁', '🐮']
-const GRADES = ['Mầm non', 'Nhà trẻ', 'Lớp 1', 'Lớp 2', 'Lớp 3', 'Lớp 4', 'Lớp 5']
+const GRADES = ['Lớp 1', 'Lớp 2', 'Lớp 3', 'Lớp 4', 'Lớp 5']
 
 export default function AddProfilePage() {
   const router = useRouter()
@@ -39,8 +39,20 @@ export default function AddProfilePage() {
       const data = await res.json()
       setLoading(false)
       if (!res.ok) return setError(data.error || 'Tạo hồ sơ thất bại')
+      
+      const GRADE_SLUGS = {
+        'Nhà trẻ': 'nha-tre',
+        'Mầm non': 'mam-non',
+        'Lớp 1': 'lop-1',
+        'Lớp 2': 'lop-2',
+        'Lớp 3': 'lop-3',
+        'Lớp 4': 'lop-4',
+        'Lớp 5': 'lop-5',
+      }
+      
       localStorage.setItem('profileId', data.id)
       localStorage.setItem('profileName', data.name)
+      localStorage.setItem('gradeSlug', GRADE_SLUGS[data.grade] || 'lop-1')
       router.push('/choose-companion')
     } catch (err) {
       setLoading(false)

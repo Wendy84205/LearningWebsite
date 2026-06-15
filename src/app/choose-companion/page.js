@@ -37,7 +37,8 @@ export default function ChooseCompanionPage() {
       localStorage.setItem('mascotEmoji', selected.emoji)
       localStorage.setItem('mascotName', selected.name)
       setLoading(false)
-      router.push('/nursery-landing')
+      const gradeSlug = localStorage.getItem('gradeSlug') || 'lop-1'
+      router.push(`/learning/${gradeSlug}`)
     } catch (err) {
       setLoading(false)
       alert('Đã xảy ra lỗi khi lưu bạn đồng hành. Vui lòng thử lại.')

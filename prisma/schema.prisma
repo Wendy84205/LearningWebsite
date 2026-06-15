@@ -30,10 +30,10 @@ model ChildProfile {
   parentId            String
   createdAt           DateTime         @default(now())
   parent              Parent           @relation(fields: [parentId], references: [id], onDelete: Cascade)
-  progress            NurseryProgress?
+  progress            Progress?
 }
 
-model NurseryProgress {
+model Progress {
   id              String       @id @default(uuid())
   currentLevel    Int          @default(3)
   completedLevels String       @default("") // Comma-separated (e.g. "1,2")
@@ -43,3 +43,19 @@ model NurseryProgress {
   profileId       String       @unique
   profile         ChildProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 }
+
+model CustomQuestion {
+  id        String   @id @default(uuid())
+  grade     String   // "lop-1" | "lop-2" | "lop-3" | "lop-4" | "lop-5"
+  worldId   Int
+  levelId   Int
+  type      String   @default("choose") // "choose" | "listen" | "matching"
+  q         String   // Nội dung câu hỏi / Từ vựng / Vế trái thẻ ghép
+  options   String   // JSON string của các lựa chọn hoặc Vế phải thẻ ghép
+  correct   Int      @default(0) // Index đáp án đúng
+  emoji     String   @default("❓")
+  subject   String   @default("Chung")
+  topic     String   @default("Chung")
+  createdAt DateTime @default(now())
+}
+

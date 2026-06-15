@@ -108,7 +108,7 @@ export default function ParentDashboardPage() {
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <Link href="/nursery-landing" id="btn-back-dash" className={styles.backBtn}>
+          <Link href="/" id="btn-back-dash" className={styles.backBtn}>
             <span className="material-symbols-outlined">arrow_back</span>
           </Link>
           <h1 className={styles.title}>Báo cáo học tập</h1>

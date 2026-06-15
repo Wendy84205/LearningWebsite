@@ -14,17 +14,20 @@ export default function GameResultsPage() {
   })
   const [showStars, setShowStars] = useState(0)
   const [confettiDots, setConfettiDots] = useState([])
+  const [gradeSlug, setGradeSlug] = useState('lop-1')
 
   useEffect(() => {
     const s = parseInt(localStorage.getItem('lastStars') || '0')
     const g = localStorage.getItem('lastGame') || 'Trò chơi'
     const mn = localStorage.getItem('mascotName') || 'Tin Tin'
     const me = localStorage.getItem('mascotEmoji') || '🤖'
+    const gs = localStorage.getItem('gradeSlug') || 'lop-1'
     
     setTimeout(() => {
       setStars(s)
       setGameName(g)
       setMascot({ name: mn, image: me })
+      setGradeSlug(gs)
     }, 0)
 
     // Save progress to DB if not already saved by game page
@@ -125,10 +128,10 @@ export default function GameResultsPage() {
         <p className={styles.message}>{msg}</p>
 
         <div className={styles.actions}>
-          <Link href="/nursery-map" id="btn-back-map" className={`btn btn-primary btn-lg ${styles.actionsBtn}`}>
+          <Link href={`/learning/${gradeSlug}/map`} id="btn-back-map" className={`btn btn-primary btn-lg ${styles.actionsBtn}`}>
             🗺️ Xem bản đồ
           </Link>
-          <Link href="/nursery-landing" id="btn-home" className={`btn btn-ghost btn-lg ${styles.actionsBtn}`}>
+          <Link href={`/learning/${gradeSlug}`} id="btn-home" className={`btn btn-ghost btn-lg ${styles.actionsBtn}`}>
             🏠 Về nhà
           </Link>
         </div>

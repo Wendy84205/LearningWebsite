@@ -1,8 +1,8 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { WORLDS } from '@/lib/grade1-data'
+import { getGradeData } from '@/lib/data'
 import styles from './page.module.css'
 
 const DEFAULT_PROFILE = { name: 'Học sinh', avatar: '/avatar-default.png' }
@@ -13,17 +13,17 @@ const DEFAULT_MASCOT = {
 const DEFAULT_PROGRESS = { stars: 0, streak: 0, currentLevel: 1, completedLevels: '' }
 const DEFAULT_SUMMARY = { normalLevelsCompleted: 0, completedLevels: [] }
 
-function getNextPracticeForWorlds(worldIds, completedLevels) {
+function getNextPracticeForWorlds(worldIds, completedLevels, worldsList, gradeSlug) {
   const completed = new Set(completedLevels || [])
 
   for (const worldId of worldIds) {
-    const world = WORLDS.find(item => item.id === worldId)
+    const world = worldsList.find(item => item.id === worldId)
     if (!world) continue
 
     const nextLevel = world.levels.find(level => !completed.has(`w${world.id}-l${level.id}`))
     if (nextLevel) {
       return {
-        href: nextLevel.game,
+        href: `${nextLevel.game}&grade=${gradeSlug}`,
         title: nextLevel.title,
         worldName: world.name,
       }
@@ -31,25 +31,30 @@ function getNextPracticeForWorlds(worldIds, completedLevels) {
 
     if (!completed.has(`w${world.id}-boss`)) {
       return {
-        href: world.bossGame,
+        href: `${world.bossGame}&grade=${gradeSlug}`,
         title: world.bossName,
         worldName: world.name,
       }
     }
   }
 
-  const firstWorld = WORLDS.find(item => item.id === worldIds[0])
+  const firstWorld = worldsList.find(item => item.id === worldIds[0])
   const firstLevel = firstWorld?.levels[0]
 
   return {
-    href: firstLevel?.game || '/nursery-map',
+    href: firstLevel ? `${firstLevel.game}&grade=${gradeSlug}` : `/learning/${gradeSlug}/map`,
     title: 'Ôn tập lại',
     worldName: firstWorld?.name || 'Bản đồ học tập',
   }
 }
 
-export default function NurseryLandingPage() {
+export default function GradeLandingPage() {
   const router = useRouter()
+  const params = useParams()
+  const gradeSlug = params.gradeSlug || 'lop-1'
+
+  const { WORLDS } = getGradeData(gradeSlug)
+
   const [profile, setProfile] = useState(DEFAULT_PROFILE)
   const [mascot, setMascot] = useState(DEFAULT_MASCOT)
   const [progress, setProgress] = useState(DEFAULT_PROGRESS)
@@ -155,12 +160,18 @@ export default function NurseryLandingPage() {
   const quickPractices = useMemo(() => {
     const completedLevels = summary.completedLevels || []
 
+    // Lấy các thế giới có sẵn tùy theo cấu hình lớp
+    const worldIds = WORLDS.map(w => w.id)
+    const mathWorldIds = WORLDS.filter(w => w.name.includes('Toán') || w.name.includes('Số')).map(w => w.id)
+    const languageWorldIds = WORLDS.filter(w => w.name.includes('Chữ') || w.name.includes('Tiếng')).map(w => w.id)
+    const otherWorldIds = WORLDS.filter(w => !mathWorldIds.includes(w.id) && !languageWorldIds.includes(w.id)).map(w => w.id)
+
     return {
-      math: getNextPracticeForWorlds([1, 4], completedLevels),
-      vietnamese: getNextPracticeForWorlds([2], completedLevels),
-      matching: getNextPracticeForWorlds([3], completedLevels),
+      math: getNextPracticeForWorlds(mathWorldIds.length > 0 ? mathWorldIds : worldIds, completedLevels, WORLDS, gradeSlug),
+      vietnamese: getNextPracticeForWorlds(languageWorldIds.length > 0 ? languageWorldIds : worldIds, completedLevels, WORLDS, gradeSlug),
+      matching: getNextPracticeForWorlds(otherWorldIds.length > 0 ? otherWorldIds : worldIds, completedLevels, WORLDS, gradeSlug),
     }
-  }, [summary.completedLevels])
+  }, [summary.completedLevels, WORLDS, gradeSlug])
 
   const isMascotEmoji = mascot.image && !mascot.image.startsWith('http') && !mascot.image.startsWith('/')
 
@@ -215,10 +226,9 @@ export default function NurseryLandingPage() {
           </div>
         </div>
 
-
         {/* Main Learning and Closet Actions */}
         <div className={styles.mainActions}>
-          <Link href="/nursery-map" id="btn-learning-map" className={styles.actionCard}>
+          <Link href={`/learning/${gradeSlug}/map`} id="btn-learning-map" className={styles.actionCard}>
             <span className={styles.actionIcon}>🗺️</span>
             <div className={styles.actionInfo}>
               <div className={styles.actionTitle}>Bản đồ học tập</div>
@@ -267,7 +277,7 @@ export default function NurseryLandingPage() {
           <div className={styles.quickGrid}>
             <Link href={quickPractices.math.href} id="btn-game-1" className={styles.quickCard}>
               <span className={styles.quickIcon}>🔢</span>
-              <span className={styles.quickName}>Toán lớp 1</span>
+              <span className={styles.quickName}>Toán học</span>
               <span className={styles.quickSub}>{quickPractices.math.title}</span>
               <span className={styles.quickMeta}>{quickPractices.math.worldName}</span>
             </Link>
@@ -281,7 +291,7 @@ export default function NurseryLandingPage() {
 
             <Link href={quickPractices.matching.href} id="btn-game-3" className={styles.quickCard}>
               <span className={styles.quickIcon}>🧩</span>
-              <span className={styles.quickName}>Ghép đôi</span>
+              <span className={styles.quickName}>Ghép đôi & Khám phá</span>
               <span className={styles.quickSub}>{quickPractices.matching.title}</span>
               <span className={styles.quickMeta}>{quickPractices.matching.worldName}</span>
             </Link>

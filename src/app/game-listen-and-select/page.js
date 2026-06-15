@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { getQuestionsForGame, WORLDS } from '@/lib/grade1-data'
+import { getGradeData } from '@/lib/data'
 import styles from './page.module.css'
 
 function GameContent() {
@@ -11,20 +11,36 @@ function GameContent() {
   const worldId = parseInt(searchParams.get('world') || '2', 10)
   const levelId = parseInt(searchParams.get('level') || '1', 10)
   const isBoss = searchParams.get('boss') === 'true'
+  const gradeSlug = searchParams.get('grade') || 'lop-1'
+  const gradeData = getGradeData(gradeSlug)
+  const WORLDS = gradeData.WORLDS
 
+  const [questions, setQuestions] = useState([])
   const [qIndex, setQIndex] = useState(0)
   const [chosen, setChosen] = useState(null)
   const [correct, setCorrect] = useState(0)
   const [speaking, setSpeaking] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  const questions = useMemo(() => {
-    return getQuestionsForGame(worldId, levelId, isBoss)
-  }, [worldId, levelId, isBoss])
+  useEffect(() => {
+    fetch(`/api/questions?grade=${gradeSlug}&world=${worldId}&level=${levelId}&boss=${isBoss}`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setQuestions(data)
+        }
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error(err)
+        setLoading(false)
+      })
+  }, [gradeSlug, worldId, levelId, isBoss])
 
   const q = questions[qIndex]
   const isLast = qIndex === questions.length - 1
-  const progress = (qIndex / questions.length) * 100
-  const currentWorld = WORLDS.find(w => w.id === worldId) || WORLDS[1]
+  const progress = questions.length ? (qIndex / questions.length) * 100 : 0
+  const currentWorld = WORLDS.find(w => w.id === worldId) || WORLDS[0]
 
   const playSound = useCallback(() => {
     if (!q) return
@@ -123,7 +139,7 @@ function GameContent() {
 
       {/* Header */}
       <header className={styles.header}>
-        <Link href="/nursery-map" className={styles.closeBtn}>✕</Link>
+        <Link href={`/learning/${gradeSlug}/map`} className={styles.closeBtn}>✕</Link>
         <div className={styles.progressWrap}>
           <div className={styles.progressContainer}>
             <div className={styles.progressFill} style={{ width: `${progress}%` }} />

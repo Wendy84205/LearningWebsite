@@ -6,8 +6,7 @@ export function middleware(request) {
 
   // Protect all game and classroom pages
   const isProtected = [
-    '/nursery-landing',
-    '/nursery-map',
+    '/learning',
     '/game-choose-1-of-2',
     '/game-listen-and-select',
     '/game-simple-matching',
@@ -27,8 +26,7 @@ export function middleware(request) {
 
 export const config = {
   matcher: [
-    '/nursery-landing/:path*',
-    '/nursery-map/:path*',
+    '/learning/:path*',
     '/game-choose-1-of-2/:path*',
     '/game-listen-and-select/:path*',
     '/game-simple-matching/:path*',

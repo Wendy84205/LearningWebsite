@@ -1,87 +1,190 @@
-# Hướng Dẫn Triển Khai & Phát Hành Học Vui (Deployment Guide)
+# 🚀 Hướng dẫn triển khai – Học Vui
 
-Tài liệu này hướng dẫn cách cấu hình, chuẩn hóa và phát hành ứng dụng **Học Vui** lên mạng nội bộ (Wi-Fi) hoặc internet công cộng (Vercel, Render, Railway, Supabase).
-
----
-
-## 🗺️ PHÂN PHỐI 1: Trải nghiệm trên iPad/Máy tính bảng qua Mạng nội bộ (Wi-Fi)
-Để trẻ chơi game trên iPad hoặc các thiết bị di động khác trong nhà, bạn có thể chạy server trên máy tính và kết nối qua địa chỉ IP nội bộ:
-
-### Bước 1: Tìm địa chỉ IP của máy tính (Mac)
-Mở Terminal và chạy lệnh sau để tìm IP trong mạng Wi-Fi:
-```bash
-ipconfig getifaddr en0
-```
-*(Ví dụ kết quả: `192.168.1.5`)*
-
-### Bước 2: Khởi chạy máy chủ nội bộ
-Chạy lệnh sau trên máy tính (sử dụng cổng `3000` và lắng nghe tất cả các thiết bị):
-```bash
-npm run dev:network
-# Hoặc chạy bản build tối ưu:
-# npm run build && npm run start:network
-```
-
-### Bước 3: Truy cập từ thiết bị khác
-Trên iPad, máy tính bảng hoặc điện thoại kết nối cùng mạng Wi-Fi, mở trình duyệt và truy cập:
-`http://192.168.1.5:3000` *(thay thế bằng IP của bạn)*
+Tài liệu này mô tả cách triển khai **Học Vui** lên môi trường sản xuất.  
+Khuyến nghị: **Vercel** (đơn giản nhất) hoặc bất kỳ VPS/server nào chạy Node.js.
 
 ---
 
-## ☁️ PHÂN PHỐI 2: Đưa lên Internet công cộng
+## 📋 Mục lục
 
-Next.js sử dụng Prisma làm ORM. Tùy thuộc vào dịch vụ lưu trữ bạn chọn, chúng ta có 2 cách tiếp cận cơ bản:
-
-### Phương án A: Máy chủ ảo / PaaS có Lưu trữ tệp tin (Render, Railway, Fly.io)
-**Dành cho việc tiếp tục sử dụng SQLite (`dev.db`).** SQLite là một tệp cơ sở dữ liệu vật lý nên cần máy chủ có phân vùng nhớ lưu trữ bền vững (Persistent Volume) để dữ liệu không bị xóa khi khởi động lại máy chủ.
-
-1. **Chuẩn bị file cấu hình `Dockerfile`** (nếu nền tảng yêu cầu):
-   Next.js có thể dễ dàng chạy trên docker.
-2. **Cấu hình biến môi trường trên PaaS**:
-   - `DATABASE_URL`: `file:/data/dev.db` *(Đường dẫn trỏ đến Persistent Volume đã mount)*
-   - `JWT_SECRET`: Chuỗi khóa bí mật ngẫu nhiên để mã hóa cookie phiên đăng nhập.
-3. **Kịch bản chạy lúc deploy**:
-   - Trước khi ứng dụng khởi chạy (`start`), cần chạy lệnh khởi tạo DB:
-     ```bash
-     npx prisma db push
-     ```
+1. [Triển khai trên Vercel](#1-triển-khai-trên-vercel)
+2. [Triển khai thủ công (VPS)](#2-triển-khai-thủ-công-vps)
+3. [Cấu hình Google OAuth](#3-cấu-hình-google-oauth)
+4. [Biến môi trường đầy đủ](#4-biến-môi-trường-đầy-đủ)
+5. [Database trong môi trường sản xuất](#5-database-trong-môi-trường-sản-xuất)
+6. [Xử lý sự cố thường gặp](#6-xử-lý-sự-cố-thường-gặp)
 
 ---
 
-### Phương án B: Serverless (Vercel) + Cơ sở dữ liệu đám mây (Supabase / Neon PostgreSQL)
-**Khuyên dùng cho hiệu năng cao nhất, miễn phí hoàn toàn.** Vercel không hỗ trợ lưu trữ tệp SQLite lâu dài, do đó ta cần kết nối Next.js với một cơ sở dữ liệu PostgreSQL đám mây (như Supabase hoặc Neon).
+## 1. Triển khai trên Vercel
 
-#### Bước 1: Tạo cơ sở dữ liệu
-1. Đăng ký tài khoản miễn phí tại [Supabase](https://supabase.com/) hoặc [Neon](https://neon.tech/).
-2. Tạo một project mới và sao chép **Connection String** (Chuỗi kết nối cơ sở dữ liệu).
-   *(Định dạng: `postgresql://postgres:password@db-host:5432/postgres`)*
+### 1.1. Cài đặt lần đầu
 
-#### Bước 2: Chuyển đổi Prisma sang PostgreSQL
-Bạn có thể chạy script tự động để chuyển đổi database provider:
 ```bash
-node scripts/use-db.js postgresql
+# Cài Vercel CLI
+npm i -g vercel
+
+# Đăng nhập
+vercel login
+
+# Triển khai từ thư mục dự án
+cd "Học Vui"
+vercel --prod
 ```
-*(Nếu muốn quay lại cấu hình SQLite cho môi trường lập trình nội bộ local, chỉ cần chạy: `node scripts/use-db.js sqlite`)*
 
-#### Bước 3: Đưa cơ sở dữ liệu lên đám mây
-Chạy lệnh sau trên máy tính để tạo bảng trên Supabase/Neon:
+### 1.2. Biến môi trường trên Vercel
+
+Vào **Vercel Dashboard → Settings → Environment Variables** và thêm:
+
+| Tên biến | Giá trị mẫu |
+|---|---|
+| `DATABASE_URL` | `file:./prod.db` (hoặc PostgreSQL URL nếu dùng Vercel Postgres) |
+| `NEXTAUTH_SECRET` | Chuỗi ngẫu nhiên 32 byte |
+| `NEXTAUTH_URL` | `https://your-app.vercel.app` |
+| `GOOGLE_CLIENT_ID` | Từ Google Cloud Console |
+| `GOOGLE_CLIENT_SECRET` | Từ Google Cloud Console |
+
+> ⚠️ **Lưu ý:** SQLite không hoạt động tốt trên Vercel (serverless). Hãy dùng **Vercel Postgres** hoặc **PlanetScale** và cập nhật `DATABASE_URL` + provider trong `prisma/schema.prisma`.
+
+### 1.3. Chạy migration sau deploy
+
 ```bash
+vercel env pull .env.production.local
 npx prisma db push
 ```
 
-#### Bước 4: Deploy lên Vercel
-1. Cài đặt Vercel CLI hoặc kết nối GitHub Repository với [Vercel Dashboard](https://vercel.com).
-2. Thêm các **Environment Variables** (Biến môi trường) sau trên Vercel:
-   - `DATABASE_URL`: *[Connection String của Supabase/Neon]*
-   - `JWT_SECRET`: *[Chuỗi khóa bí mật ngẫu nhiên]*
-   - `NEXT_PUBLIC_GOOGLE_CLIENT_ID`: *[Google Client ID của bạn để đăng nhập bằng Google]*
-3. Nhấp **Deploy**! Vercel sẽ tự động build và cấp phát URL công cộng (dạng `https://hoc-vui.vercel.app`).
+---
+
+## 2. Triển khai thủ công (VPS)
+
+```bash
+# 1. Clone code
+git clone https://github.com/Wendy84205/LearningWebsite.git
+cd LearningWebsite
+
+# 2. Cài dependencies
+npm ci --production
+
+# 3. Tạo file .env
+nano .env
+
+# 4. Build
+npm run build
+
+# 5. Chạy với PM2
+npm install -g pm2
+pm2 start "npm run start" --name hoc-vui
+pm2 save
+pm2 startup
+```
 
 ---
 
-## 🔒 Khuyến nghị Bảo mật Sản phẩm (Production Security)
-1. **JWT_SECRET**: Thay đổi giá trị mặc định của `JWT_SECRET` trong `.env` thành chuỗi dài ngẫu nhiên:
-   ```bash
-   openssl rand -base64 32
+## 3. Cấu hình Google OAuth
+
+1. Truy cập [Google Cloud Console](https://console.cloud.google.com/).
+2. Chọn dự án → **API & Services → Credentials → Create Credentials → OAuth 2.0 Client ID**.
+3. Application type: **Web application**.
+4. Thêm **Authorized redirect URIs**:
+   - Môi trường dev: `http://localhost:3000/api/auth/callback/google`
+   - Môi trường prod: `https://your-domain.com/api/auth/callback/google`
+5. Sao chép **Client ID** và **Client Secret** vào file `.env`:
+   ```env
+   GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=GOCSPX-xxx
    ```
-2. **Google OAuth**: Thay thế `NEXT_PUBLIC_GOOGLE_CLIENT_ID` demo bằng Client ID thuộc Google Cloud Console của chính bạn, cấu hình chính xác redirect URI trỏ về trang web thực tế của bạn.
+
+> ✅ **Quan trọng:** Email tài khoản Google Console phải khớp với email GitHub để Vercel auto-deploy hoạt động.
+
+---
+
+## 4. Biến môi trường đầy đủ
+
+Tạo file `.env` ở thư mục gốc dự án:
+
+```env
+# Database
+DATABASE_URL="file:./dev.db"
+
+# NextAuth
+NEXTAUTH_SECRET="thay-bang-chuoi-32-byte-ngau-nhien"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Google OAuth (tùy chọn nhưng khuyến nghị)
+GOOGLE_CLIENT_ID="xxx.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="GOCSPX-xxx"
+```
+
+Tạo `NEXTAUTH_SECRET` mạnh:
+```bash
+openssl rand -hex 32
+```
+
+---
+
+## 5. Database trong môi trường sản xuất
+
+Dự án hiện dùng **SQLite** (file `dev.db`) – phù hợp phát triển và demo.
+
+### Nâng cấp lên PostgreSQL (khuyến nghị cho production)
+
+1. Sửa `prisma/schema.prisma`:
+   ```prisma
+   datasource db {
+     provider = "postgresql"
+     url      = env("DATABASE_URL")
+   }
+   ```
+2. Cập nhật `DATABASE_URL` trong `.env`:
+   ```env
+   DATABASE_URL="postgresql://user:pass@host:5432/hocvui"
+   ```
+3. Chạy migration:
+   ```bash
+   npx prisma migrate deploy
+   ```
+
+---
+
+## 6. Xử lý sự cố thường gặp
+
+### ❌ Lỗi `invalid_client` khi đăng nhập Google
+
+- Kiểm tra `GOOGLE_CLIENT_ID` và `GOOGLE_CLIENT_SECRET` trong `.env`.
+- Đảm bảo URI redirect đã được thêm vào Google Cloud Console.
+- Xác nhận ứng dụng OAuth đã được **publish** (không còn ở trạng thái Testing nếu dùng email ngoài whitelist).
+
+### ❌ Lỗi `NEXTAUTH_URL` không khớp
+
+- `NEXTAUTH_URL` phải là URL chính xác của ứng dụng (không có dấu `/` ở cuối).
+- Trên Vercel: đặt `NEXTAUTH_URL` = `https://ten-app.vercel.app`.
+
+### ❌ Database lỗi sau deploy
+
+```bash
+npx prisma db push --accept-data-loss
+```
+
+### ❌ Build lỗi `Module not found`
+
+```bash
+rm -rf .next node_modules
+npm install
+npm run build
+```
+
+---
+
+## 📁 Cấu trúc Git
+
+```
+main          ← Nhánh chính, luôn deployable
+└── dev       ← Phát triển tính năng mới
+```
+
+Commit và push để tự động deploy lên Vercel:
+```bash
+git add .
+git commit -m "feat: mô tả thay đổi"
+git push origin main
+```

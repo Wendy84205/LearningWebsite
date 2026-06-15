@@ -1,12 +1,17 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { WORLDS } from '@/lib/grade1-data'
+import { getGradeData } from '@/lib/data'
 import styles from './page.module.css'
 
-export default function NurseryMapPage() {
+export default function GradeMapPage() {
   const router = useRouter()
+  const params = useParams()
+  const gradeSlug = params.gradeSlug || 'lop-1'
+
+  const { WORLDS } = getGradeData(gradeSlug)
+
   const [completed, setCompleted] = useState([]) // danh sách các màn đã hoàn thành (ví dụ: 'w1-l1', 'w1-boss')
   const [stars, setStars] = useState(0)
   const [streak, setStreak] = useState(0)
@@ -19,6 +24,19 @@ export default function NurseryMapPage() {
   const [goldMedalModalOpen, setGoldMedalModalOpen] = useState(false) // mở popup huy chương vàng
 
   const [confettiPieces, setConfettiPieces] = useState([])
+  const [promoting, setPromoting] = useState(false)
+
+  // Lấy tên tiếng Việt của lớp học để đọc âm thanh
+  const getGradeNameVi = (slug) => {
+    if (slug === 'nha-tre') return 'Nhà trẻ'
+    if (slug === 'mam-non') return 'Mầm non'
+    if (slug === 'lop-1') return 'Lớp 1'
+    if (slug === 'lop-2') return 'Lớp 2'
+    if (slug === 'lop-3') return 'Lớp 3'
+    if (slug === 'lop-4') return 'Lớp 4'
+    if (slug === 'lop-5') return 'Lớp 5'
+    return 'Lớp học'
+  }
 
   useEffect(() => {
     const profileId = localStorage.getItem('profileId')
@@ -82,15 +100,16 @@ export default function NurseryMapPage() {
     return world.levels.every(l => completed.includes(`w${world.id}-l${l.id}`))
   }
 
-  // Kiểm tra đã hoàn tất toàn bộ 5 thế giới
+  // Kiểm tra đã hoàn tất toàn bộ thế giới của lớp này
   const isAllWorldsCompleted = useMemo(() => {
+    if (WORLDS.length === 0) return false
     return WORLDS.every(w => completed.includes(`w${w.id}-boss`))
-  }, [completed])
+  }, [completed, WORLDS])
 
   const handleSpeakerClick = () => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel()
-      const text = `Chào ${profileName}! Đây là lộ trình học tập Lớp 1 thế giới kỳ diệu. Hãy cùng khám phá các thế giới Số Học, Chữ Cái, Ghép Cặp và giành Huy chương Vàng nhé!`
+      const text = `Chào ${profileName}! Đây là lộ trình học tập khối ${getGradeNameVi(gradeSlug)} thế giới kỳ diệu. Hãy cùng vượt qua các thế giới và giành Huy chương Vàng nhé!`
       const utterance = new SpeechSynthesisUtterance(text)
       utterance.lang = 'vi-VN'
       utterance.onstart = () => setSpeechSpeaking(true)
@@ -138,7 +157,7 @@ export default function NurseryMapPage() {
     if (!isAllWorldsCompleted) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel()
-        const utter = new SpeechSynthesisUtterance('Con cần vượt qua các trận Boss của cả 5 thế giới học tập để mở khóa Huy chương Vàng nhé!')
+        const utter = new SpeechSynthesisUtterance('Con cần vượt qua các trận Boss của tất cả thế giới học tập để mở khóa Huy chương Vàng nhé!')
         utter.lang = 'vi-VN'
         window.speechSynthesis.speak(utter)
       }
@@ -150,7 +169,7 @@ export default function NurseryMapPage() {
 
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel()
-      const text = `Chúc mừng bé ${profileName}! Con đã hoàn thành xuất sắc toàn bộ hành trình học tập lớp 1. Con là một Nhà Thám Hiểm Tri Thức tuyệt vời và đã giành được Huy Chương Vàng. Hãy tiếp tục khám phá những điều mới mỗi ngày nhé!`
+      const text = `Chúc mừng bé ${profileName}! Con đã hoàn thành xuất sắc toàn bộ hành trình học tập ${getGradeNameVi(gradeSlug)}. Con là một Nhà Thám Hiểm Tri Thức tuyệt vời và đã giành được Huy Chương Vàng. Hãy tiếp tục khám phá những điều mới mỗi ngày nhé!`
       const utterance = new SpeechSynthesisUtterance(text)
       utterance.lang = 'vi-VN'
       utterance.rate = 0.85
@@ -171,6 +190,41 @@ export default function NurseryMapPage() {
     setActiveWorld(world)
   }
 
+  const handlePromote = async () => {
+    const profileId = localStorage.getItem('profileId')
+    if (!profileId) return
+    setPromoting(true)
+    try {
+      const res = await fetch('/api/profile/promote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profileId })
+      })
+      const data = await res.json()
+      if (data.success) {
+        localStorage.setItem('gradeSlug', data.nextGradeSlug)
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel()
+          const utter = new SpeechSynthesisUtterance(`Chúc mừng con đã lên ${data.nextGradeName}!`)
+          utter.lang = 'vi-VN'
+          window.speechSynthesis.speak(utter)
+        }
+        setGoldMedalModalOpen(false)
+        router.push(`/learning/${data.nextGradeSlug}/map`)
+        setTimeout(() => {
+          window.location.reload()
+        }, 800)
+      } else {
+        alert(data.error || 'Đã xảy ra lỗi khi lên lớp.')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Đã xảy ra lỗi kết nối.')
+    } finally {
+      setPromoting(false)
+    }
+  }
+
   // Tọa độ vẽ các Node thế giới trên map
   const NODE_POSITIONS = [
     { top: '80px',  left: '160px' }, // World 1
@@ -180,16 +234,15 @@ export default function NurseryMapPage() {
     { top: '880px', left: '120px' }  // World 5
   ]
 
-
   return (
     <div className={styles.page}>
       {/* Top App Bar */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <Link href="/nursery-landing" className={styles.backBtn}>
+          <Link href={`/learning/${gradeSlug}`} className={styles.backBtn}>
             <span className="material-symbols-outlined">arrow_back</span>
           </Link>
-          <h1 className={styles.title}>Bản đồ Lớp 1</h1>
+          <h1 className={styles.title}>Bản đồ {getGradeNameVi(gradeSlug)}</h1>
         </div>
         <div className={styles.headerRight}>
           <div className={styles.starBadge}>
@@ -216,7 +269,7 @@ export default function NurseryMapPage() {
       }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--primary, #0060ac)' }}>
-            {WORLDS.filter(w => completed.includes(`w${w.id}-boss`)).length}/5
+            {WORLDS.filter(w => completed.includes(`w${w.id}-boss`)).length}/{WORLDS.length}
           </div>
           <div style={{ fontSize: '11px', color: '#78909c', fontWeight: 700 }}>Thế giới xong</div>
         </div>
@@ -247,12 +300,12 @@ export default function NurseryMapPage() {
             <path d="M200,0 C350,180 50,360 200,540 C350,720 50,900 200,1080" />
           </svg>
 
-          {/* Render 5 World Nodes */}
+          {/* Render Grade World Nodes */}
           {WORLDS.map((world, idx) => {
             const unlocked = isWorldUnlocked(world)
             const isDone = completed.includes(`w${world.id}-boss`)
             const current = unlocked && !isDone
-            const pos = NODE_POSITIONS[idx]
+            const pos = NODE_POSITIONS[idx % NODE_POSITIONS.length]
 
             return (
               <div
@@ -295,10 +348,10 @@ export default function NurseryMapPage() {
             )
           })}
 
-          {/* World 6: Huy chương Vàng Boss cuối */}
+          {/* Huy chương Vàng Boss cuối */}
           <div
             className={styles.nodeContainer}
-            style={{ top: '1060px', left: '50%', transform: 'translateX(-50%)' }}
+            style={{ top: `${80 + WORLDS.length * 200}px`, left: '50%', transform: 'translateX(-50%)' }}
             onClick={handleGoldMedalClick}
           >
             <div className={styles.nodeCol}>
@@ -362,7 +415,7 @@ export default function NurseryMapPage() {
                       
                       {unlocked ? (
                         <Link
-                          href={lvl.game}
+                          href={`${lvl.game}&grade=${gradeSlug}`}
                           className={styles.playBtn}
                           style={{
                             background: activeWorld.borderColor,
@@ -397,7 +450,7 @@ export default function NurseryMapPage() {
 
                   {isBossUnlocked(activeWorld) ? (
                     <Link
-                      href={activeWorld.bossGame}
+                      href={`${activeWorld.bossGame}&grade=${gradeSlug}`}
                       className={styles.playBtn}
                       style={{
                         background: 'linear-gradient(135deg, #d97706, #b45309)',
@@ -448,22 +501,44 @@ export default function NurseryMapPage() {
               <div className={styles.goldMedalAnimation}>🏆</div>
               <h2 className={styles.goldMedalTitle}>CHIẾN THẮNG HUY CHƯƠNG VÀNG!</h2>
               <p className={styles.goldMedalText}>
-                Chúc mừng bé <strong>{profileName}</strong> đã xuất sắc hoàn thành toàn bộ hành trình học tập lớp 1!<br /><br />
+                Chúc mừng bé <strong>{profileName}</strong> đã xuất sắc hoàn thành toàn bộ hành trình học tập {getGradeNameVi(gradeSlug)}!<br /><br />
                 Con là một <strong>Nhà Thám Hiểm Tri Thức</strong> tuyệt vời. Hãy tiếp tục khám phá những điều mới mẻ mỗi ngày nhé! 🎉🌟
               </p>
-              <button
-                className={styles.playBtn}
-                style={{
-                  background: 'linear-gradient(135deg, #d97706, #fbbf24)',
-                  color: 'white',
-                  width: '100%',
-                  fontSize: '15px',
-                  padding: '12px'
-                }}
-                onClick={() => setGoldMedalModalOpen(false)}
-              >
-                TUYỆT VỜI! 💖
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
+                {gradeSlug !== 'lop-5' && (
+                  <button
+                    className={styles.playBtn}
+                    style={{
+                      background: 'linear-gradient(135deg, #10b981, #059669)',
+                      color: 'white',
+                      width: '100%',
+                      fontSize: '16px',
+                      fontWeight: 800,
+                      padding: '12px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      cursor: 'pointer'
+                    }}
+                    onClick={handlePromote}
+                    disabled={promoting}
+                  >
+                    {promoting ? 'ĐANG LÊN LỚP...' : 'LÊN LỚP KẾ TIẾP! 🚀'}
+                  </button>
+                )}
+                <button
+                  className={styles.playBtn}
+                  style={{
+                    background: 'linear-gradient(135deg, #d97706, #fbbf24)',
+                    color: 'white',
+                    width: '100%',
+                    fontSize: '15px',
+                    padding: '12px'
+                  }}
+                  onClick={() => setGoldMedalModalOpen(false)}
+                >
+                  ĐÓNG 💖
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -474,10 +549,10 @@ export default function NurseryMapPage() {
         <div className={styles.mascotBubble}>
           <p className={styles.mascotBubbleText}>
             {completed.filter(c => c.endsWith('-boss')).length === 0
-              ? `Chào ${profileName}! Nhấn vào 🏡 Ngôi làng Số Học để bắt đầu cuộc hành trình lớp 1 nhé! 🎉`
+              ? `Chào ${profileName}! Nhấn vào thế giới đầu tiên để bắt đầu cuộc hành trình nhé! 🎉`
               : isAllWorldsCompleted
               ? `Tuyệt vời ông mặt trời ${profileName}! Nhấn vào Huy chương Vàng 🏆 để nhận giải thưởng thôi!`
-              : `Cố lên ${profileName}! Đã hoàn thành ${completed.filter(c => c.endsWith('-boss')).length}/5 thế giới rồi! 💪`}
+              : `Cố lên ${profileName}! Đã hoàn thành ${completed.filter(c => c.endsWith('-boss')).length}/${WORLDS.length} thế giới rồi! 💪`}
           </p>
           <div className={styles.mascotBubbleArrow} />
         </div>
@@ -492,11 +567,11 @@ export default function NurseryMapPage() {
 
       {/* Bottom Navigation */}
       <nav className={styles.mobileBottomNav}>
-        <Link href="/nursery-landing" className={styles.navItem}>
+        <Link href={`/learning/${gradeSlug}`} className={styles.navItem}>
           <span className="material-symbols-outlined">home</span>
           <span>Trang chủ</span>
         </Link>
-        <Link href="/nursery-map" className={`${styles.navItem} ${styles.navItemActive}`}>
+        <Link href={`/learning/${gradeSlug}/map`} className={`${styles.navItem} ${styles.navItemActive}`}>
           <span className="material-symbols-outlined">map</span>
           <span>Lộ trình</span>
         </Link>

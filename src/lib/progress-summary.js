@@ -1,4 +1,14 @@
-import { WORLDS } from '@/lib/grade1-data'
+import { getGradeData } from '@/lib/data'
+
+export const GRADE_SLUGS = {
+  'Nhà trẻ': 'nha-tre',
+  'Mầm non': 'mam-non',
+  'Lớp 1': 'lop-1',
+  'Lớp 2': 'lop-2',
+  'Lớp 3': 'lop-3',
+  'Lớp 4': 'lop-4',
+  'Lớp 5': 'lop-5',
+}
 
 export const FOCUS_RECOMMENDATIONS = {
   1: {
@@ -33,26 +43,27 @@ export const FOCUS_RECOMMENDATIONS = {
   }
 }
 
-const NORMAL_LEVEL_TOKENS = WORLDS.flatMap(world =>
-  world.levels.map(level => `w${world.id}-l${level.id}`)
-)
+// Utility to get grade slug from grade name or slug
+export function getSlug(gradeOrSlug) {
+  if (!gradeOrSlug) return 'lop-1'
+  return GRADE_SLUGS[gradeOrSlug] || String(gradeOrSlug).toLowerCase()
+}
 
-export const TOTAL_NORMAL_LEVELS = NORMAL_LEVEL_TOKENS.length
-
-export function parseCompletedLevels(completedLevels) {
+export function parseCompletedLevels(completedLevels, gradeOrSlug = 'lop-1') {
   if (!completedLevels) return []
 
+  const slug = getSlug(gradeOrSlug)
   const normalized = String(completedLevels)
     .split(',')
     .map(item => item.trim())
     .filter(Boolean)
-    .map(normalizeCompletedLevelToken)
+    .map(item => normalizeCompletedLevelToken(item, slug))
     .filter(Boolean)
 
   return [...new Set(normalized)]
 }
 
-export function normalizeCompletedLevelToken(completedLevel) {
+export function normalizeCompletedLevelToken(completedLevel, gradeOrSlug = 'lop-1') {
   if (completedLevel === null || completedLevel === undefined) return null
 
   const raw = String(completedLevel).trim()
@@ -62,28 +73,48 @@ export function normalizeCompletedLevelToken(completedLevel) {
 
   if (/^\d+$/.test(raw)) {
     const legacyIndex = Number(raw) - 1
-    return NORMAL_LEVEL_TOKENS[legacyIndex] || null
+    const slug = getSlug(gradeOrSlug)
+    const gradeData = getGradeData(slug)
+    const worlds = gradeData.WORLDS || []
+    const normalLevelTokens = worlds.flatMap(world =>
+      world.levels.map(level => `w${world.id}-l${level.id}`)
+    )
+    return normalLevelTokens[legacyIndex] || null
   }
 
   return null
 }
 
-export function getNormalLevelPosition(completedLevel) {
-  const normalized = normalizeCompletedLevelToken(completedLevel)
-  const index = NORMAL_LEVEL_TOKENS.indexOf(normalized)
+export function getNormalLevelPosition(completedLevel, gradeOrSlug = 'lop-1') {
+  const slug = getSlug(gradeOrSlug)
+  const normalized = normalizeCompletedLevelToken(completedLevel, slug)
+  const gradeData = getGradeData(slug)
+  const worlds = gradeData.WORLDS || []
+  const normalLevelTokens = worlds.flatMap(world =>
+    world.levels.map(level => `w${world.id}-l${level.id}`)
+  )
+  const index = normalLevelTokens.indexOf(normalized)
 
   return index >= 0 ? index + 1 : null
 }
 
-export function buildProgressSummary(progress) {
-  const completedList = parseCompletedLevels(progress?.completedLevels)
+export function buildProgressSummary(progress, gradeOrSlug = 'lop-1') {
+  const slug = getSlug(gradeOrSlug)
+  const gradeData = getGradeData(slug)
+  const worlds = gradeData.WORLDS || []
+  const normalLevelTokens = worlds.flatMap(world =>
+    world.levels.map(level => `w${world.id}-l${level.id}`)
+  )
+  const totalNormalLevels = normalLevelTokens.length
+
+  const completedList = parseCompletedLevels(progress?.completedLevels, slug)
   const medalCount = completedList.filter(item => item.endsWith('-boss')).length
   const normalLevelsCompleted = completedList.filter(item => item.includes('-l')).length
-  const progressPct = TOTAL_NORMAL_LEVELS > 0
-    ? Math.round((normalLevelsCompleted / TOTAL_NORMAL_LEVELS) * 100)
+  const progressPct = totalNormalLevels > 0
+    ? Math.round((normalLevelsCompleted / totalNormalLevels) * 100)
     : 0
 
-  const worldProgress = WORLDS.map(world => {
+  const worldProgress = worlds.map(world => {
     const completedLevelsCount = world.levels.filter(level =>
       completedList.includes(`w${world.id}-l${level.id}`)
     ).length
@@ -115,19 +146,21 @@ export function buildProgressSummary(progress) {
     return a.id - b.id
   })[0]
 
+  const focusRecommendations = gradeData.FOCUS_RECOMMENDATIONS || FOCUS_RECOMMENDATIONS
+
   return {
     stars: progress?.stars ?? 0,
     streak: progress?.streak ?? 0,
     medalCount,
-    totalMedals: WORLDS.length,
+    totalMedals: worlds.length,
     normalLevelsCompleted,
-    totalNormalLevels: TOTAL_NORMAL_LEVELS,
+    totalNormalLevels,
     progressPct,
     completedLevels: completedList,
     worldProgress,
-    weakestWorldId: weakestWorld?.id ?? WORLDS[0]?.id ?? null,
+    weakestWorldId: weakestWorld?.id ?? worlds[0]?.id ?? null,
     focusRecommendation: weakestWorld
-      ? FOCUS_RECOMMENDATIONS[weakestWorld.id]
-      : FOCUS_RECOMMENDATIONS[WORLDS[0]?.id]
+      ? focusRecommendations[weakestWorld.id]
+      : focusRecommendations[worlds[0]?.id]
   }
 }

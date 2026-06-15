@@ -24,11 +24,14 @@ export default function KidsClosetPage() {
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBvdz9atv7ARpvqQLQcBC-nUsmg4xE1NcZ9EKHi3pdIpmzdujb3-kikQVWw4tBLFITAzvANKzSCe0NlqVat2TRwlp6b-mJ-xBvzm4dKeJu-iELiFhzLYcLVoc7tbcEnuOYszTSiVWsW52WX4Q6bGRJExXAohb4mGeMLqcMoGkZiVBx6oTpGwqt3df4aSWNCGMPeZoHyyNOV2MOdWRNrPPnUjKV1hlqrBOpRSOeDSq5vB3tuxPfqXjIUthHfISQ-a0F_O2u4jo6AHeA'
   })
   const [saving, setSaving] = useState(false)
+  const [gradeSlug, setGradeSlug] = useState('lop-1')
 
   useEffect(() => {
     const mn = localStorage.getItem('mascotName') || 'Tin Tin'
+    const gs = localStorage.getItem('gradeSlug') || 'lop-1'
     setTimeout(() => {
       setMascot(prev => ({ ...prev, name: mn }))
+      setGradeSlug(gs)
     }, 0)
 
     const profileId = localStorage.getItem('profileId')
@@ -96,7 +99,7 @@ export default function KidsClosetPage() {
       {/* Header */}
       <header className={styles.header}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <Link href="/nursery-landing" className={styles.backBtn}>
+          <Link href={`/learning/${gradeSlug}`} className={styles.backBtn}>
             <span className="material-symbols-outlined">arrow_back</span>
           </Link>
           <h1 className={styles.title}>Tủ đồ của bé</h1>
