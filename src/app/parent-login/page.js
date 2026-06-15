@@ -131,7 +131,7 @@ function ParentLoginInner() {
       if (initialized) return
       if (typeof window !== 'undefined' && window.google && window.google.accounts) {
         initialized = true
-        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '1048866166164-demo.apps.googleusercontent.com'
+        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '699295971832-tc494tnl4c1msic81jf0oasf6orl0jjm.apps.googleusercontent.com'
         
         window.google.accounts.id.initialize({
           client_id: clientId,
