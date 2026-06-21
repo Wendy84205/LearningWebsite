@@ -31,6 +31,8 @@ model ChildProfile {
   createdAt           DateTime         @default(now())
   parent              Parent           @relation(fields: [parentId], references: [id], onDelete: Cascade)
   progress            Progress?
+  learningAttempts    LearningAttempt[]
+  badges              StudentBadge[]
 }
 
 model Progress {
@@ -89,4 +91,76 @@ model AdminCmsItem {
 
   @@index([module, type])
   @@index([grade, subject, topic])
+}
+
+model LearningAttempt {
+  id             String          @id @default(uuid())
+  profileId      String
+  parentId       String
+  activityType   String          @default("game") // game | test | practice | daily | review
+  title          String
+  grade          String?
+  subject        String          @default("")
+  topic          String          @default("")
+  skill          String          @default("")
+  difficulty     String          @default("")
+  gameType       String          @default("")
+  completedLevel String          @default("")
+  worldId        Int?
+  levelId        Int?
+  isBoss         Boolean         @default(false)
+  correct        Int             @default(0)
+  total          Int             @default(0)
+  scorePct       Int             @default(0)
+  stars          Int             @default(0)
+  xp             Int             @default(0)
+  createdAt      DateTime        @default(now())
+  profile        ChildProfile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  answers        StudentAnswer[]
+
+  @@index([profileId, createdAt])
+  @@index([activityType])
+}
+
+model StudentAnswer {
+  id            String          @id @default(uuid())
+  attemptId     String
+  questionId    String          @default("")
+  selected      String          @default("")
+  correctAnswer String          @default("")
+  isCorrect     Boolean         @default(false)
+  difficulty    String          @default("easy")
+  subject       String          @default("")
+  topic         String          @default("")
+  skill         String          @default("")
+  createdAt     DateTime        @default(now())
+  attempt       LearningAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@index([questionId, isCorrect])
+  @@index([attemptId])
+}
+
+model StudentBadge {
+  id         String       @id @default(uuid())
+  profileId  String
+  badgeId    String
+  name       String
+  unlockedAt DateTime     @default(now())
+  profile    ChildProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, badgeId])
+  @@index([profileId])
+}
+
+model ParentNotification {
+  id        String   @id @default(uuid())
+  parentId  String
+  profileId String?
+  type      String   @default("info") // activity | badge | alert | success
+  title     String
+  body      String   @default("")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([parentId, read, createdAt])
 }

@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { getNotifications } from '@/lib/api/parent-api'
 import styles from './page.module.css'
 
 function MaterialIcon({ children, className = '', filled = false, style }) {
@@ -178,11 +177,46 @@ export default function ParentDashboardPage() {
 
   useEffect(() => {
     if (!selected?.id) return
-    getNotifications(selected.id).then(setNotifications).catch(() => setNotifications([]))
+    fetch(`/api/notifications?profileId=${selected.id}`)
+      .then(res => res.ok ? res.json() : { notifications: [] })
+      .then(data => setNotifications(data.notifications || []))
+      .catch(() => setNotifications([]))
   }, [selected?.id])
 
   return (
     <div className={styles.page}>
+      <aside className={styles.stitchSidebar}>
+        <div className={styles.sidebarBrand}>
+          <span className="material-symbols-outlined" style={{ fontSize: 36, color: '#58cc02' }}>school</span>
+          <h1>Học Vui</h1>
+        </div>
+        <nav className={styles.sidebarNav}>
+          {[
+            { id: 'overview', label: 'Tổng quan', icon: 'dashboard' },
+            { id: 'progress', label: 'Tiến độ', icon: 'analytics' },
+            { id: 'notifications', label: 'Thông báo', icon: 'notifications' },
+            { id: 'settings', label: 'Cài đặt', icon: 'settings' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              className={`${styles.sidebarLink} ${activeView === tab.id ? styles.sidebarLinkActive : ''}`}
+              onClick={() => setActiveView(tab.id)}
+            >
+              <MaterialIcon filled={activeView === tab.id}>{tab.icon}</MaterialIcon>
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+        <div className={styles.sidebarFooter}>
+          <div className={styles.sidebarUserCard}>
+            <p style={{ fontWeight: 800, fontSize: 14 }}>{parentEmail || 'Phụ huynh'}</p>
+            <p style={{ fontSize: 12, color: '#777', fontWeight: 700 }}>Theo dõi {profiles.length} bé</p>
+          </div>
+        </div>
+      </aside>
+
+      <div className={styles.mainShell}>
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
@@ -239,7 +273,7 @@ export default function ParentDashboardPage() {
               </Link>
             </div>
 
-            <div className={styles.viewTabs}>
+            <div className={styles.viewTabs} style={{ display: 'none' }}>
               {[
                 { id: 'overview', label: 'Tổng quan', icon: 'dashboard' },
                 { id: 'progress', label: 'Tiến độ', icon: 'trending_up' },
@@ -319,6 +353,45 @@ export default function ParentDashboardPage() {
                   ))}
                 </div>
               </section>
+            )}
+
+            {selected && activeView === 'overview' && (
+              <>
+                <section className={styles.stitchHero}>
+                  <h2>Chào phụ huynh {selected.name} 👋</h2>
+                  <p>Hôm nay bé đạt <em>{summary.progressPct}%</em> mục tiêu học tập</p>
+                </section>
+                <section className={styles.gamifiedMetricGrid}>
+                  <div className={styles.gamifiedMetricCard}>
+                    <div className={styles.metricIcon} style={{ background: 'rgba(28,176,246,0.1)', color: '#1cb0f6' }}>
+                      <MaterialIcon filled>bolt</MaterialIcon>
+                    </div>
+                    <strong>{activityStats.totalXp || 0}</strong>
+                    <span>XP tích lũy</span>
+                  </div>
+                  <div className={styles.gamifiedMetricCard}>
+                    <div className={styles.metricIcon} style={{ background: 'rgba(255,200,0,0.15)', color: '#ffc800' }}>
+                      <MaterialIcon filled>local_fire_department</MaterialIcon>
+                    </div>
+                    <strong>{summary.streak} ngày</strong>
+                    <span>Streak hiện tại</span>
+                  </div>
+                  <div className={styles.gamifiedMetricCard}>
+                    <div className={styles.metricIcon} style={{ background: 'rgba(88,204,2,0.1)', color: '#58cc02' }}>
+                      <MaterialIcon filled>workspace_premium</MaterialIcon>
+                    </div>
+                    <strong>Cấp {activityStats.level?.level || 1}</strong>
+                    <span>Level hiện tại</span>
+                  </div>
+                  <div className={styles.gamifiedMetricCard}>
+                    <div className={styles.metricIcon} style={{ background: 'rgba(28,176,246,0.1)', color: '#1cb0f6' }}>
+                      <MaterialIcon filled>analytics</MaterialIcon>
+                    </div>
+                    <strong>{activityStats.averageScore || 0}%</strong>
+                    <span>Điểm trung bình</span>
+                  </div>
+                </section>
+              </>
             )}
 
             {selected && activeView === 'overview' && (
@@ -580,6 +653,7 @@ export default function ParentDashboardPage() {
             )}
           </>
         )}
+      </div>
       </div>
     </div>
   )

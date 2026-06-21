@@ -1,4 +1,4 @@
-import prisma from '@/lib/db'
+import { getQuestionBankAnalytics } from '@/lib/question-analytics'
 import { getAdminSession } from '@/lib/admin-auth'
 import { getGradeData } from '@/lib/data/index'
 import {
@@ -455,7 +455,8 @@ export async function GET(request) {
         parentEmail: student.parent?.email || 'N/A',
         stars: student.progress?.stars || 0,
         streak: student.progress?.streak || 0
-      }))
+      })),
+      questionAnalytics: await getQuestionBankAnalytics().catch(() => null),
     })
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 })

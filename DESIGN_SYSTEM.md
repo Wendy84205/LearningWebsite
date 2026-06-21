@@ -1,5 +1,26 @@
 # Design System
 
+Synced from Stitch project **Học Vui Learning Platform** (`9227577490891885848`).
+
+## Stitch Screen Map
+| App route | Stitch screen |
+|-----------|---------------|
+| `/learning/[gradeSlug]` | Trang chủ Học sinh - Tổng quan (Branded) |
+| `/learning/[gradeSlug]/games` | Trung tâm Học tập & Kiểm tra (Branded) |
+| `/learning/[gradeSlug]/achievements` | Thành tích & Huy hiệu (Synchronized) |
+| `/parent-dashboard` | Dashboard Phụ huynh - Gamified |
+| `/admin` (questions tab) | Ngân hàng Câu hỏi |
+| `/game-choose-1-of-2` | Lớp 1 - Chọn 1 trong 2 |
+
+Reference: `.stitch/project.json`, `src/lib/stitch-screens.js`
+
+## Parent Gamified Theme (Stitch Vibrant Quest)
+- Primary accent: `#58cc02` (green), secondary `#1cb0f6`, tertiary `#ffc800`
+- Font: Nunito Sans on parent dashboard; Be Vietnam Pro on student surfaces
+- Cards: `gamified-card` — 2px border, 4px bottom edge, white background, 24px radius
+- Buttons: `pressed-button-primary` — 4px bottom shadow, translateY on active
+- Layout: sticky sidebar (264px) + scrollable main on desktop
+
 ## Student And Parent UI
 - Source of truth: Stitch `Cheerful Learning` and `Vibrant Quest`.
 - Font: Be Vietnam Pro.

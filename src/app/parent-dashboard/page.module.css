@@ -40,17 +40,179 @@
 .page {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  background:
-    linear-gradient(180deg, rgba(212, 227, 255, 0.52), rgba(248, 249, 250, 0) 360px),
-    repeating-linear-gradient(135deg, rgba(0, 93, 167, 0.035) 0 2px, transparent 2px 28px),
-    var(--surface);
-  position: relative;
-  overflow-x: hidden;
-  font-family: var(--font-body, system-ui);
+  background: #faf9f9;
+  color: #4b4b4b;
+  font-family: 'Nunito Sans', var(--font-body, system-ui);
 }
 
-/* Header */
+.stitchSidebar {
+  display: none;
+  width: 264px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  background: #f4f3f3;
+  border-right: 2px solid #e5e5e5;
+  padding: 24px 0;
+  flex-direction: column;
+}
+
+@media (min-width: 900px) {
+  .stitchSidebar {
+    display: flex;
+  }
+}
+
+.sidebarBrand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 24px 32px;
+}
+
+.sidebarBrand h1 {
+  font-size: 24px;
+  font-weight: 900;
+  color: #58cc02;
+}
+
+.sidebarNav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 8px;
+}
+
+.sidebarLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin: 0 8px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  background: transparent;
+  color: #777;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.sidebarLinkActive {
+  background: rgba(88, 204, 2, 0.1);
+  color: #58cc02;
+  border-color: rgba(88, 204, 2, 0.2);
+}
+
+.sidebarFooter {
+  padding: 16px;
+  margin-top: auto;
+}
+
+.sidebarUserCard {
+  background: #e5e5e5;
+  border: 2px solid #d0d0d0;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.mainShell {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+.gamifiedMetricGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.gamifiedMetricCard {
+  background: #fff;
+  border: 2px solid #e5e5e5;
+  border-bottom-width: 4px;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.gamifiedMetricCard strong {
+  display: block;
+  font-size: 28px;
+  font-weight: 900;
+  color: #4b4b4b;
+  margin: 8px 0 4px;
+}
+
+.gamifiedMetricCard span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #777;
+}
+
+.metricIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stitchHero {
+  margin-bottom: 24px;
+}
+
+.stitchHero h2 {
+  font-size: 28px;
+  font-weight: 900;
+  color: #4b4b4b;
+}
+
+.stitchHero p {
+  font-size: 18px;
+  font-weight: 700;
+  color: #777;
+}
+
+.stitchHero em {
+  color: #58cc02;
+  font-style: normal;
+}
+
+.childSwitcher {
+  display: flex;
+  background: #e5e5e5;
+  border: 2px solid #e5e5e5;
+  border-radius: 999px;
+  padding: 4px;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.childChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background: transparent;
+  font-weight: 700;
+  cursor: pointer;
+  color: #777;
+}
+
+.childChipActive {
+  background: #fff;
+  border-color: #d0d0d0;
+  color: #4b4b4b;
+  font-weight: 900;
+}
+
 .header {
   position: sticky;
   top: 0;

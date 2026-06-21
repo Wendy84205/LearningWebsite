@@ -1,0 +1,21 @@
+{
+  "projectId": "9227577490891885848",
+  "title": "Học Vui Learning Platform",
+  "designSystems": {
+    "student": "Cheerful Learning",
+    "parent": "Vibrant Quest"
+  },
+  "screens": {
+    "studentDashboard": { "id": "4689f693a36d45b48b48e865a2f80d95", "title": "Trang chủ Học sinh - Tổng quan (Branded)" },
+    "studentDashboardAlt": { "id": "918cc6cdf12e425b9e8205cba755499e", "title": "Trang chủ Học sinh - Tổng quan" },
+    "learningCenter": { "id": "69ba35da69aa4f3c870c6377d98ccc32", "title": "Trung tâm Học tập & Kiểm tra (Branded)" },
+    "achievements": { "id": "8dd779238bc54666901fd5b0193a2439", "title": "Thành tích & Huy hiệu (Synchronized)" },
+    "parentDashboard": { "id": "7dd539bbffda4bd5a6dea406bb3ec4b6", "title": "Dashboard Phụ huynh - Phong cách Gamified" },
+    "questionBank": { "id": "4c7a671773934d839b53a4df457e7dae", "title": "Ngân hàng Câu hỏi" },
+    "adminOverview": { "id": "9d396a54b86747cabd63a64fb74abea1", "title": "Admin Dashboard - Tổng quan" },
+    "gameChoose": { "id": "fb7bae2398f848a29074122d6ec23d50", "title": "Lớp 1 - Chọn 1 trong 2" },
+    "gameListen": { "id": "0bcc171c18e04a52b3570491ddaf8fe0", "title": "Lớp 1 - Nghe và chọn" },
+    "gameMatching": { "id": "902fcac8c64a4df6bca792fb128cba18", "title": "Lớp 1 - Ghép cặp đơn giản" },
+    "parentLogin": { "id": "68992ba7bede47e38ee5bf79abdbdfa9", "title": "Đăng nhập Phụ huynh - Phong cách Gamified" }
+  }
+}

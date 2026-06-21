@@ -153,7 +153,59 @@ export async function recordActivityAttempt({
     },
   })
 
+  let learningAttempt = null
+  try {
+    learningAttempt = await prisma.learningAttempt.create({
+      data: {
+        profileId: profile.id,
+        parentId: profile.parentId,
+        activityType,
+        title,
+        grade: grade || profile.grade,
+        subject,
+        topic,
+        skill,
+        difficulty: String(difficulty || ''),
+        gameType: String(gameType || ''),
+        completedLevel: String(completedLevel || ''),
+        worldId: worldId == null ? null : toNumber(worldId, null),
+        levelId: levelId == null ? null : toNumber(levelId, null),
+        isBoss: Boolean(isBoss),
+        correct,
+        total,
+        scorePct,
+        stars,
+        xp,
+        answers: normalizedAnswers.length ? {
+          create: normalizedAnswers.map(answer => ({
+            questionId: answer.questionId,
+            selected: String(answer.selected ?? ''),
+            correctAnswer: String(answer.correctAnswer ?? ''),
+            isCorrect: answer.isCorrect,
+            difficulty: answer.difficulty,
+            subject: answer.subject,
+            topic: answer.topic,
+            skill: answer.skill,
+          })),
+        } : undefined,
+      },
+    })
+
+    await prisma.parentNotification.create({
+      data: {
+        parentId: profile.parentId,
+        profileId: profile.id,
+        type: 'activity',
+        title: `${profile.name} hoàn thành: ${title}`,
+        body: `${correct}/${total} đúng · ${scorePct}% · +${xp} XP`,
+      },
+    })
+  } catch (err) {
+    console.error('Normalized activity write failed:', err.message)
+  }
+
   const stats = await buildActivityStats(profile.id)
+  const existingBadgeIds = stats.badges.map(badge => badge.id)
   const newBadges = unlockBadges({
     completedActivities: stats.totalAttempts,
     completedTests: stats.testCount,
@@ -163,12 +215,38 @@ export async function recordActivityAttempt({
     mathCorrect: stats.mathCorrect,
     streak: updatedProgress.streak,
     lastScorePct: scorePct,
-  }, stats.badges.map(badge => badge.id))
+  }, existingBadgeIds)
+
+  if (newBadges.length) {
+    try {
+      await prisma.studentBadge.createMany({
+        data: newBadges.map(badge => ({
+          profileId: profile.id,
+          badgeId: badge.id,
+          name: badge.name,
+          unlockedAt: new Date(badge.unlockedAt),
+        })),
+        skipDuplicates: true,
+      })
+      await prisma.parentNotification.createMany({
+        data: newBadges.map(badge => ({
+          parentId: profile.parentId,
+          profileId: profile.id,
+          type: 'badge',
+          title: `${profile.name} đạt huy hiệu mới`,
+          body: badge.name,
+        })),
+      })
+    } catch (err) {
+      console.error('Badge persistence failed:', err.message)
+    }
+  }
 
   const level = levelFromXp(stats.totalXp)
 
   return {
     attempt,
+    learningAttempt,
     progress: updatedProgress,
     result: {
       correct,
@@ -183,18 +261,48 @@ export async function recordActivityAttempt({
 }
 
 export async function getActivityAttempts(profileId, limit = 40) {
-  const rows = await prisma.adminCmsItem.findMany({
-    where: {
-      module: ACTIVITY_MODULE,
-      type: ACTIVITY_TYPE,
-    },
+  let normalizedRows = []
+  try {
+    normalizedRows = await prisma.learningAttempt.findMany({
+      where: { profileId },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      include: { answers: true },
+    })
+  } catch (_) {
+    normalizedRows = []
+  }
+
+  const fromNormalized = normalizedRows.map(row => ({
+    id: row.id,
+    title: row.title,
+    grade: row.grade,
+    subject: row.subject,
+    topic: row.topic,
+    skill: row.skill,
+    difficulty: row.difficulty,
+    activityType: row.activityType,
+    gameType: row.gameType,
+    correct: row.correct,
+    total: row.total,
+    scorePct: row.scorePct,
+    stars: row.stars,
+    xp: row.xp,
+    answers: row.answers,
+    createdAt: row.createdAt?.toISOString?.() || row.createdAt,
+  }))
+
+  if (fromNormalized.length >= limit) return fromNormalized
+
+  const legacyRows = await prisma.adminCmsItem.findMany({
+    where: { module: ACTIVITY_MODULE, type: ACTIVITY_TYPE },
     orderBy: { createdAt: 'desc' },
     take: Math.max(limit * 3, 60),
   })
 
-  return rows
+  const legacy = legacyRows
     .filter(row => row.data?.profileId === profileId)
-    .slice(0, limit)
+    .slice(0, limit - fromNormalized.length)
     .map(row => ({
       id: row.id,
       title: row.title,
@@ -206,6 +314,8 @@ export async function getActivityAttempts(profileId, limit = 40) {
       createdAt: row.createdAt?.toISOString?.() || row.createdAt,
       ...row.data,
     }))
+
+  return [...fromNormalized, ...legacy].slice(0, limit)
 }
 
 export async function buildActivityStats(profileId) {
@@ -252,7 +362,19 @@ export async function buildActivityStats(profileId) {
     lastScorePct: attempts[0]?.scorePct || 0,
   }
 
-  const badges = unlockBadges(statsForBadges, [])
+  let persistedBadges = []
+  try {
+    persistedBadges = await prisma.studentBadge.findMany({
+      where: { profileId },
+      orderBy: { unlockedAt: 'desc' },
+    })
+  } catch (_) {
+    persistedBadges = []
+  }
+
+  const badges = persistedBadges.length
+    ? persistedBadges.map(b => ({ id: b.badgeId, name: b.name, unlockedAt: b.unlockedAt.toISOString() }))
+    : unlockBadges(statsForBadges, [])
 
   return {
     attempts: attempts.slice(0, 12),
