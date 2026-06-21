@@ -1,10 +1,23 @@
 # Game Engine Flow
 
-## Current Games
-- `src/app/game-choose-1-of-2`
-- `src/app/game-listen-and-select`
-- `src/app/game-simple-matching`
-- `src/app/game-results`
+## Engine Modules
+- `src/lib/games/engine/game-types.js`
+- `src/lib/games/engine/question-adapter.js`
+- `src/lib/games/engine/game-session.js`
+- `src/lib/games/engine/scoring.js`
+- `src/lib/games/use-game-page.js` — shared client hook
+- `src/lib/games/GenericQuizGame.js`
+
+## Game Routes
+- Hub: `/learning/[gradeSlug]/games`
+- `/game-quiz-adventure`
+- `/game-math-battle`
+- `/game-word-match`
+- `/game-memory-card`
+- `/game-choose-1-of-2`
+- `/game-listen-and-select`
+- `/game-simple-matching`
+- `/game-results`
 
 ## Shared Flow
 ```txt
@@ -12,10 +25,10 @@ Game page
   -> GET /api/questions?grade&world&level&game
   -> question-distribution service
   -> Question Bank + CMS + static fallback
-  -> game adapter shape
-  -> student answers
-  -> POST /api/progress
-  -> result screen
+  -> question-adapter
+  -> game-session / use-game-page
+  -> POST /api/student/submit
+  -> /game-results
   -> parent dashboard summary
 ```
 
@@ -25,22 +38,15 @@ Game page
 ```txt
 XP = baseXP + difficultyBonus + streakBonus + comboBonus
 ```
-- Existing progress storage still uses `Progress.stars`, `Progress.streak`, and `Progress.completedLevels`.
 
-## Game Adapter Shapes
-- Choose/quiz:
-  - `q`
-  - `options`
-  - `correct`
-  - `emoji`
-- Listen:
-  - `word`
-  - `options`
-  - `correct`
-  - `audioUrl`
-- Matching:
-  - `left`
-  - `right`
+## Student Sub-routes
+- `/learning/[gradeSlug]/practice`
+- `/learning/[gradeSlug]/achievements`
+- `/learning/[gradeSlug]/report`
+- `/learning/[gradeSlug]/test`
 
-## Next Engine Modules
-Build new reusable games under `src/lib/games` or `src/app/games` only after the schema for `game_sessions` is added.
+## Parent Dashboard Tabs
+- Overview, Progress, Notifications, Settings on `/parent-dashboard`
+
+## Next Schema Step
+Add `game_sessions` table when full attempt history is required beyond `AdminCmsItem`.

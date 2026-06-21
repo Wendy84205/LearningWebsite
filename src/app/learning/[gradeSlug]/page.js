@@ -346,10 +346,30 @@ export default function GradeLandingPage() {
               <strong>Nhiệm vụ hôm nay</strong>
               <small>{missions?.daily?.count || 0} câu gợi ý</small>
             </Link>
+            <Link href={`/learning/${gradeSlug}/games`} className={styles.missionCard}>
+              <span className="material-symbols-outlined">sports_esports</span>
+              <strong>Trò chơi học tập</strong>
+              <small>7 game từ Question Bank</small>
+            </Link>
             <Link href={`/learning/${gradeSlug}/test?mode=test`} className={styles.missionCard}>
               <span className="material-symbols-outlined">assignment</span>
               <strong>Bài kiểm tra</strong>
               <small>Lấy câu hỏi published</small>
+            </Link>
+            <Link href={`/learning/${gradeSlug}/practice`} className={styles.missionCard}>
+              <span className="material-symbols-outlined">fitness_center</span>
+              <strong>Luyện tập</strong>
+              <small>Feedback tức thì</small>
+            </Link>
+            <Link href={`/learning/${gradeSlug}/achievements`} className={styles.missionCard}>
+              <span className="material-symbols-outlined">emoji_events</span>
+              <strong>Thành tích</strong>
+              <small>XP, level, badge</small>
+            </Link>
+            <Link href={`/learning/${gradeSlug}/report`} className={styles.missionCard}>
+              <span className="material-symbols-outlined">monitoring</span>
+              <strong>Báo cáo</strong>
+              <small>Lịch sử & kỹ năng yếu</small>
             </Link>
             <Link href={missions?.review?.href || `/learning/${gradeSlug}/test?mode=review`} className={styles.missionCard}>
               <span className="material-symbols-outlined">psychology</span>

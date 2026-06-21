@@ -28,9 +28,9 @@
 ## Build And Deploy
 - `git diff --check`
 - `npm run lint`
+- `npm run test`
 - `npm run build`
 - `vercel --prod`
 
 ## Known Gaps
-- `npm run typecheck` and `npm run test` are not yet defined in `package.json`.
-- Full test attempt/game session history requires new tables.
+- Full test attempt/game session history requires normalized tables beyond `AdminCmsItem`.

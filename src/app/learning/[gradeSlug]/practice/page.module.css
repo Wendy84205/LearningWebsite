@@ -1,0 +1,119 @@
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #eef4ff, #f8fafc);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: #fff;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.score {
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.filterBtn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 2px solid #dbeafe;
+  background: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.filterActive {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.card {
+  background: #fff;
+  border-radius: 24px;
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 8px 0 #dbeafe;
+  padding: 24px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #eef4ff;
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.prompt {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+.choices {
+  display: grid;
+  gap: 10px;
+}
+
+.choiceBtn {
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 2px solid #dbeafe;
+  background: #fff;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #bfdbfe;
+}
+
+.empty, .resultCard {
+  text-align: center;
+  padding: 48px 24px;
+  background: #fff;
+  border-radius: 24px;
+  border: 2px solid #e2e8f0;
+}
+
+.good { color: #047857; font-weight: 700; margin-top: 12px; }
+.bad { color: #b91c1c; font-weight: 700; margin-top: 12px; }
+
+.primaryBtn {
+  margin-top: 16px;
+  padding: 12px 24px;
+  border-radius: 999px;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #003d73;
+}

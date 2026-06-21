@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { getNotifications } from '@/lib/api/parent-api'
 import styles from './page.module.css'
 
 function MaterialIcon({ children, className = '', filled = false, style }) {
@@ -108,6 +109,7 @@ export default function ParentDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [parentEmail, setParentEmail] = useState('')
+  const [activeView, setActiveView] = useState('overview')
 
   useEffect(() => {
     async function loadDashboard() {
@@ -172,6 +174,12 @@ export default function ParentDashboardPage() {
   const recentActivities = selected?.recentActivities || []
   const weakSkills = selected?.weakSkills || []
   const badges = selected?.badges || []
+  const [notifications, setNotifications] = useState([])
+
+  useEffect(() => {
+    if (!selected?.id) return
+    getNotifications(selected.id).then(setNotifications).catch(() => setNotifications([]))
+  }, [selected?.id])
 
   return (
     <div className={styles.page}>
@@ -231,7 +239,89 @@ export default function ParentDashboardPage() {
               </Link>
             </div>
 
-            {selected && (
+            <div className={styles.viewTabs}>
+              {[
+                { id: 'overview', label: 'Tổng quan', icon: 'dashboard' },
+                { id: 'progress', label: 'Tiến độ', icon: 'trending_up' },
+                { id: 'notifications', label: 'Thông báo', icon: 'notifications' },
+                { id: 'settings', label: 'Cài đặt', icon: 'settings' },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  className={`${styles.viewTab} ${activeView === tab.id ? styles.viewTabActive : ''}`}
+                  onClick={() => setActiveView(tab.id)}
+                >
+                  <MaterialIcon>{tab.icon}</MaterialIcon>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {selected && activeView === 'settings' && (
+              <section className={styles.settingsPanel}>
+                <h2 className={styles.sectionTitle}><MaterialIcon>settings</MaterialIcon> Cài đặt phụ huynh</h2>
+                <div className={styles.settingsCard}>
+                  <p><strong>Email:</strong> {parentEmail}</p>
+                  <p><strong>Hồ sơ con:</strong> {profiles.length} bé</p>
+                  <Link href="/add-profile" className="btn btn-primary" style={{ marginTop: 12, display: 'inline-block' }}>Quản lý hồ sơ con</Link>
+                  <Link href="/profile-select" className="btn btn-secondary" style={{ marginTop: 8, display: 'inline-block', marginLeft: 8 }}>Chọn bé chơi</Link>
+                </div>
+              </section>
+            )}
+
+            {selected && activeView === 'notifications' && (
+              <section className={styles.settingsPanel}>
+                <h2 className={styles.sectionTitle}><MaterialIcon>notifications</MaterialIcon> Thông báo</h2>
+                {notifications.length === 0 ? (
+                  <div className={styles.emptyActivity}>Chưa có thông báo mới.</div>
+                ) : (
+                  <div className={styles.activityList}>
+                    {notifications.map(item => (
+                      <div key={item.id} className={styles.activityItem}>
+                        <span className={styles.activityKind}>
+                          <MaterialIcon>{item.type === 'badge' ? 'emoji_events' : item.type === 'alert' ? 'warning' : 'info'}</MaterialIcon>
+                        </span>
+                        <div>
+                          <strong>{item.title}</strong>
+                          <small>{item.body}</small>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {selected && activeView === 'progress' && (
+              <section className={styles.settingsPanel}>
+                <h2 className={styles.sectionTitle}><MaterialIcon>trending_up</MaterialIcon> Tiến độ chi tiết</h2>
+                <div className={styles.learningReportGrid}>
+                  <div className={styles.reportCard}>
+                    <span className={styles.reportIcon}><MaterialIcon>bolt</MaterialIcon></span>
+                    <div><span>XP</span><strong>{activityStats.totalXp || 0}</strong></div>
+                  </div>
+                  <div className={styles.reportCard}>
+                    <span className={styles.reportIcon}><MaterialIcon>sports_esports</MaterialIcon></span>
+                    <div><span>Game</span><strong>{activityStats.completedGames || 0}</strong></div>
+                  </div>
+                  <div className={styles.reportCard}>
+                    <span className={styles.reportIcon}><MaterialIcon>assignment</MaterialIcon></span>
+                    <div><span>Kiểm tra</span><strong>{activityStats.completedTests || 0}</strong></div>
+                  </div>
+                </div>
+                <div className={styles.worldsGrid} style={{ marginTop: 20 }}>
+                  {worldProgress.map(world => (
+                    <div key={world.id} className={styles.worldProgressCard}>
+                      <strong>{world.name}</strong>
+                      <small>{world.completedLevelsCount}/{world.totalLevelsCount} ải · {world.pct}%</small>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {selected && activeView === 'overview' && (
               <div className={styles.dashboard}>
                 <section className={styles.parentHero}>
                   <div className={styles.parentHeroMain}>

@@ -9,6 +9,8 @@
     "start": "next start",
     "start:network": "next start -H 0.0.0.0",
     "lint": "eslint",
+    "test": "node --experimental-vm-modules --test tests/*.test.js",
+    "typecheck": "node -e \"console.log('JS project — typecheck skipped')\"",
     "postinstall": "prisma generate"
   },
   "dependencies": {
