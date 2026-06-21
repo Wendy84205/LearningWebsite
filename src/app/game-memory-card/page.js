@@ -5,12 +5,15 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { buildMemoryPairs } from '@/lib/games/engine/question-adapter'
 import { saveGameResult } from '@/lib/api/student-api'
-import styles from '@/lib/games/shared-game.module.css'
+import { getGameTheme } from '@/lib/games/game-themes'
+import { GameLoading, GameHud } from '@/lib/games/GameUi'
+import '@/lib/games/game-ui.css'
 
 function MemoryCardInner() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const gradeSlug = searchParams.get('grade') || 'lop-1'
+  const theme = getGameTheme('memory-card')
   const [cards, setCards] = useState([])
   const [flipped, setFlipped] = useState([])
   const [matched, setMatched] = useState(new Set())
@@ -28,6 +31,30 @@ function MemoryCardInner() {
       .catch(() => setLoading(false))
   }, [gradeSlug])
 
+  const totalPairs = cards.length / 2
+
+  const finishGame = async (nextMatched, finalMoves) => {
+    const profileId = localStorage.getItem('profileId')
+    const stars = finalMoves <= cards.length ? 3 : finalMoves <= cards.length * 2 ? 2 : 1
+    localStorage.setItem('lastStars', String(stars))
+    localStorage.setItem('lastXp', String(30 + stars * 10))
+    localStorage.setItem('lastScorePct', '100')
+    localStorage.setItem('lastGame', theme.label)
+    if (profileId) {
+      await saveGameResult({
+        profileId,
+        activityType: 'game',
+        title: theme.label,
+        grade: gradeSlug,
+        gameType: 'memory-card',
+        correct: nextMatched.size,
+        total: totalPairs,
+        starsEarned: stars,
+      })
+    }
+    router.push(`/game-results?grade=${gradeSlug}&game=memory-card`)
+  }
+
   const handleFlip = async (card) => {
     if (flipped.length >= 2 || matched.has(card.pairId) || flipped.find(f => f.id === card.id)) return
 
@@ -42,61 +69,67 @@ function MemoryCardInner() {
         setMatched(nextMatched)
         setFlipped([])
 
-        if (nextMatched.size === cards.length / 2) {
-          const profileId = localStorage.getItem('profileId')
-          const stars = moves <= cards.length ? 3 : moves <= cards.length * 2 ? 2 : 1
-          localStorage.setItem('lastStars', String(stars))
-          localStorage.setItem('lastXp', String(30 + stars * 10))
-          localStorage.setItem('lastScore', '100')
-          if (profileId) {
-            await saveGameResult({
-              profileId,
-              activityType: 'game',
-              title: 'Thẻ Nhớ',
-              grade: gradeSlug,
-              gameType: 'memory-card',
-              correct: nextMatched.size,
-              total: cards.length / 2,
-              starsEarned: stars,
-            })
-          }
-          router.push(`/game-results?grade=${gradeSlug}&game=memory-card`)
+        if (nextMatched.size === totalPairs) {
+          await finishGame(nextMatched, moves + 1)
         }
       } else {
-        setTimeout(() => setFlipped([]), 700)
+        setTimeout(() => setFlipped([]), 650)
       }
     }
   }
 
-  if (loading) {
-    return <div className={styles.loading}><div className={styles.loadingIcon}>🃏</div><h2>Đang xáo bài...</h2></div>
-  }
+  const isRevealed = (card) => flipped.some(f => f.id === card.id) || matched.has(card.pairId)
 
-  const visible = (card) => flipped.some(f => f.id === card.id) || matched.has(card.pairId)
+  if (loading) return <GameLoading theme={theme} />
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <Link href={`/learning/${gradeSlug}/games`} className={styles.backBtn}>
-          <span className="material-symbols-outlined">arrow_back</span>
-          Thẻ Nhớ
-        </Link>
-        <span className={styles.statPill}>{moves} lượt · {matched.size}/{cards.length / 2}</span>
-      </header>
-      <main className={styles.main}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 12 }}>
+    <div className="game-shell" data-theme="memory-card">
+      <div className="game-bg" aria-hidden="true">
+        <div className="game-bg-blob game-bg-blob-a" />
+        <div className="game-bg-blob game-bg-blob-b" />
+        <div className="game-bg-grid" />
+      </div>
+
+      <GameHud
+        theme={theme}
+        gradeSlug={gradeSlug}
+        label={theme.label}
+        session={{ score: matched.size, hearts: null }}
+        config={{}}
+        questionIndex={matched.size}
+        totalQuestions={totalPairs}
+      />
+
+      <main className="game-main">
+        <div className="game-hero-tag">
+          <span className="material-symbols-outlined">grid_view</span>
+          {theme.tagline} · {moves} lượt lật
+        </div>
+
+        <div className="game-memory-grid">
           {cards.map(card => (
             <button
               key={card.id}
               type="button"
-              className={styles.choiceBtn}
-              style={{ minHeight: 80, justifyContent: 'center' }}
+              className={[
+                'game-memory-card',
+                isRevealed(card) ? 'revealed' : '',
+                matched.has(card.pairId) ? 'matched' : '',
+              ].filter(Boolean).join(' ')}
               onClick={() => handleFlip(card)}
+              aria-label={isRevealed(card) ? card.label : 'Thẻ úp'}
             >
-              {visible(card) ? card.label : '?'}
+              <div className="game-memory-inner">
+                <div className="game-memory-face game-memory-front">?</div>
+                <div className="game-memory-face game-memory-back">{card.label}</div>
+              </div>
             </button>
           ))}
         </div>
+
+        {cards.length === 0 && (
+          <Link href={`/learning/${gradeSlug}/games`} className="game-hud-back">Về trò chơi</Link>
+        )}
       </main>
     </div>
   )
@@ -104,7 +137,7 @@ function MemoryCardInner() {
 
 export default function MemoryCardPage() {
   return (
-    <Suspense fallback={<div className={styles.loading}>...</div>}>
+    <Suspense fallback={<GameLoading theme={getGameTheme('memory-card')} />}>
       <MemoryCardInner />
     </Suspense>
   )

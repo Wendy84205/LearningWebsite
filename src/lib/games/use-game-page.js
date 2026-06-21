@@ -76,8 +76,11 @@ export function useGamePage({
     localStorage.setItem('lastStars', String(result.stars))
     localStorage.setItem('lastXp', String(result.xp))
     localStorage.setItem('lastScore', String(result.scorePct))
+    localStorage.setItem('lastScorePct', String(result.scorePct))
     localStorage.setItem('lastCorrect', String(result.correct))
     localStorage.setItem('lastTotal', String(result.total))
+    localStorage.setItem('lastGame', activityTitle || GAME_LABELS[gameType])
+    localStorage.setItem('lastCombo', String(finalSession.maxCombo || 0))
 
     if (profileId) {
       try {

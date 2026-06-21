@@ -127,8 +127,12 @@
   font-size: 36px;
   line-height: 48px;
   font-weight: 900;
-  color: var(--primary);
   font-family: var(--font-body);
+}
+
+.themeEmoji {
+  font-size: 40px;
+  line-height: 1;
 }
 
 .gameName {

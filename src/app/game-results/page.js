@@ -1,11 +1,17 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { getGameTheme } from '@/lib/games/game-themes'
 import styles from './page.module.css'
+import '@/lib/games/game-ui.css'
 
 const STAR_MSGS = ['Cố gắng hơn nhé!', 'Tốt lắm!', 'Rất giỏi!', 'Xuất sắc!']
 
-export default function GameResultsPage() {
+function ResultsContent() {
+  const searchParams = useSearchParams()
+  const gameKey = searchParams.get('game') || ''
+  const theme = getGameTheme(gameKey)
   const [stars, setStars] = useState(0)
   const [gameName, setGameName] = useState('')
   const [mascot, setMascot] = useState({
@@ -21,7 +27,7 @@ export default function GameResultsPage() {
 
   useEffect(() => {
     const s = parseInt(localStorage.getItem('lastStars') || '0')
-    const g = localStorage.getItem('lastGame') || 'Trò chơi'
+    const g = localStorage.getItem('lastGame') || theme.label || 'Trò chơi'
     const mn = localStorage.getItem('mascotName') || 'Tin Tin'
     const me = localStorage.getItem('mascotEmoji') || '🤖'
     const gs = localStorage.getItem('gradeSlug') || 'lop-1'
@@ -72,7 +78,7 @@ export default function GameResultsPage() {
   const isMascotEmoji = mascot.image && !mascot.image.startsWith('http') && !mascot.image.startsWith('/')
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} data-theme={gameKey || 'quiz-adventure'}>
       <div className={styles.blob1} aria-hidden="true" />
       <div className={styles.blob2} aria-hidden="true" />
 
@@ -92,7 +98,7 @@ export default function GameResultsPage() {
       </div>
 
       <div className={styles.content}>
-        <div className={styles.mascotWrap}>
+        <div className={styles.mascotWrap} style={{ borderColor: theme.accent }}>
           {isMascotEmoji ? (
             <span className={styles.mascotEmoji}>{mascot.image}</span>
           ) : (
@@ -104,7 +110,8 @@ export default function GameResultsPage() {
           )}
         </div>
 
-        <h1 className={styles.title}>Hoàn thành!</h1>
+        <span className={styles.themeEmoji}>{theme.emoji}</span>
+        <h1 className={styles.title} style={{ color: theme.accentDark || theme.accent }}>Hoàn thành!</h1>
         <p className={styles.gameName}>{gameName}</p>
 
         <div className={styles.starsRow}>
@@ -137,6 +144,10 @@ export default function GameResultsPage() {
         </div>
 
         <div className={styles.actions}>
+          <Link href={`/learning/${gradeSlug}/games`} id="btn-play-again" className={`btn btn-primary btn-lg ${styles.actionsBtn}`}>
+            <span className="material-symbols-outlined">sports_esports</span>
+            Chơi tiếp
+          </Link>
           <Link href={`/learning/${gradeSlug}/map`} id="btn-back-map" className={`btn btn-primary btn-lg ${styles.actionsBtn}`}>
             <span className="material-symbols-outlined">map</span>
             Xem bản đồ
@@ -148,5 +159,13 @@ export default function GameResultsPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function GameResultsPage() {
+  return (
+    <Suspense fallback={<div className={styles.page} style={{ display: 'grid', placeItems: 'center' }}>Đang tải...</div>}>
+      <ResultsContent />
+    </Suspense>
   )
 }
