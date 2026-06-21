@@ -243,3 +243,113 @@
     transform: scale(1.15);
   }
 }
+
+/* Stitch game surface overrides */
+.page {
+  background:
+    linear-gradient(180deg, #e0f2fe 0%, #f8f9fa 48%, #fff8e1 100%);
+  isolation: isolate;
+}
+
+.blob1 {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background:
+    repeating-linear-gradient(135deg, rgba(0, 93, 167, 0.055) 0 2px, transparent 2px 28px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
+  opacity: 1;
+  filter: none;
+}
+
+.blob2 {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 0;
+  width: auto;
+  height: 28vh;
+  border-radius: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(247, 230, 26, 0.22)),
+    repeating-linear-gradient(90deg, rgba(0, 93, 167, 0.08) 0 1px, transparent 1px 34px);
+  opacity: 1;
+  filter: none;
+}
+
+.header {
+  border-bottom: 2px solid var(--outline-variant);
+  background-color: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+}
+
+.closeBtn {
+  border: 2px solid var(--outline-variant);
+  border-bottom: 4px solid var(--outline-variant);
+  background-color: var(--surface-container-lowest);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.2s, color 0.2s;
+}
+
+.closeBtn:hover {
+  color: var(--error);
+  border-color: var(--error-container);
+  transform: translateY(-2px);
+}
+
+.closeBtn:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.progressContainer {
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 2px 4px rgba(0, 29, 55, 0.08);
+}
+
+.starBadge {
+  border: 2px solid #fcc419;
+  border-bottom: 5px solid #d9c900;
+  background: #fff9db;
+  color: #8a6a00;
+}
+
+.subjectBadgeWrap {
+  position: relative;
+  z-index: 10;
+}
+
+.instruction {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.soundBtn {
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  border-bottom: 7px solid #004883;
+}
+
+.optionBtn {
+  min-height: 108px;
+  border-bottom-width: 6px;
+}
+
+.optionBtn:disabled,
+.soundBtn:disabled {
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .soundAnimating,
+  .progressFill,
+  .closeBtn,
+  .soundBtn,
+  .optionBtn {
+    animation: none;
+    transition: none;
+  }
+}

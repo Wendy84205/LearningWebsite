@@ -306,7 +306,7 @@ function ParentLoginInner() {
                   disabled={loading}
                   style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}
                 >
-                  {loading ? '⏳ Đang tạo tài khoản...' : 'Tạo tài khoản phụ huynh'}
+                  {loading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản phụ huynh'}
                 </button>
                 <p className={styles.helperText}>Sau khi đăng ký, hệ thống sẽ chuyển bố mẹ sang bước thêm hồ sơ cho bé.</p>
               </form>
@@ -377,7 +377,7 @@ function ParentLoginInner() {
                   disabled={loading}
                   style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}
                 >
-                  {loading ? '⏳ Đang xử lý...' : 'Đăng nhập'}
+                  {loading ? 'Đang xử lý...' : 'Đăng nhập'}
                 </button>
                 <p className={styles.helperText}>Nếu tài khoản có nhiều bé, bố mẹ sẽ được chọn hồ sơ trước khi vào trang học.</p>
               </form>

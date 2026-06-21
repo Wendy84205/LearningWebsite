@@ -87,7 +87,7 @@ export default function AddProfilePage() {
 
       <div className={styles.container}>
         <div className={styles.header}>
-          <span className={styles.headerIcon}>👶</span>
+          <span className={`material-symbols-outlined ${styles.headerIcon}`}>child_care</span>
           <h1>Tạo hồ sơ cho bé</h1>
           <p>Hãy thiết lập thông tin cơ bản để cá nhân hóa lộ trình học nhé!</p>
         </div>
@@ -95,7 +95,10 @@ export default function AddProfilePage() {
         <form id="form-add-profile" onSubmit={handleSubmit} className={styles.card}>
           {/* Avatar picker */}
           <div className={styles.section}>
-            <label className={styles.sectionLabel}>Chọn biểu tượng cho bé 🎨</label>
+            <label className={styles.sectionLabel}>
+              <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginRight: '6px' }}>palette</span>
+              Chọn biểu tượng cho bé
+            </label>
             <div className={styles.avatarGrid}>
               {AVATARS.map(a => (
                 <button
@@ -168,7 +171,12 @@ export default function AddProfilePage() {
             disabled={loading}
             style={{ width: '100%', justifyContent: 'center', marginTop: '12px' }}
           >
-            {loading ? '⏳ Đang lưu hồ sơ...' : 'Tiếp theo → Chọn bạn đồng hành'}
+            {loading ? 'Đang lưu hồ sơ...' : (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                Tiếp theo
+                <span className="material-symbols-outlined">arrow_forward</span>
+              </span>
+            )}
           </button>
         </form>
       </div>

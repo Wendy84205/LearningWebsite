@@ -45,17 +45,48 @@ model Progress {
 }
 
 model CustomQuestion {
-  id        String   @id @default(uuid())
-  grade     String   // "lop-1" | "lop-2" | "lop-3" | "lop-4" | "lop-5"
-  worldId   Int
-  levelId   Int
-  type      String   @default("choose") // "choose" | "listen" | "matching"
-  q         String   // Nội dung câu hỏi / Từ vựng / Vế trái thẻ ghép
-  options   String   // JSON string của các lựa chọn hoặc Vế phải thẻ ghép
-  correct   Int      @default(0) // Index đáp án đúng
-  emoji     String   @default("❓")
-  subject   String   @default("Chung")
-  topic     String   @default("Chung")
-  createdAt DateTime @default(now())
+  id         String   @id @default(uuid())
+  grade      String   // "lop-1" | "lop-2" | "lop-3" | "lop-4" | "lop-5"
+  worldId    Int
+  levelId    Int
+  type       String   @default("choose") // "choose" | "listen" | "matching" | "drag-drop" | "typing"
+  q          String   // Nội dung câu hỏi / Từ vựng / Vế trái thẻ ghép
+  options    String   // JSON string của các lựa chọn hoặc Vế phải thẻ ghép
+  correct    Int      @default(0) // Index đáp án đúng
+  emoji      String   @default("❓")
+  subject    String   @default("Chung")
+  topic      String   @default("Chung")
+  skill      String   @default("")
+  difficulty String   @default("easy")
+  tags       String   @default("")
+  imageUrl   String   @default("")
+  audioUrl   String   @default("")
+  explanation String  @default("")
+  gameTypes   String   @default("") // Comma-separated compatible games, e.g. "choose_1_of_2,quiz"
+  status      String   @default("published") // draft | review | published | archived
+  createdAt  DateTime @default(now())
+
+  @@index([grade, worldId, levelId])
+  @@index([subject, topic, skill])
+  @@index([type, status])
 }
 
+model AdminCmsItem {
+  id         String   @id @default(uuid())
+  module     String   // content | learning-map | assessments | reports | media | ai-studio | settings | roles
+  type       String   // grade | subject | topic | skill | lesson | game | world | level | badge | setting | etc.
+  title      String
+  status     String   @default("active") // active | draft | disabled | archived
+  grade      String?
+  subject    String?
+  topic      String?
+  skill      String?
+  difficulty String?
+  order      Int      @default(0)
+  data       Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([module, type])
+  @@index([grade, subject, topic])
+}

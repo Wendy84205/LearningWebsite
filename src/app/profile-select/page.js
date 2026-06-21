@@ -56,7 +56,7 @@ export default function ProfileSelectPage() {
   if (loading) {
     return (
       <div className={styles.page}>
-        <div className={styles.loading}>⏳ Đang tải danh sách hồ sơ...</div>
+        <div className={styles.loading}>Đang tải danh sách hồ sơ...</div>
       </div>
     )
   }
@@ -68,7 +68,7 @@ export default function ProfileSelectPage() {
 
       <div className={styles.container}>
         <div className={styles.header}>
-          <span className={styles.headerIcon}>🎒</span>
+          <span className={`material-symbols-outlined ${styles.headerIcon}`}>school</span>
           <h1>Chào mừng con đến với Học Vui!</h1>
           <p>Bé nào sẽ cùng học hôm nay thế nhỉ?</p>
         </div>
@@ -93,8 +93,9 @@ export default function ProfileSelectPage() {
         </div>
 
         <div className={styles.actions}>
-          <Link href="/add-profile" className="btn btn-primary" id="btn-add-profile-select">
-            + Thêm hồ sơ bé mới
+          <Link href="/add-profile" className="btn btn-primary" id="btn-add-profile-select" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <span className="material-symbols-outlined">add</span>
+            Thêm hồ sơ bé mới
           </Link>
         </div>
       </div>

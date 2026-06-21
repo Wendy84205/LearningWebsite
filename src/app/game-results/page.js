@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 
-const STAR_MSGS = ['Cố gắng hơn nhé! 💪', 'Tốt lắm! 👏', 'Rất giỏi! 🌟', 'Xuất sắc! 🏆']
+const STAR_MSGS = ['Cố gắng hơn nhé!', 'Tốt lắm!', 'Rất giỏi!', 'Xuất sắc!']
 
 export default function GameResultsPage() {
   const [stars, setStars] = useState(0)
@@ -78,9 +78,8 @@ export default function GameResultsPage() {
 
   return (
     <div className={styles.page}>
-      {/* Background Blobs */}
-      <div className={styles.blob1} />
-      <div className={styles.blob2} />
+      <div className={styles.blob1} aria-hidden="true" />
+      <div className={styles.blob2} aria-hidden="true" />
 
       {/* Confetti dots */}
       <div className={styles.confetti} aria-hidden="true">
@@ -120,7 +119,7 @@ export default function GameResultsPage() {
               className={`${styles.starIcon} ${showStars >= n ? styles.starLit : styles.starDim}`}
               style={{ animationDelay: `${n * 0.4}s` }}
             >
-              ⭐
+              <span className="material-symbols-outlined">star</span>
             </span>
           ))}
         </div>
@@ -129,10 +128,12 @@ export default function GameResultsPage() {
 
         <div className={styles.actions}>
           <Link href={`/learning/${gradeSlug}/map`} id="btn-back-map" className={`btn btn-primary btn-lg ${styles.actionsBtn}`}>
-            🗺️ Xem bản đồ
+            <span className="material-symbols-outlined">map</span>
+            Xem bản đồ
           </Link>
           <Link href={`/learning/${gradeSlug}`} id="btn-home" className={`btn btn-ghost btn-lg ${styles.actionsBtn}`}>
-            🏠 Về nhà
+            <span className="material-symbols-outlined">home</span>
+            Về nhà
           </Link>
         </div>
       </div>

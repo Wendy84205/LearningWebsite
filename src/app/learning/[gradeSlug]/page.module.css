@@ -2,8 +2,12 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--surface);
+  background:
+    linear-gradient(180deg, rgba(212, 227, 255, 0.45), rgba(248, 249, 250, 0) 340px),
+    repeating-linear-gradient(135deg, rgba(0, 93, 167, 0.035) 0 2px, transparent 2px 30px),
+    var(--surface);
   position: relative;
+  overflow-x: hidden;
 }
 
 /* Top Bar */
@@ -16,7 +20,7 @@
   justify-content: space-between;
   padding: 16px 48px;
   background-color: var(--surface-container-lowest);
-  border-bottom: 1px solid var(--outline-variant);
+  border-bottom: 2px solid var(--outline-variant);
   box-shadow: 0 4px 16px rgba(0, 96, 172, 0.07);
 }
 
@@ -29,13 +33,13 @@
 .greeting {
   font-size: 18px;
   line-height: 28px;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--on-surface-variant);
 }
 
 .greetingText strong {
   color: var(--primary);
-  font-weight: 800;
+  font-weight: 850;
 }
 
 .statsRow {
@@ -57,21 +61,27 @@
   width: 40px;
   height: 40px;
   border-radius: var(--radius-full);
+  border: 2px solid var(--outline-variant);
+  border-bottom: 4px solid var(--outline-variant);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--on-surface-variant);
-  border: 2px solid var(--outline-variant);
   background: var(--surface-container-lowest);
   cursor: pointer;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .parentDashBtn:hover {
   color: var(--primary);
   border-color: var(--primary);
   transform: translateY(-2px);
+}
+
+.parentDashBtn:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
 }
 
 /* Main Content Area */
@@ -105,7 +115,8 @@
   flex: 1;
   padding: 20px 24px;
   background-color: var(--surface-container-lowest);
-  border: 1px solid var(--outline-variant);
+  border: 2px solid var(--outline-variant);
+  border-bottom: 5px solid var(--outline-variant);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-tactile);
   position: relative;
@@ -114,7 +125,7 @@
 .mascotBubble::after {
   content: '';
   position: absolute;
-  right: -10px;
+  right: -12px;
   bottom: 24px;
   border: 10px solid transparent;
   border-left-color: var(--outline-variant);
@@ -134,7 +145,7 @@
 .speechText {
   font-size: 18px;
   line-height: 28px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--primary);
 }
 
@@ -169,13 +180,13 @@
   animation: float 3s ease-in-out infinite;
 }
 
-
 .mascotLabel {
   font-size: 14px;
   line-height: 20px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--on-surface-variant);
   background-color: var(--surface-container-high);
+  border: 2px solid var(--outline-variant);
   padding: 2px 10px;
   border-radius: var(--radius-full);
 }
@@ -201,19 +212,21 @@
   padding: 24px;
   border-radius: var(--radius-xl);
   text-decoration: none;
-  border: 1px solid var(--outline-variant);
+  border: 2px solid var(--outline-variant);
+  border-bottom: 6px solid var(--outline-variant);
   box-shadow: var(--shadow-tactile);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s, border-color 0.2s;
   background-color: var(--surface-container-lowest);
 }
 
 .actionCard:hover {
   transform: translateY(-4px);
   box-shadow: 0 16px 32px -4px rgba(0, 96, 172, 0.15);
+  border-color: var(--primary);
 }
 
 .actionIcon {
-  font-size: 40px;
+  font-size: 40px !important;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -227,20 +240,20 @@
 .actionTitle {
   font-size: 20px;
   line-height: 28px;
-  font-weight: 800;
+  font-weight: 850;
   color: var(--primary);
 }
 
 .actionSub {
   font-size: 14px;
   line-height: 20px;
-  font-weight: 600;
-  color: var(--on-surface-variant);
+  font-weight: 650;
+  color: var(--outline);
   margin-top: 4px;
 }
 
 .actionArrow {
-  font-size: 24px;
+  font-size: 24px !important;
   color: var(--outline);
   font-weight: 700;
 }
@@ -266,13 +279,19 @@
   gap: 8px;
   text-align: center;
   background-color: var(--surface-container-lowest);
-  border: 1px solid var(--outline-variant);
+  border: 2px solid var(--outline-variant);
+  border-bottom: 5px solid var(--outline-variant);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-tactile);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.miniStat:hover {
+  transform: translateY(-4px);
 }
 
 .miniStatIcon {
-  font-size: 32px;
+  font-size: 32px !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -281,15 +300,15 @@
 .miniStatVal {
   font-size: 28px;
   line-height: 36px;
-  font-weight: 800;
+  font-weight: 900;
   color: var(--primary);
 }
 
 .miniStatLabel {
   font-size: 14px;
   line-height: 20px;
-  color: var(--on-surface-variant);
-  font-weight: 600;
+  color: var(--outline);
+  font-weight: 700;
 }
 
 /* Quick Start Section */
@@ -302,8 +321,10 @@
 .quickStartTitle {
   font-size: 24px;
   line-height: 32px;
-  font-weight: 800;
+  font-weight: 850;
   color: var(--on-surface);
+  display: flex;
+  align-items: center;
 }
 
 .quickGrid {
@@ -326,20 +347,22 @@
   gap: 12px;
   text-decoration: none;
   background-color: var(--surface-container-lowest);
-  border: 1px solid var(--outline-variant);
+  border: 2px solid var(--outline-variant);
+  border-bottom: 5px solid var(--outline-variant);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-tactile);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s, border-color 0.2s;
   cursor: pointer;
 }
 
 .quickCard:hover {
   transform: translateY(-4px);
   box-shadow: 0 16px 32px -4px rgba(0, 96, 172, 0.15);
+  border-color: var(--primary);
 }
 
 .quickIcon {
-  font-size: 40px;
+  font-size: 40px !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -348,7 +371,7 @@
 .quickName {
   font-size: 16px;
   line-height: 24px;
-  font-weight: 800;
+  font-weight: 850;
   color: var(--on-surface);
   text-align: center;
 }
@@ -356,8 +379,8 @@
 .quickSub {
   font-size: 14px;
   line-height: 20px;
-  color: var(--on-surface-variant);
-  font-weight: 600;
+  color: var(--outline);
+  font-weight: 650;
   text-align: center;
 }
 
@@ -371,6 +394,7 @@
   line-height: 18px;
   font-weight: 700;
   text-align: center;
+  border: 2px solid var(--outline-variant);
 }
 
 /* Animations */
@@ -380,5 +404,17 @@
   }
   50% {
     transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascotImg,
+  .mascotEmoji,
+  .parentDashBtn,
+  .actionCard,
+  .miniStat,
+  .quickCard {
+    animation: none;
+    transition: none;
   }
 }

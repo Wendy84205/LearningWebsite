@@ -1,5 +1,20 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { getGradeData } from '@/lib/data/index'
+import CurriculumPage from './pages/CurriculumPage'
+import OverviewPage from './pages/OverviewPage'
+import StudentsPage from './pages/StudentsPage'
+import ParentsPage from './pages/ParentsPage'
+import QuestionsPage from './pages/QuestionsPage'
+import GamesPage from './pages/GamesPage'
+import LearningMapPage from './pages/LearningMapPage'
+import AssignmentsPage from './pages/AssignmentsPage'
+import TestsPage from './pages/TestsPage'
+import AchievementsPage from './pages/AchievementsPage'
+import ReportsPage from './pages/ReportsPage'
+import AiGeneratorPage from './pages/AiGeneratorPage'
+import MediaPage from './pages/MediaPage'
+import SettingsPage from './pages/SettingsPage'
 import styles from './page.module.css'
 
 const GRADES_MAP = {
@@ -11,15 +26,861 @@ const GRADE_TO_SLUG = {
 const NEXT_GRADE = {
   'Lớp 1': 'Lớp 2', 'Lớp 2': 'Lớp 3', 'Lớp 3': 'Lớp 4', 'Lớp 4': 'Lớp 5', 'Lớp 5': null
 }
+const DEFAULT_ADMIN_EMAIL = 'wendy84205@gmail.com'
+const ADMIN_NAV = [
+  { key: 'overview', icon: 'dashboard', label: 'Dashboard' },
+  { key: 'curriculum', icon: 'menu_book', label: 'Curriculum' },
+  { key: 'questions', icon: 'quiz', label: 'Question Bank' },
+  { key: 'games', icon: 'videogame_asset', label: 'Games' },
+  { key: 'learningMap', icon: 'map', label: 'Learning Map' },
+  { key: 'students', icon: 'group', label: 'Students' },
+  { key: 'parents', icon: 'family_restroom', label: 'Parents' },
+  { key: 'assignments', icon: 'assignment', label: 'Assignments' },
+  { key: 'tests', icon: 'checklist', label: 'Tests' },
+  { key: 'achievements', icon: 'workspace_premium', label: 'Achievements' },
+  { key: 'reports', icon: 'assessment', label: 'Reports' },
+  { key: 'aiGenerator', icon: 'auto_awesome', label: 'AI Generator' },
+  { key: 'media', icon: 'perm_media', label: 'Media Library' },
+  { key: 'settings', icon: 'settings', label: 'Settings' },
+]
+const CMS_AUTOMATION_ACTIONS = {
+  'complete-cms-bootstrap': {
+    icon: 'rocket_launch',
+    label: 'Hoàn thiện CMS',
+    description: 'Seed đủ dữ liệu nền cho curriculum, map, game, media, settings, reports và workflow.',
+    confirm: true
+  },
+  'seed-content-types': {
+    icon: 'schema',
+    label: 'Content types',
+    description: 'Seed registry content model/schema cho CMS hiện đại.'
+  },
+  'modernize-cms-governance': {
+    icon: 'verified',
+    label: 'Modernize records',
+    description: 'Bổ sung slug, SEO, version và governance metadata cho dữ liệu cũ.',
+    confirm: true
+  },
+  'create-cms-quality-report': {
+    icon: 'rule_settings',
+    label: 'Quality report',
+    description: 'Tạo báo cáo kiểm tra metadata, workflow và validation của CMS.'
+  },
+  'sync-static-curriculum': {
+    icon: 'sync',
+    label: 'Sync chương trình',
+    description: 'Tạo bản ghi CMS còn thiếu từ chương trình hiện có.',
+    confirm: true
+  },
+  'publish-all-drafts': {
+    icon: 'published_with_changes',
+    label: 'Xuất bản drafts',
+    description: 'Chuyển toàn bộ bản nháp của module hiện tại sang active.',
+    confirm: true
+  },
+  'archive-disabled': {
+    icon: 'archive',
+    label: 'Archive disabled',
+    description: 'Dọn các item disabled khỏi dữ liệu đang vận hành.',
+    confirm: true,
+    danger: true
+  },
+  'create-assignment-plan': {
+    icon: 'assignment_add',
+    label: 'Tạo bài giao nhanh',
+    description: 'Tạo assignment thật từ học sinh và lesson hiện có.'
+  },
+  'create-test-blueprint': {
+    icon: 'fact_check',
+    label: 'Tạo quiz blueprint',
+    description: 'Sinh đề nháp từ question bank và chương trình.'
+  },
+  'create-report-snapshot': {
+    icon: 'monitoring',
+    label: 'Snapshot báo cáo',
+    description: 'Lưu ảnh chụp số liệu hệ thống vào Reports.'
+  },
+  'seed-media-library': {
+    icon: 'perm_media',
+    label: 'Seed media',
+    description: 'Tạo thư mục media cốt lõi cho audio, ảnh và mascot.'
+  },
+  'seed-default-settings': {
+    icon: 'settings_suggest',
+    label: 'Seed settings',
+    description: 'Tạo cấu hình website, gamification và bảo mật mặc định.'
+  },
+  'generate-achievement-rules': {
+    icon: 'workspace_premium',
+    label: 'Sinh luật thưởng',
+    description: 'Tạo badge/reward draft từ dữ liệu tiến độ.'
+  },
+  'generate-ai-draft': {
+    icon: 'auto_awesome',
+    label: 'Tạo AI draft',
+    description: 'Lưu prompt/draft vào AI Generator để admin duyệt.'
+  }
+}
+const STITCH_MODULES = {
+  curriculum: {
+    icon: '🧭',
+    title: 'Quản lý học liệu',
+    subtitle: 'Bám màn Stitch “Quản lý Học liệu - Khối lớp & Môn học”, tập trung vào khối lớp, thế giới học tập và độ phủ bài.',
+    accent: 'blue',
+    chips: ['Khối lớp', 'Môn học', 'Lộ trình'],
+    cards: [
+      ['Lớp 1', '5 thế giới học tập', 'Đang dùng chương trình mở rộng theo Toán, Tiếng Việt, Tự nhiên & Xã hội.'],
+      ['Độ phủ câu hỏi', 'Theo từng ải', 'Admin có thể kiểm tra số câu hệ thống và bổ sung câu hỏi riêng ở ngân hàng câu hỏi.'],
+      ['Trạng thái nội dung', 'Sẵn sàng rà soát', 'Ưu tiên các bài Tiếng Việt nghe chọn, ghép đôi và toán phạm vi 100.'],
+    ],
+    rows: [
+      ['Lớp 1', 'Đang hoạt động', '36 ải thường', 'Đủ dữ liệu cơ bản'],
+      ['Lớp 2-5', 'Khung dữ liệu', 'Chờ mở rộng', 'Không ảnh hưởng Lớp 1'],
+    ],
+  },
+  learningCenter: {
+    icon: '🎯',
+    title: 'Trung tâm học tập & kiểm tra',
+    subtitle: 'Gom màn “Trung tâm Học tập & Kiểm tra” và “Quản lý Bài tập & Kiểm tra” thành trung tâm vận hành bài học.',
+    accent: 'green',
+    chips: ['Bài học', 'Kiểm tra', 'Phân loại'],
+    cards: [
+      ['Bài luyện nhanh', '3 chế độ chính', 'Chọn 1 trong 2, nghe và chọn, ghép cặp đơn giản.'],
+      ['Bài kiểm tra', 'Theo thế giới', 'Sẵn UI cho tạo phiên kiểm tra theo khối, môn, ải.'],
+      ['Dữ liệu học sinh', 'Theo tiến trình thật', 'Kết quả hiện lấy từ Progress của từng hồ sơ.'],
+    ],
+    rows: [
+      ['Chọn 1 trong 2', 'Toán / TNXH', 'Hoạt động', 'Dùng câu hỏi hệ thống + admin'],
+      ['Nghe và chọn', 'Tiếng Việt', 'Hoạt động', 'Ưu tiên phát âm và vần'],
+      ['Ghép cặp', 'Toán & Tiếng Việt', 'Hoạt động', 'Luyện ghi nhớ hình - chữ'],
+    ],
+  },
+  aiGenerator: {
+    icon: '✨',
+    title: 'AI Generator',
+    subtitle: 'Bám màn Stitch “AI Generator - Tự động hóa nội dung”: nơi chuẩn bị prompt, duyệt nháp và đưa câu hỏi vào ngân hàng.',
+    accent: 'violet',
+    chips: ['Prompt', 'Duyệt nháp', 'Đưa vào ngân hàng'],
+    cards: [
+      ['Tạo câu hỏi', 'Theo khối và ải', 'UI đã có chỗ cho luồng sinh nội dung trước khi lưu vào CustomQuestion.'],
+      ['Kiểm duyệt', 'Admin duyệt thủ công', 'Không tự ghi DB khi chưa có bước xác nhận rõ ràng.'],
+      ['Chuẩn chương trình', 'Theo WORLDS', 'Sinh nội dung gắn với đúng thế giới và bài học.'],
+    ],
+    rows: [
+      ['Prompt theo bài', 'Sẵn UI', 'Chưa nối model', 'Cần API AI riêng'],
+      ['Duyệt câu hỏi', 'Sẵn UI', 'Chưa tự động', 'Dùng ngân hàng câu hỏi để lưu'],
+    ],
+  },
+  rewards: {
+    icon: '🏅',
+    title: 'Cấu hình trò chơi & thưởng',
+    subtitle: 'Bám màn Stitch “Cấu hình Trò chơi & Kinh tế Phần thưởng”: quản lý sao, streak, huy chương và động lực học.',
+    accent: 'amber',
+    chips: ['Sao', 'Streak', 'Huy chương'],
+    cards: [
+      ['Sao thưởng', 'Theo lượt chơi', 'Progress đang lưu tổng sao thật cho từng bé.'],
+      ['Chuỗi học', 'Theo streak', 'Admin có thể xem và reset trong quản lý học sinh.'],
+      ['Huy chương world', 'Theo boss', 'Đồng bộ với logic tiến trình và completedLevels.'],
+    ],
+    rows: [
+      ['Sao', 'Đang lưu DB', 'progress.stars', 'Hiển thị ở dashboard'],
+      ['Streak', 'Đang lưu DB', 'progress.streak', 'Có thể chỉnh từ admin'],
+      ['Huy chương', 'Từ completedLevels', 'Tính theo boss', 'Dùng ở dashboard phụ huynh'],
+    ],
+  },
+  reports: {
+    icon: '📈',
+    title: 'Báo cáo & phân tích',
+    subtitle: 'Bám màn Stitch “Báo cáo & Phân tích chi tiết”: tổng hợp sức khỏe hệ thống, phân bố lớp và học sinh nổi bật.',
+    accent: 'cyan',
+    chips: ['KPI', 'Top học sinh', 'Phân bố lớp'],
+    cards: [
+      ['Phụ huynh', 'Dữ liệu thật', 'Lấy từ Parent trong DB.'],
+      ['Học sinh', 'Dữ liệu thật', 'Lấy từ ChildProfile kèm Progress.'],
+      ['Câu hỏi admin', 'Dữ liệu thật', 'Lấy từ CustomQuestion.'],
+    ],
+    rows: [
+      ['Tổng phụ huynh', 'Realtime API', 'Đã nối', 'GET /api/admin/stats'],
+      ['Tổng sao', 'Realtime API', 'Đã nối', 'Aggregate Progress'],
+      ['Top học sinh', 'Realtime API', 'Đã nối', 'Sắp theo sao và streak'],
+    ],
+  },
+  importExport: {
+    icon: '📦',
+    title: 'Nhập & xuất dữ liệu',
+    subtitle: 'Bám màn Stitch “Nhập & Xuất Dữ liệu Hệ thống”: chuẩn hóa các luồng CSV, backup, và kiểm tra dữ liệu.',
+    accent: 'slate',
+    chips: ['CSV', 'Backup', 'Kiểm tra'],
+    cards: [
+      ['Xuất học sinh', 'Đã hoạt động', 'Nút xuất CSV đang dùng dữ liệu học sinh thật.'],
+      ['Nhập câu hỏi', 'Sẵn UI', 'Có thể nối sau vào CustomQuestion theo batch.'],
+      ['Sao lưu dữ liệu', 'Sẵn UI', 'Chờ chính sách backup DB.'],
+    ],
+    rows: [
+      ['Xuất học sinh CSV', 'Hoạt động', 'Frontend', 'hocvui_hocsinh.csv'],
+      ['Nhập câu hỏi CSV', 'Chờ backend', 'CustomQuestion', 'Cần validate định dạng'],
+      ['Backup hệ thống', 'Chờ backend', 'Database', 'Cần quyền admin cao'],
+    ],
+  },
+  media: {
+    icon: '🖼️',
+    title: 'Thư viện đa phương tiện',
+    subtitle: 'Bám màn Stitch “Thư viện Đa phương tiện”: quản lý hình, âm thanh, mascot và tài nguyên bài học.',
+    accent: 'rose',
+    chips: ['Ảnh', 'Âm thanh', 'Mascot'],
+    cards: [
+      ['Mascot', 'Đang dùng emoji/image', 'Hồ sơ học sinh có mascotName và mascotImage.'],
+      ['Âm thanh Tiếng Việt', 'Cần chuẩn hóa', 'Phục vụ game nghe và chọn.'],
+      ['Hình minh họa', 'Theo bài học', 'Sẵn khu vực phân loại theo world/level.'],
+    ],
+    rows: [
+      ['Mascot học sinh', 'Đang lưu profile', 'Hoạt động', 'ChildProfile mascot fields'],
+      ['Audio phát âm', 'Chờ thư viện', 'Ưu tiên', 'Tiếng Việt Lớp 1'],
+      ['Ảnh bài học', 'Chờ thư viện', 'Trung bình', 'Theo chủ đề'],
+    ],
+  },
+  settings: {
+    icon: '⚙️',
+    title: 'Cài đặt hệ thống & phân quyền',
+    subtitle: 'Bám màn Stitch “Cài đặt Hệ thống & Phân quyền”: quản lý tài khoản admin, bảo mật và trạng thái hệ thống.',
+    accent: 'dark',
+    chips: ['Admin', 'Bảo mật', 'Phân quyền'],
+    cards: [
+      ['Đăng nhập admin', 'Đã hoạt động', 'Cookie admin token và API /api/admin/auth.'],
+      ['Biến môi trường', 'Đã hỗ trợ', 'ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_SECRET.'],
+      ['Phân quyền chi tiết', 'Sẵn UI', 'Có thể mở rộng role sau.'],
+    ],
+    rows: [
+      ['Admin auth', 'Hoạt động', 'Cookie ký HMAC', '7 ngày'],
+      ['Route guard', 'Hoạt động', 'getAdminSession', 'Đã await đúng'],
+      ['Role nâng cao', 'Chờ schema', 'Không đổi schema', 'Để phase sau'],
+    ],
+  },
+}
+const CMS_MODULES = {
+  ...STITCH_MODULES,
+  curriculum: {
+    ...STITCH_MODULES.curriculum,
+    module: 'curriculum',
+    title: 'Curriculum CMS',
+    subtitle: 'Quản lý lớp, môn, chủ đề, kỹ năng và bài học. Đây là nguồn cấu trúc học liệu chính của hệ thống.',
+    chips: ['Grade', 'Subject', 'Topic', 'Skill', 'Lesson'],
+    types: ['grade', 'subject', 'topic', 'skill', 'lesson'],
+    primaryAction: 'Thêm học liệu'
+  },
+  games: {
+    icon: '🎮',
+    module: 'games',
+    title: 'Games CMS',
+    subtitle: 'Quản lý game, phần thưởng và mapping giữa Game → Question Pool → Skill.',
+    accent: 'violet',
+    chips: ['Game Config', 'XP', 'Coin', 'Stars'],
+    types: ['game', 'question-pool', 'game-config'],
+    primaryAction: 'Thêm game',
+    cards: [
+      ['Choose 1 of 2', 'Đang hoạt động', 'Game trắc nghiệm 2 đáp án cho Toán và TNXH.'],
+      ['Simple Matching', 'Đang hoạt động', 'Game ghép đôi cho chữ, số và hình ảnh.'],
+      ['Listen & Select', 'Đang hoạt động', 'Game nghe chọn cho Tiếng Việt lớp 1.'],
+    ],
+    rows: [
+      ['Choose 1 of 2', 'active', 'question-pool', 'XP/Coin/Stars cấu hình theo game'],
+      ['Simple Matching', 'active', 'question-pool', 'Ghép đôi theo skill'],
+      ['Listen & Select', 'active', 'question-pool', 'Cần audio/voice chuẩn hóa'],
+    ],
+  },
+  learningMap: {
+    icon: '🗺️',
+    module: 'learning-map',
+    title: 'Learning Map Builder',
+    subtitle: 'Builder bản đồ học tập theo World, Stage, Level, Boss Level và Reward.',
+    accent: 'green',
+    chips: ['World', 'Stage', 'Level', 'Boss', 'Reward'],
+    types: ['world', 'stage', 'level', 'boss', 'reward', 'unlock-rule'],
+    primaryAction: 'Thêm node bản đồ',
+    cards: [
+      ['World', 'Khu vực học', 'Ví dụ: Ngôi làng số học, Khu rừng chữ cái.'],
+      ['Level', 'Game + Question Pool', 'Mỗi level trỏ về game, pool câu hỏi, XP, coin, stars.'],
+      ['Boss & Reward', 'Cuối chương', 'Boss mở huy hiệu, medal và reward.'],
+    ],
+    rows: [
+      ['World', 'CRUD', 'learning-map', 'Có thể sắp xếp và preview map'],
+      ['Level', 'CRUD', 'game mapping', 'Gắn question pool và skill'],
+      ['Unlock rule', 'CRUD', 'progress', 'Điều kiện mở khóa theo level/world'],
+    ],
+  },
+  assignments: {
+    icon: '📋',
+    module: 'assignments',
+    title: 'Assignments CMS',
+    subtitle: 'Tạo bài tập, chọn lớp/môn/kỹ năng và giao cho học sinh, nhóm học sinh hoặc cả lớp.',
+    accent: 'slate',
+    chips: ['Assign', 'Class', 'Skill', 'Score'],
+    types: ['assignment', 'assignment-template', 'target-group'],
+    primaryAction: 'Tạo bài tập',
+    cards: [
+      ['Giao bài', 'Một hoặc nhiều học sinh', 'Chọn lớp, môn, kỹ năng và deadline.'],
+      ['Theo dõi', 'Đã làm / chưa làm', 'Sẵn cấu trúc để nối kết quả làm bài.'],
+      ['Điểm số', 'Theo assignment', 'Lưu thang điểm và mô tả.'],
+    ],
+    rows: [
+      ['Quick assignment', 'CRUD', 'assignment', 'Giao bài nhanh theo skill'],
+      ['Class assignment', 'CRUD', 'target-group', 'Giao cả lớp'],
+      ['Result tracking', 'Chờ kết quả', 'report', 'Sẽ nối với lịch sử học'],
+    ],
+  },
+  tests: {
+    icon: '✅',
+    module: 'tests',
+    title: 'Tests CMS',
+    subtitle: 'Quản lý Quick Test, Topic Test, Chapter Test, Semester Test, hẹn giờ và chấm điểm.',
+    accent: 'cyan',
+    chips: ['Quick', 'Topic', 'Chapter', 'Semester'],
+    types: ['quick-test', 'topic-test', 'chapter-test', 'semester-test', 'test-rule'],
+    primaryAction: 'Tạo bài kiểm tra',
+    cards: [
+      ['Quick Test', '5 câu', 'Kiểm tra nhanh sau bài học.'],
+      ['Topic Test', '10 câu', 'Kiểm tra theo chủ đề hoặc kỹ năng.'],
+      ['Chapter/Semester', '20-30 câu', 'Đề dài có hẹn giờ và thang điểm.'],
+    ],
+    rows: [
+      ['Random câu hỏi', 'Cấu hình', 'question-pool', 'Chọn số câu theo difficulty'],
+      ['Hẹn giờ', 'Cấu hình', 'test-rule', 'Thời lượng theo loại đề'],
+      ['Chấm điểm', 'Cấu hình', 'rubric', 'Có đáp án và giải thích'],
+    ],
+  },
+  achievements: {
+    icon: '🏆',
+    module: 'achievements',
+    title: 'Achievements CMS',
+    subtitle: 'Quản lý huy hiệu, huy chương và điều kiện mở khóa theo XP, streak, world hoặc test.',
+    accent: 'amber',
+    chips: ['Badge', 'Medal', 'Unlock Rule'],
+    types: ['badge', 'medal', 'unlock-condition'],
+    primaryAction: 'Thêm huy hiệu',
+    cards: [
+      ['Nhà toán học', 'Badge', 'Mở khóa khi hoàn thành chuỗi kỹ năng Toán.'],
+      ['Chăm học', 'Streak', 'Mở khóa khi học liên tiếp nhiều ngày.'],
+      ['Hoàn thành World', 'Medal', 'Nhận khi vượt boss cuối chương.'],
+    ],
+    rows: [
+      ['Badge', 'CRUD', 'achievement', 'Icon, tên, mô tả'],
+      ['Medal', 'CRUD', 'world reward', 'Gắn với boss/world'],
+      ['Condition', 'CRUD', 'unlock rule', 'XP, streak, completion'],
+    ],
+  },
+  reports: {
+    ...STITCH_MODULES.reports,
+    module: 'reports',
+    title: 'Reports Center',
+    subtitle: 'Báo cáo học sinh, curriculum, câu hỏi và export Excel/PDF.',
+    chips: ['Student', 'Curriculum', 'Question', 'Export'],
+    types: ['student-report', 'curriculum-report', 'question-report', 'export-template'],
+    primaryAction: 'Tạo mẫu báo cáo'
+  },
+  aiGenerator: {
+    ...STITCH_MODULES.aiGenerator,
+    module: 'ai',
+    title: 'AI Generator',
+    subtitle: 'Tạo câu hỏi, bài học và đề kiểm tra bằng AI theo lớp, môn, chủ đề, số lượng.',
+    chips: ['Questions', 'Lessons', 'Tests'],
+    types: ['question-prompt', 'lesson-prompt', 'test-prompt', 'ai-draft'],
+    primaryAction: 'Tạo prompt'
+  },
+  media: {
+    ...STITCH_MODULES.media,
+    module: 'media',
+    title: 'Media Library',
+    subtitle: 'Kho hình ảnh, audio, video, mascot, badge, sticker; có tag, search và preview.',
+    chips: ['Image', 'Audio', 'Video', 'Mascot', 'Badge'],
+    types: ['image', 'audio', 'video', 'mascot', 'badge-asset', 'sticker'],
+    primaryAction: 'Thêm tài nguyên'
+  },
+  settings: {
+    ...STITCH_MODULES.settings,
+    module: 'settings',
+    title: 'Settings',
+    subtitle: 'Thiết lập website, gamification, role, permission và notification.',
+    chips: ['Website', 'Gamification', 'Role', 'Notification'],
+    types: ['website', 'gamification', 'role', 'permission', 'notification'],
+    primaryAction: 'Thêm cấu hình'
+  }
+}
+const LEGACY_CMS_MODULES = CMS_MODULES
+const ADMIN_CMS_MODULES = {
+  curriculum: {
+    ...LEGACY_CMS_MODULES.curriculum,
+    module: 'content',
+    title: 'Curriculum',
+    subtitle: 'Quản lý chương trình học từ Grade, Subject, Topic, Skill đến Lesson theo cấu trúc Education CMS.',
+    icon: '📚',
+    accent: 'blue',
+    chips: ['Grade', 'Subject', 'Topic', 'Skill', 'Lesson'],
+    types: ['grade', 'subject', 'topic', 'skill', 'lesson'],
+    primaryAction: 'Thêm nội dung',
+    cards: [
+      ['Grade Management', 'Lớp 1-5', 'Thêm, sửa, xóa và sắp xếp khối lớp.'],
+      ['Subject & Topic', 'CRUD + ẩn hiện', 'Gắn môn với lớp, mô tả chủ đề và điều chỉnh thứ tự học.'],
+      ['Skill & Lesson', 'Độ khó + học liệu', 'Quản lý kỹ năng, thời lượng, lý thuyết, ví dụ, ảnh, video và mini game.'],
+    ],
+    dataFields: [
+      { name: 'theory', label: 'Lý thuyết', multiline: true },
+      { name: 'example', label: 'Ví dụ', multiline: true },
+      { name: 'mediaUrl', label: 'Ảnh / video / audio URL' },
+      { name: 'miniGame', label: 'Mini game' },
+      { name: 'estimatedMinutes', label: 'Thời lượng học' },
+    ],
+  },
+  games: {
+    ...LEGACY_CMS_MODULES.games,
+    module: 'games',
+    title: 'Games',
+    subtitle: 'Quản lý game, phần thưởng và mapping giữa Game, Question Pool, Skill theo phong cách Stitch.',
+    icon: '🎮',
+    accent: 'violet',
+    chips: ['Game Config', 'Question Pool', 'XP', 'Coin', 'Stars'],
+    types: ['game', 'question-pool', 'game-config', 'reward-rule'],
+    primaryAction: 'Thêm game',
+    dataFields: [
+      { name: 'gameRoute', label: 'Route trò chơi' },
+      { name: 'questionPool', label: 'Question pool' },
+      { name: 'rewardRule', label: 'Luật thưởng', multiline: true },
+      { name: 'failureRule', label: 'Luật khi làm sai', multiline: true },
+    ],
+  },
+  learningMap: {
+    ...LEGACY_CMS_MODULES.learningMap,
+    module: 'learning-map',
+    title: 'Learning Map',
+    subtitle: 'Builder bản đồ học tập: World, Stage, Level, Boss, Reward và điều kiện mở khóa.',
+    icon: '🗺️',
+    accent: 'green',
+    chips: ['World', 'Stage', 'Level', 'Boss', 'Reward', 'Drag Drop'],
+    types: ['world', 'stage', 'level', 'boss', 'reward', 'unlock-rule'],
+    primaryAction: 'Thêm node bản đồ',
+    cards: [
+      ['World & Stage', 'Ảnh nền + màu sắc', 'Tạo thế giới học, stage, icon và màu chủ đạo.'],
+      ['Level Builder', 'Game + Question Pool', 'Gắn mỗi level với game, pool câu hỏi, XP, coin và số sao.'],
+      ['Boss & Reward', 'Badge + medal', 'Thiết lập boss cuối chương, phần thưởng và điều kiện mở khóa.'],
+    ],
+    dataFields: [
+      { name: 'backgroundImage', label: 'Ảnh nền' },
+      { name: 'iconUrl', label: 'Icon URL' },
+      { name: 'color', label: 'Màu sắc' },
+      { name: 'game', label: 'Game' },
+      { name: 'questionPool', label: 'Question Pool' },
+      { name: 'unlockRule', label: 'Điều kiện mở khóa', multiline: true },
+      { name: 'rewardBadge', label: 'Badge / Medal' },
+    ],
+  },
+  assignments: {
+    ...LEGACY_CMS_MODULES.assignments,
+    module: 'assignments',
+    title: 'Assignments',
+    subtitle: 'Tạo bài tập, chọn lớp/môn/kỹ năng và giao cho học sinh, nhóm học sinh hoặc cả lớp.',
+    icon: '📋',
+    accent: 'slate',
+    chips: ['Assign', 'Class', 'Skill', 'Deadline', 'Score'],
+    types: ['assignment', 'assignment-template', 'target-group', 'homework-policy'],
+    primaryAction: 'Tạo bài tập',
+    dataFields: [
+      { name: 'targetGroup', label: 'Nhóm học sinh' },
+      { name: 'deadline', label: 'Hạn nộp' },
+      { name: 'scoringRule', label: 'Cách chấm điểm', multiline: true },
+      { name: 'teacherNote', label: 'Ghi chú giáo viên', multiline: true },
+    ],
+  },
+  tests: {
+    ...LEGACY_CMS_MODULES.tests,
+    module: 'tests',
+    title: 'Tests',
+    subtitle: 'Quản lý Practice, Quiz, Chapter Test, Semester Test, random câu hỏi, hẹn giờ và điểm đạt.',
+    icon: '✅',
+    accent: 'cyan',
+    chips: ['Practice', 'Quiz', 'Chapter Test', 'Semester Test'],
+    types: ['practice', 'quiz', 'chapter-test', 'semester-test', 'assessment-rule'],
+    primaryAction: 'Tạo bài đánh giá',
+    cards: [
+      ['Practice', 'Luyện tập', 'Bài luyện theo skill, không áp lực điểm số.'],
+      ['Quiz', '10-20 câu', 'Sinh tự động từ Question Bank và random đáp án.'],
+      ['Chapter/Semester Test', 'Hẹn giờ', 'Cấu hình điểm đạt, thời lượng và thang điểm.'],
+    ],
+    dataFields: [
+      { name: 'questionCount', label: 'Số câu' },
+      { name: 'timerMinutes', label: 'Thời gian làm bài' },
+      { name: 'passScore', label: 'Điểm đạt' },
+      { name: 'randomize', label: 'Random câu / đáp án' },
+      { name: 'rubric', label: 'Thang điểm', multiline: true },
+    ],
+  },
+  achievements: {
+    ...LEGACY_CMS_MODULES.achievements,
+    module: 'achievements',
+    title: 'Achievements',
+    subtitle: 'Quản lý huy hiệu, huy chương và điều kiện mở khóa theo XP, streak, world hoặc bài kiểm tra.',
+    icon: '🏆',
+    accent: 'amber',
+    chips: ['Badge', 'Medal', 'Unlock Rule', 'Reward'],
+    types: ['badge', 'medal', 'unlock-condition', 'reward'],
+    primaryAction: 'Thêm huy hiệu',
+    dataFields: [
+      { name: 'badgeIcon', label: 'Icon huy hiệu' },
+      { name: 'unlockCondition', label: 'Điều kiện mở khóa', multiline: true },
+      { name: 'rewardValue', label: 'Giá trị thưởng' },
+      { name: 'celebrationCopy', label: 'Thông điệp chúc mừng', multiline: true },
+    ],
+  },
+  reports: {
+    ...LEGACY_CMS_MODULES.reports,
+    module: 'reports',
+    title: 'Reports',
+    subtitle: 'Báo cáo học sinh, học tập, câu hỏi, phụ huynh và mẫu export PDF/Excel.',
+    icon: '📊',
+    accent: 'cyan',
+    chips: ['Student', 'Learning', 'Question', 'Parent', 'Export'],
+    types: ['student-report', 'learning-report', 'question-report', 'parent-report', 'export-template'],
+    primaryAction: 'Tạo mẫu báo cáo',
+    cards: [
+      ['Student Report', 'Tiến độ + điểm số', 'Theo dõi môn mạnh, môn yếu và lộ trình hiện tại của từng bé.'],
+      ['Learning Report', 'Tỷ lệ hoàn thành', 'Tổng hợp thời gian học, chuỗi học và tiến độ theo world.'],
+      ['Question Report', 'Câu dễ / khó', 'Phát hiện câu sai nhiều, câu dễ nhất, câu khó nhất để cải thiện nội dung.'],
+    ],
+    dataFields: [
+      { name: 'reportScope', label: 'Phạm vi báo cáo' },
+      { name: 'cadence', label: 'Chu kỳ' },
+      { name: 'exportFormat', label: 'Định dạng export' },
+      { name: 'recipients', label: 'Người nhận' },
+      { name: 'templateNote', label: 'Ghi chú mẫu', multiline: true },
+    ],
+  },
+  media: {
+    ...LEGACY_CMS_MODULES.media,
+    module: 'media',
+    title: 'Media Library',
+    subtitle: 'Kho hình ảnh, audio, video, sticker, badge, mascot với folder, tag, search và preview.',
+    icon: '🖼️',
+    accent: 'rose',
+    chips: ['Image', 'Audio', 'Video', 'Sticker', 'Badge', 'Mascot'],
+    types: ['image', 'audio', 'video', 'sticker', 'badge', 'mascot', 'folder', 'tag'],
+    primaryAction: 'Thêm tài nguyên',
+    cards: [
+      ['Upload & Folder', 'Nhiều file', 'Phân loại tài nguyên theo thư mục, chủ đề và khối lớp.'],
+      ['Tag & Search', 'Tìm nhanh', 'Gắn tag để dùng lại trong bài học, game và reward.'],
+      ['Preview', 'Ảnh/audio/video', 'Lưu metadata để admin kiểm tra tài nguyên trước khi đưa vào bài học.'],
+    ],
+    dataFields: [
+      { name: 'fileUrl', label: 'File URL' },
+      { name: 'folder', label: 'Folder' },
+      { name: 'tags', label: 'Tags' },
+      { name: 'altText', label: 'Alt text / lời đọc' },
+      { name: 'license', label: 'Nguồn / bản quyền' },
+    ],
+  },
+  aiGenerator: {
+    ...LEGACY_CMS_MODULES.aiGenerator,
+    module: 'ai-studio',
+    title: 'AI Generator',
+    subtitle: 'Tạo câu hỏi, bài học, đề kiểm tra và review chất lượng nội dung trước khi đưa vào CMS.',
+    icon: '✨',
+    accent: 'violet',
+    chips: ['Generate Questions', 'Generate Lessons', 'Generate Exams', 'AI Review'],
+    types: ['question-generator', 'lesson-generator', 'exam-generator', 'ai-review', 'ai-draft'],
+    primaryAction: 'Tạo AI workflow',
+    cards: [
+      ['AI Generate Question', '20/50/100 câu', 'Nhập lớp, môn, topic, skill và số lượng để chuẩn bị prompt.'],
+      ['AI Generate Lesson', 'Lý thuyết + ví dụ', 'Tạo bản nháp bài học, tóm tắt và hoạt động gợi ý.'],
+      ['AI Review', 'Trùng lặp + lỗi', 'Kiểm tra câu hỏi trùng, lỗi diễn đạt và đề xuất chỉnh sửa.'],
+    ],
+    dataFields: [
+      { name: 'prompt', label: 'Prompt', multiline: true },
+      { name: 'outputCount', label: 'Số lượng output' },
+      { name: 'reviewRule', label: 'Luật review', multiline: true },
+      { name: 'tone', label: 'Giọng văn' },
+    ],
+  },
+  settings: {
+    ...LEGACY_CMS_MODULES.settings,
+    module: 'settings',
+    title: 'Settings',
+    subtitle: 'Thiết lập website, gamification, notification, security và cấu hình hệ thống.',
+    icon: '⚙️',
+    accent: 'dark',
+    chips: ['System', 'Gamification', 'Notification', 'Security', 'Role'],
+    types: ['system', 'gamification', 'notification', 'security', 'role', 'permission'],
+    primaryAction: 'Thêm cấu hình',
+    cards: [
+      ['System', 'Tên website + logo', 'Quản lý tên, logo, favicon và thông tin nhận diện.'],
+      ['Gamification', 'XP + coin + level', 'Cấu hình kinh tế thưởng và cấp độ học sinh.'],
+      ['Notification & Security', 'Email + push', 'Quản lý thông báo, bảo mật và trạng thái vận hành.'],
+    ],
+    dataFields: [
+      { name: 'settingKey', label: 'Setting key' },
+      { name: 'settingValue', label: 'Setting value', multiline: true },
+      { name: 'appliesTo', label: 'Áp dụng cho' },
+      { name: 'environment', label: 'Môi trường' },
+      { name: 'permissionSet', label: 'Permission set', multiline: true },
+    ],
+  },
+}
+const CMS_TABS = Object.keys(ADMIN_CMS_MODULES)
+
+function createEmptyCmsForm(moduleKey) {
+  const moduleConfig = ADMIN_CMS_MODULES[moduleKey]
+  const data = {
+    description: '',
+    content: '',
+    xp: '',
+    coin: '',
+    stars: '',
+    duration: '',
+    questionCount: '',
+    fileUrl: ''
+  }
+  moduleConfig?.dataFields?.forEach(field => {
+    data[field.name] = ''
+  })
+
+  return {
+    id: '',
+    module: moduleConfig?.module || moduleKey,
+    type: moduleConfig?.types?.[0] || 'item',
+    title: '',
+    status: 'active',
+    grade: '',
+    subject: '',
+    topic: '',
+    skill: '',
+    difficulty: '',
+    order: 0,
+    data
+  }
+}
+
+function getQuestionText(question) {
+  return question.q || question.word || question.left || ''
+}
+
+function getQuestionOptions(question) {
+  if (question.type === 'matching') {
+    return [question.options || question.right || '']
+  }
+
+  if (Array.isArray(question.options)) {
+    return question.options
+  }
+
+  if (Array.isArray(question.options_array)) {
+    return question.options_array
+  }
+
+  if (typeof question.options === 'string') {
+    try {
+      const parsed = JSON.parse(question.options)
+      return Array.isArray(parsed) ? parsed : question.options.split(',')
+    } catch {
+      return question.options.split(',')
+    }
+  }
+
+  return []
+}
+
+function getQuestionSubject(question, fallback = 'Chung') {
+  return question.subject || question.subjectName || fallback
+}
+
+function getQuestionTopic(question, fallback = 'Chung') {
+  return question.topic || question.skill || question.levelTitle || fallback
+}
+
+function csvCell(value) {
+  return `"${String(value ?? '').replaceAll('"', '""')}"`
+}
+
+function parseCsvLine(line) {
+  const cells = []
+  let current = ''
+  let quoted = false
+
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i]
+    const next = line[i + 1]
+
+    if (char === '"' && quoted && next === '"') {
+      current += '"'
+      i += 1
+    } else if (char === '"') {
+      quoted = !quoted
+    } else if (char === ',' && !quoted) {
+      cells.push(current.trim())
+      current = ''
+    } else {
+      current += char
+    }
+  }
+
+  cells.push(current.trim())
+  return cells
+}
+
+function parseQuestionImport(text, defaults) {
+  const content = String(text || '').trim()
+  if (!content) return []
+
+  if (content.startsWith('[')) {
+    const parsed = JSON.parse(content)
+    return parsed.map(item => ({
+      ...defaults,
+      ...item,
+      worldId: parseInt(item.worldId ?? defaults.worldId, 10),
+      levelId: parseInt(item.levelId ?? defaults.levelId, 10)
+    }))
+  }
+
+  const rows = content.split(/\r?\n/).map(row => row.trim()).filter(Boolean)
+  if (rows.length < 2) return []
+
+  const headers = parseCsvLine(rows[0]).map(header => header.toLowerCase())
+  return rows.slice(1).map(row => {
+    const cells = parseCsvLine(row)
+    const record = headers.reduce((acc, header, index) => {
+      acc[header] = cells[index] || ''
+      return acc
+    }, {})
+    const answers = record.answers || record.options || [record.optiona, record.optionb].filter(Boolean).join('|')
+
+    return {
+      ...defaults,
+      grade: record.grade || defaults.grade,
+      worldId: parseInt(record.worldid || record.world || defaults.worldId, 10),
+      levelId: parseInt(record.levelid || record.level || defaults.levelId, 10),
+      type: record.type || 'choose',
+      q: record.question || record.q || '',
+      options: record.type === 'matching' ? answers : JSON.stringify(answers.split('|').map(item => item.trim()).filter(Boolean)),
+      correct: parseInt(record.correct || '0', 10) || 0,
+      emoji: record.emoji || '❓',
+      subject: record.subject || 'Chung',
+      topic: record.topic || 'Chung',
+      skill: record.skill || '',
+      difficulty: record.difficulty || 'easy',
+      tags: record.tags || '',
+      imageUrl: record.imageurl || record.image || '',
+      audioUrl: record.audiourl || record.audio || '',
+      explanation: record.explanation || '',
+      gameTypes: record.gametypes || record.game_types || '',
+      status: record.status || 'published'
+    }
+  }).filter(item => item.q)
+}
+
+function parseCmsImport(text, moduleConfig) {
+  const content = String(text || '').trim()
+  if (!content) return []
+
+  if (content.startsWith('[')) {
+    const parsed = JSON.parse(content)
+    return parsed.map(item => ({
+      status: 'draft',
+      ...item,
+      module: moduleConfig.module,
+      data: typeof item.data === 'string' ? JSON.parse(item.data) : (item.data || {})
+    }))
+  }
+
+  const rows = content.split(/\r?\n/).map(row => row.trim()).filter(Boolean)
+  if (rows.length < 2) return []
+
+  const headers = parseCsvLine(rows[0]).map(header => header.toLowerCase())
+  return rows.slice(1).map(row => {
+    const cells = parseCsvLine(row)
+    const record = headers.reduce((acc, header, index) => {
+      acc[header] = cells[index] || ''
+      return acc
+    }, {})
+    const data = record.data_json
+      ? JSON.parse(record.data_json)
+      : {
+          description: record.description || '',
+          content: record.content || ''
+        }
+
+    return {
+      module: moduleConfig.module,
+      type: record.type || moduleConfig.types?.[0] || 'item',
+      title: record.title || record.name || '',
+      status: record.status || 'draft',
+      grade: record.grade || '',
+      subject: record.subject || '',
+      topic: record.topic || '',
+      skill: record.skill || '',
+      difficulty: record.difficulty || '',
+      order: parseInt(record.order || '0', 10) || 0,
+      data
+    }
+  }).filter(item => item.title)
+}
+
+function MaterialIcon({ children, className = '', filled = false }) {
+  return (
+    <span
+      className={`material-symbols-outlined ${className}`}
+      style={filled ? { fontVariationSettings: "'FILL' 1" } : undefined}
+    >
+      {children}
+    </span>
+  )
+}
+
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString('vi-VN')
+}
+
+function buildQuestionPayload(questionData, context = {}) {
+  const answers = Array.isArray(questionData.answers) && questionData.answers.length
+    ? questionData.answers
+    : [
+        { id: 'A', text: questionData.optionA || '', isCorrect: Number(questionData.correct || 0) === 0 },
+        { id: 'B', text: questionData.optionB || '', isCorrect: Number(questionData.correct || 0) === 1 }
+      ].filter(answer => answer.text)
+
+  return {
+    id: questionData.id,
+    grade: questionData.grade || context.grade,
+    worldId: questionData.worldId || context.worldId,
+    levelId: questionData.levelId || context.levelId,
+    type: questionData.type || 'choose_1_of_2',
+    question: questionData.question || questionData.q || '',
+    q: questionData.q || questionData.question || '',
+    answers,
+    correctAnswer: questionData.correctAnswer || answers.find(answer => answer.isCorrect)?.id || 'A',
+    correct: Number.isFinite(Number(questionData.correct)) ? Number(questionData.correct) : 0,
+    emoji: questionData.emoji || '❓',
+    subject: questionData.subject || 'Chung',
+    topic: questionData.topic || 'Chung',
+    skill: questionData.skill || '',
+    difficulty: String(questionData.difficulty || '1'),
+    tags: questionData.tags || '',
+    imageUrl: questionData.imageUrl || '',
+    audioUrl: questionData.audioUrl || '',
+    explanation: questionData.explanation || '',
+    gameTypes: questionData.gameTypes || [],
+    status: questionData.status || 'published'
+  }
+}
+
+
 
 export default function AdminPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [authenticated, setAuthenticated] = useState(false)
+  const [authChecking, setAuthChecking] = useState(true)
   const [loginError, setLoginError] = useState('')
+  const [passwordVisible, setPasswordVisible] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
+  const [globalSearch, setGlobalSearch] = useState('')
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState(null)
+  const [confirmDialog, setConfirmDialog] = useState(null)
 
   // Overview
   const [stats, setStats] = useState({
@@ -29,59 +890,92 @@ export default function AdminPage() {
 
   // Students
   const [students, setStudents] = useState([])
-  const [studentSearch, setStudentSearch] = useState('')
-  const [studentGradeFilter, setStudentGradeFilter] = useState('all')
-  const [editingStudent, setEditingStudent] = useState(null)
-  const [viewingStudent, setViewingStudent] = useState(null)
 
   // Parents
   const [parents, setParents] = useState([])
-  const [parentSearch, setParentSearch] = useState('')
-  const [viewingParent, setViewingParent] = useState(null)
 
   // Questions
   const [selectedGrade, setSelectedGrade] = useState('lop-1')
   const [selectedWorld, setSelectedWorld] = useState(1)
   const [selectedLevel, setSelectedLevel] = useState(1)
   const [questions, setQuestions] = useState({ staticQuestions: [], customQuestions: [] })
-  const [editingQuestion, setEditingQuestion] = useState(null)
-  const [newQuestionModal, setNewQuestionModal] = useState(false)
-  const [newQuestion, setNewQuestion] = useState({
-    type: 'choose', q: '', optionA: '', optionB: '', correct: 0, emoji: '❓', subject: 'Toán', topic: 'Chung'
+
+  // CMS modules
+  const [cmsItems, setCmsItems] = useState([])
+  const [cmsSearch, setCmsSearch] = useState('')
+  const [cmsTypeFilter, setCmsTypeFilter] = useState('all')
+  const [cmsForm, setCmsForm] = useState(createEmptyCmsForm('curriculum'))
+  const [cmsFormOpen, setCmsFormOpen] = useState(false)
+  const [moduleDataByTab, setModuleDataByTab] = useState({})
+
+  const gradeData = useMemo(() => getGradeData(selectedGrade), [selectedGrade])
+  const availableWorlds = gradeData.WORLDS || []
+  const activeWorld = availableWorlds.find(world => world.id === selectedWorld) || availableWorlds[0]
+  const availableLevels = activeWorld?.levels || []
+  const activeLevel = availableLevels.find(level => level.id === selectedLevel) || availableLevels[0]
+  const activeCmsModule = ADMIN_CMS_MODULES[activeTab]
+  const activeModuleData = moduleDataByTab[activeTab] || null
+  const activeCmsQuickActions = useMemo(() => {
+    if (!activeCmsModule || !Array.isArray(activeModuleData?.actions)) return []
+    return activeModuleData.actions
+      .map(action => ({ action, ...CMS_AUTOMATION_ACTIONS[action] }))
+      .filter(item => item.label)
+  }, [activeCmsModule, activeModuleData])
+  const navItems = useMemo(() => ADMIN_NAV.map(item => ({
+    ...item,
+    badge: item.key === 'students' ? students.length : item.key === 'parents' ? parents.length : null
+  })), [students.length, parents.length])
+  const activeNavItem = navItems.find(item => item.key === activeTab) || navItems[0]
+  const filteredCmsItems = cmsItems.filter(item => {
+    const matchType = cmsTypeFilter === 'all' || item.type === cmsTypeFilter
+    const text = [
+      item.title, item.type, item.grade, item.subject, item.topic, item.skill, item.difficulty, item.status,
+      item.data?.description, item.data?.content
+    ].join(' ').toLowerCase()
+    return matchType && text.includes(cmsSearch.toLowerCase())
   })
 
-  const showToast = (msg, type = 'success') => {
+  const showToast = useCallback((msg, type = 'success') => {
     setToast({ msg, type })
     setTimeout(() => setToast(null), 3000)
+  }, [])
+
+  const askConfirm = (dialog) => {
+    setConfirmDialog(dialog)
+  }
+
+  const runConfirmedAction = async () => {
+    if (!confirmDialog?.onConfirm) return
+    const action = confirmDialog.onConfirm
+    setConfirmDialog(null)
+    await action()
   }
 
   useEffect(() => {
     fetch('/api/admin/auth')
       .then(res => { if (res.ok) setAuthenticated(true) })
       .catch(() => {})
+      .finally(() => setAuthChecking(false))
   }, [])
-
-  useEffect(() => {
-    if (!authenticated) return
-    if (activeTab === 'overview') loadStats()
-    else if (activeTab === 'students') loadStudents()
-    else if (activeTab === 'parents') loadParents()
-    else if (activeTab === 'questions') loadQuestions()
-  }, [authenticated, activeTab, selectedGrade, selectedWorld, selectedLevel])
 
   const handleLogin = async (e) => {
     e.preventDefault()
     setLoginError('')
+    setLoading(true)
     try {
       const res = await fetch('/api/admin/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email: email.trim(), password })
       })
       const data = await res.json()
-      if (res.ok) { setAuthenticated(true) }
+      if (res.ok) {
+        setAuthenticated(true)
+        setPassword('')
+      }
       else { setLoginError(data.error || 'Tài khoản hoặc mật khẩu không đúng') }
     } catch { setLoginError('Lỗi kết nối máy chủ') }
+    finally { setLoading(false) }
   }
 
   const handleLogout = async () => {
@@ -91,7 +985,7 @@ export default function AdminPage() {
     setPassword('')
   }
 
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/stats')
@@ -99,9 +993,9 @@ export default function AdminPage() {
       if (data && !data.error) setStats(data)
     } catch (err) { console.error(err) }
     finally { setLoading(false) }
-  }
+  }, [])
 
-  const loadStudents = async () => {
+  const loadStudents = useCallback(async () => {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/students')
@@ -109,9 +1003,9 @@ export default function AdminPage() {
       if (Array.isArray(data)) setStudents(data)
     } catch (err) { console.error(err) }
     finally { setLoading(false) }
-  }
+  }, [])
 
-  const loadParents = async () => {
+  const loadParents = useCallback(async () => {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/parents')
@@ -119,9 +1013,9 @@ export default function AdminPage() {
       if (Array.isArray(data)) setParents(data)
     } catch (err) { console.error(err) }
     finally { setLoading(false) }
-  }
+  }, [])
 
-  const loadQuestions = async () => {
+  const loadQuestions = useCallback(async () => {
     setLoading(true)
     try {
       const res = await fetch(`/api/admin/questions?grade=${selectedGrade}&world=${selectedWorld}&level=${selectedLevel}`)
@@ -129,25 +1023,221 @@ export default function AdminPage() {
       if (data && !data.error) setQuestions(data)
     } catch (err) { console.error(err) }
     finally { setLoading(false) }
+  }, [selectedGrade, selectedWorld, selectedLevel])
+
+  const loadCmsItems = useCallback(async () => {
+    const moduleConfig = ADMIN_CMS_MODULES[activeTab]
+    if (!moduleConfig) return
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/admin/modules?module=${encodeURIComponent(moduleConfig.module)}`)
+      const data = await res.json()
+      if (res.ok && Array.isArray(data.items)) {
+        setCmsItems(data.items)
+        setModuleDataByTab(prev => ({ ...prev, [activeTab]: data }))
+      } else {
+        showToast(data.error || 'Không tải được dữ liệu module', 'error')
+      }
+    } catch (err) {
+      console.error(err)
+      showToast('Lỗi kết nối khi tải module admin', 'error')
+    }
+    finally { setLoading(false) }
+  }, [activeTab, showToast])
+
+  useEffect(() => {
+    if (!authenticated) return
+    const timer = setTimeout(() => {
+      if (activeTab === 'overview' || activeTab === 'reports' || CMS_TABS.includes(activeTab)) loadStats()
+      if (activeTab === 'students') loadStudents()
+      else if (activeTab === 'parents') loadParents()
+      else if (activeTab === 'questions') loadQuestions()
+      else if (CMS_TABS.includes(activeTab)) loadCmsItems()
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [authenticated, activeTab, loadStats, loadStudents, loadParents, loadQuestions, loadCmsItems])
+
+  useEffect(() => {
+    if (!ADMIN_CMS_MODULES[activeTab]) return
+    const timer = setTimeout(() => {
+      setCmsForm(createEmptyCmsForm(activeTab))
+      setCmsTypeFilter('all')
+      setCmsSearch('')
+      setCmsFormOpen(false)
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [activeTab])
+
+  const handleCmsFormChange = (field, value) => {
+    setCmsForm(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleCmsDataChange = (field, value) => {
+    setCmsForm(prev => ({ ...prev, data: { ...prev.data, [field]: value } }))
+  }
+
+  const openNewCmsForm = () => {
+    setCmsForm(createEmptyCmsForm(activeTab))
+    setCmsFormOpen(true)
+  }
+
+  const openEditCmsForm = (item) => {
+    setCmsForm({
+      ...createEmptyCmsForm(activeTab),
+      ...item,
+      data: {
+        ...createEmptyCmsForm(activeTab).data,
+        ...(item.data || {})
+      }
+    })
+    setCmsFormOpen(true)
+  }
+
+  const handleCmsSave = async (e) => {
+    e.preventDefault()
+    const method = cmsForm.id ? 'PUT' : 'POST'
+    try {
+      const res = await fetch('/api/admin/cms', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cmsForm)
+      })
+      const data = await res.json()
+      if (res.ok && !data.error) {
+        setCmsFormOpen(false)
+        setCmsForm(createEmptyCmsForm(activeTab))
+        loadCmsItems()
+        loadStats()
+        showToast(cmsForm.id ? 'Đã cập nhật CMS item ✅' : 'Đã tạo CMS item ✅')
+      } else {
+        showToast(data.error || 'Lưu CMS thất bại', 'error')
+      }
+    } catch (err) {
+      console.error(err)
+      showToast('Lỗi kết nối khi lưu CMS', 'error')
+    }
+  }
+
+  const handleCmsDelete = (item) => {
+    askConfirm({
+      title: 'Xóa CMS item',
+      message: `Xóa "${item.title}" khỏi module ${activeCmsModule?.title || item.module}?`,
+      confirmLabel: 'Xóa item',
+      danger: true,
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/admin/cms?id=${item.id}`, { method: 'DELETE' })
+          if (res.ok) { loadCmsItems(); loadStats(); showToast('Đã xóa CMS item') }
+          else { showToast('Xóa CMS thất bại', 'error') }
+        } catch (err) { console.error(err) }
+      }
+    })
+  }
+
+  const handleCmsModuleAction = async (item, action, extra = {}) => {
+    if (!activeCmsModule || !action) return
+
+    const runAction = async () => {
+      try {
+        const res = await fetch('/api/admin/modules', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            module: activeCmsModule.module,
+            action,
+            id: item?.id,
+            ...extra
+          })
+        })
+        const data = await res.json()
+        if (res.ok && !data.error) {
+          loadCmsItems()
+          loadStats()
+          showToast(data.message || 'Đã cập nhật module')
+        } else {
+          showToast(data.error || 'Thao tác module thất bại', 'error')
+        }
+      } catch (err) {
+        console.error(err)
+        showToast('Lỗi kết nối khi chạy thao tác module', 'error')
+      }
+    }
+
+    if (item && action === 'archive-item') {
+      askConfirm({
+        title: 'Lưu trữ CMS item',
+        message: `Chuyển "${item.title}" sang trạng thái archived? Item sẽ không còn là nội dung đang hoạt động.`,
+        confirmLabel: 'Lưu trữ',
+        danger: true,
+        onConfirm: runAction
+      })
+      return
+    }
+
+    await runAction()
+  }
+
+  const handleSyncStaticCms = () => {
+    if (!activeCmsModule) return
+    const gradeName = GRADES_MAP[selectedGrade] || selectedGrade
+    askConfirm({
+      title: 'Đồng bộ chương trình vào CMS',
+      message: `Tạo các CMS record còn thiếu cho ${gradeName} từ chương trình hiện có. Các record đã tồn tại sẽ được giữ nguyên, không ghi đè nội dung admin đã sửa.`,
+      confirmLabel: 'Đồng bộ',
+      onConfirm: () => handleCmsModuleAction(null, 'sync-static-curriculum', {
+        grade: selectedGrade,
+        status: 'active'
+      })
+    })
+  }
+
+  const runCmsAutomation = async (actionConfig) => {
+    if (!activeCmsModule || !actionConfig?.action) return
+
+    const extra = {
+      grade: selectedGrade,
+      world: selectedWorld,
+      level: selectedLevel,
+      status: 'active'
+    }
+
+    if (actionConfig.action === 'generate-ai-draft') {
+      const prompt = window.prompt(
+        'Nhập prompt để tạo AI draft:',
+        `Tạo 5 câu hỏi ${activeLevel?.title || ''} cho ${GRADES_MAP[selectedGrade] || selectedGrade}`
+      )
+      if (!prompt) return
+      extra.prompt = prompt
+      extra.title = `AI draft - ${activeLevel?.title || activeCmsModule.title}`
+      extra.subject = activeWorld ? (activeWorld.id === 2 ? 'Tiếng Việt' : activeWorld.id === 5 ? 'Tự nhiên & Xã hội' : 'Toán') : ''
+      extra.topic = activeLevel?.title || activeWorld?.name || ''
+    }
+
+    const runAction = () => handleCmsModuleAction(null, actionConfig.action, extra)
+
+    if (actionConfig.confirm) {
+      askConfirm({
+        title: actionConfig.label,
+        message: actionConfig.description || `Chạy thao tác ${actionConfig.label} cho ${activeCmsModule.title}?`,
+        confirmLabel: actionConfig.label,
+        danger: actionConfig.danger,
+        onConfirm: runAction
+      })
+      return
+    }
+
+    await runAction()
   }
 
   // Student Actions
-  const handleEditStudentSave = async (e) => {
-    e.preventDefault()
+  const handleEditStudentSave = async (studentData) => {
     try {
       const res = await fetch('/api/admin/students', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: editingStudent.id,
-          name: editingStudent.name,
-          grade: editingStudent.grade,
-          stars: editingStudent.progress?.stars || 0,
-          streak: editingStudent.progress?.streak || 0
-        })
+        body: JSON.stringify(studentData)
       })
       if (res.ok) {
-        setEditingStudent(null)
         loadStudents()
         showToast('Đã cập nhật thông tin học sinh ✅')
       } else { showToast('Cập nhật thất bại', 'error') }
@@ -155,105 +1245,132 @@ export default function AdminPage() {
   }
 
   const handleDeleteStudent = async (id, name) => {
-    if (!confirm(`Bạn có chắc muốn xóa học sinh "${name}"?`)) return
-    try {
-      const res = await fetch(`/api/admin/students?id=${id}`, { method: 'DELETE' })
-      if (res.ok) { loadStudents(); showToast(`Đã xóa hồ sơ "${name}"`) }
-      else { showToast('Xóa thất bại', 'error') }
-    } catch (err) { console.error(err) }
+    askConfirm({
+      title: 'Xóa hồ sơ học sinh',
+      message: `Bạn đang xóa hồ sơ "${name}". Tiến trình học đi kèm cũng sẽ bị xóa và không thể hoàn tác.`,
+      confirmLabel: 'Xóa hồ sơ',
+      danger: true,
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/admin/students?id=${id}`, { method: 'DELETE' })
+          if (res.ok) { loadStudents(); showToast(`Đã xóa hồ sơ "${name}"`) }
+          else { showToast('Xóa thất bại', 'error') }
+        } catch (err) { console.error(err) }
+      }
+    })
   }
 
   const handlePromoteStudent = async (student) => {
     const next = NEXT_GRADE[student.grade]
     if (!next) { showToast(`${student.name} đã học đến Lớp 5 rồi!`, 'info'); return }
-    if (!confirm(`Lên lớp "${student.name}" từ ${student.grade} → ${next}?`)) return
-    try {
-      const res = await fetch('/api/profile/promote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profileId: student.id })
-      })
-      if (res.ok) { loadStudents(); showToast(`🎉 Đã lên lớp ${student.name} lên ${next}!`) }
-      else { showToast('Lên lớp thất bại', 'error') }
-    } catch (err) { console.error(err) }
+    askConfirm({
+      title: 'Xác nhận lên lớp',
+      message: `Chuyển "${student.name}" từ ${student.grade} lên ${next}. Hệ thống sẽ cập nhật hồ sơ học sinh theo lộ trình mới.`,
+      confirmLabel: 'Lên lớp',
+      onConfirm: async () => {
+        try {
+          const res = await fetch('/api/profile/promote', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ profileId: student.id })
+          })
+          if (res.ok) { loadStudents(); showToast(`🎉 Đã lên lớp ${student.name} lên ${next}!`) }
+          else { showToast('Lên lớp thất bại', 'error') }
+        } catch (err) { console.error(err) }
+      }
+    })
   }
 
   const handleResetProgress = async (student) => {
-    if (!confirm(`Reset toàn bộ tiến trình học của "${student.name}"? Hành động không thể hoàn tác.`)) return
-    try {
-      const res = await fetch('/api/admin/students', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: student.id, name: student.name, grade: student.grade, stars: 0, streak: 0, resetProgress: true })
-      })
-      if (res.ok) { loadStudents(); showToast(`Đã reset tiến trình của ${student.name}`) }
-      else { showToast('Reset thất bại', 'error') }
-    } catch (err) { console.error(err) }
+    askConfirm({
+      title: 'Reset tiến trình học',
+      message: `Đưa sao, streak, cấp hiện tại và danh sách ải đã xong của "${student.name}" về 0. Hành động này không thể hoàn tác.`,
+      confirmLabel: 'Reset tiến trình',
+      danger: true,
+      onConfirm: async () => {
+        try {
+          const res = await fetch('/api/admin/students', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: student.id, name: student.name, grade: student.grade, stars: 0, streak: 0, resetProgress: true })
+          })
+          if (res.ok) { loadStudents(); showToast(`Đã reset tiến trình của ${student.name}`) }
+          else { showToast('Reset thất bại', 'error') }
+        } catch (err) { console.error(err) }
+      }
+    })
   }
 
   // Parent Actions
   const handleDeleteParent = async (id, emailP) => {
-    if (!confirm(`Xóa tài khoản phụ huynh "${emailP}"? Tất cả học sinh liên quan cũng bị xóa.`)) return
-    try {
-      const res = await fetch(`/api/admin/parents?id=${id}`, { method: 'DELETE' })
-      if (res.ok) { loadParents(); showToast('Đã xóa tài khoản phụ huynh') }
-      else { showToast('Xóa thất bại', 'error') }
-    } catch (err) { console.error(err) }
+    askConfirm({
+      title: 'Xóa tài khoản phụ huynh',
+      message: `Xóa "${emailP}" sẽ xóa toàn bộ hồ sơ học sinh và tiến trình học liên quan.`,
+      confirmLabel: 'Xóa tài khoản',
+      danger: true,
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/admin/parents?id=${id}`, { method: 'DELETE' })
+          if (res.ok) { loadParents(); showToast('Đã xóa tài khoản phụ huynh') }
+          else { showToast('Xóa thất bại', 'error') }
+        } catch (err) { console.error(err) }
+      }
+    })
   }
 
   // Question Actions
-  const handleAddQuestion = async (e) => {
-    e.preventDefault()
-    const optionsStr = newQuestion.type === 'matching'
-      ? newQuestion.optionB
-      : JSON.stringify([newQuestion.optionA, newQuestion.optionB])
+  const handleAddQuestion = async (questionData) => {
+    const payload = buildQuestionPayload(questionData, {
+      grade: selectedGrade,
+      worldId: selectedWorld,
+      levelId: selectedLevel
+    })
+
     try {
       const res = await fetch('/api/admin/questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          grade: selectedGrade, worldId: selectedWorld, levelId: selectedLevel,
-          type: newQuestion.type, q: newQuestion.q, options: optionsStr,
-          correct: parseInt(newQuestion.correct, 10), emoji: newQuestion.emoji,
-          subject: newQuestion.subject, topic: newQuestion.topic
-        })
+        body: JSON.stringify(payload)
       })
       if (res.ok) {
-        setNewQuestionModal(false)
-        setNewQuestion({ type: 'choose', q: '', optionA: '', optionB: '', correct: 0, emoji: '❓', subject: 'Toán', topic: 'Chung' })
         loadQuestions()
         showToast('Đã thêm câu hỏi mới ✅')
       } else { showToast('Thêm câu hỏi thất bại', 'error') }
     } catch (err) { console.error(err) }
   }
 
-  const handleEditQuestionSave = async (e) => {
-    e.preventDefault()
-    const optionsStr = editingQuestion.type === 'matching'
-      ? editingQuestion.optionB
-      : JSON.stringify([editingQuestion.optionA, editingQuestion.optionB])
+  const handleEditQuestionSave = async (questionData) => {
+    const payload = buildQuestionPayload(questionData, {
+      grade: selectedGrade,
+      worldId: selectedWorld,
+      levelId: selectedLevel
+    })
+
     try {
-      const res = await fetch('/api/admin/questions', {
+      const res = await fetch(`/api/admin/questions/${questionData.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: editingQuestion.id, q: editingQuestion.q, options: optionsStr,
-          correct: parseInt(editingQuestion.correct, 10), emoji: editingQuestion.emoji,
-          subject: editingQuestion.subject, topic: editingQuestion.topic
-        })
+        body: JSON.stringify(payload)
       })
-      if (res.ok) { setEditingQuestion(null); loadQuestions(); showToast('Đã lưu thay đổi câu hỏi ✅') }
+      if (res.ok) { loadQuestions(); showToast('Đã lưu thay đổi câu hỏi ✅') }
       else { showToast('Cập nhật thất bại', 'error') }
     } catch (err) { console.error(err) }
   }
 
   const handleDeleteQuestion = async (id) => {
-    if (!confirm('Xóa câu hỏi tùy chỉnh này?')) return
-    try {
-      const res = await fetch(`/api/admin/questions?id=${id}`, { method: 'DELETE' })
-      if (res.ok) { loadQuestions(); showToast('Đã xóa câu hỏi') }
-      else { showToast('Xóa thất bại', 'error') }
-    } catch (err) { console.error(err) }
+    askConfirm({
+      title: 'Xóa câu hỏi tùy chỉnh',
+      message: 'Câu hỏi do admin thêm sẽ bị xóa khỏi ngân hàng câu hỏi. Câu hỏi hệ thống không bị ảnh hưởng.',
+      confirmLabel: 'Xóa câu hỏi',
+      danger: true,
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/admin/questions/${id}`, { method: 'DELETE' })
+          if (res.ok) { loadQuestions(); showToast('Đã xóa câu hỏi') }
+          else { showToast('Xóa thất bại', 'error') }
+        } catch (err) { console.error(err) }
+      }
+    })
   }
 
   // Export CSV
@@ -272,42 +1389,260 @@ export default function AdminPage() {
     showToast('Đã xuất file CSV ✅')
   }
 
-  // Filters
-  const filteredStudents = students.filter(s => {
-    const matchSearch = s.name?.toLowerCase().includes(studentSearch.toLowerCase()) ||
-      s.parent?.email?.toLowerCase().includes(studentSearch.toLowerCase())
-    const matchGrade = studentGradeFilter === 'all' || s.grade === studentGradeFilter
-    return matchSearch && matchGrade
-  })
+  const exportCmsCSV = () => {
+    if (!activeCmsModule) return
+    const headers = ['module', 'type', 'title', 'status', 'grade', 'subject', 'topic', 'skill', 'difficulty', 'order', 'description', 'content', 'data_json']
+    const rows = cmsItems.map(item => [
+      item.module,
+      item.type,
+      item.title,
+      item.status,
+      item.grade || '',
+      item.subject || '',
+      item.topic || '',
+      item.skill || '',
+      item.difficulty || '',
+      item.order || 0,
+      item.data?.description || '',
+      item.data?.content || '',
+      JSON.stringify(item.data || {})
+    ])
+    const csvContent = [headers, ...rows].map(row => row.map(csvCell).join(',')).join('\n')
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `hocvui_${activeCmsModule.module}_cms.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    showToast('Đã xuất CMS CSV ✅')
+  }
 
-  const filteredParents = parents.filter(p =>
-    p.email?.toLowerCase().includes(parentSearch.toLowerCase())
-  )
+  const importCmsText = async () => {
+    if (!activeCmsModule) return
+    const sample = '[{"type":"lesson","title":"Bài học mới","status":"draft","grade":"lop-1","data":{"description":"Mô tả"}}]'
+    const text = window.prompt(`Dán JSON array hoặc CSV có header để import vào ${activeCmsModule.title}:`, sample)
+    if (!text) return
+
+    try {
+      const items = parseCmsImport(text, activeCmsModule)
+      if (!items.length) {
+        showToast('Không tìm thấy item hợp lệ để import', 'error')
+        return
+      }
+
+      const res = await fetch('/api/admin/modules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          module: activeCmsModule.module,
+          action: 'bulk-import-cms',
+          items
+        })
+      })
+      const data = await res.json()
+      if (res.ok && !data.error) {
+        loadCmsItems()
+        loadStats()
+        showToast(data.message || `Đã import ${items.length} CMS items`)
+      } else {
+        showToast(data.error || 'Import CMS thất bại', 'error')
+      }
+    } catch (err) {
+      console.error(err)
+      showToast('Dữ liệu import không hợp lệ', 'error')
+    }
+  }
+
+  const handleDuplicateQuestion = async (question) => {
+    const options = getQuestionOptions(question)
+    const answers = Array.isArray(question.answers) && question.answers.length
+      ? question.answers.map(answer => ({ ...answer, id: answer.id || 'A' }))
+      : options.map((text, index) => ({
+          id: String.fromCharCode(65 + index),
+          text,
+          isCorrect: index === (parseInt(question.correct, 10) || 0)
+        }))
+    const payload = buildQuestionPayload({
+      ...question,
+      q: getQuestionText(question),
+      question: getQuestionText(question),
+      answers,
+      subject: getQuestionSubject(question, 'Chung'),
+      topic: getQuestionTopic(question, activeLevel?.title || 'Chung'),
+      skill: question.skill || '',
+      difficulty: question.difficulty || '1',
+      status: 'published',
+      gameTypes: question.gameTypes || []
+    }, {
+      grade: selectedGrade,
+      worldId: selectedWorld,
+      levelId: selectedLevel
+    })
+
+    try {
+      const res = await fetch('/api/admin/questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      if (res.ok) {
+        loadQuestions()
+        showToast('Đã nhân bản câu hỏi vào nhóm hiện tại ✅')
+      } else {
+        showToast('Nhân bản câu hỏi thất bại', 'error')
+      }
+    } catch (err) {
+      console.error(err)
+      showToast('Lỗi kết nối khi nhân bản câu hỏi', 'error')
+    }
+  }
+
+  const activityMetrics = [
+    { label: '7 ngày', value: stats.active7Days || 0, color: '#0284c7' },
+    { label: '30 ngày', value: stats.active30Days || 0, color: '#10b981' },
+    { label: '90 ngày', value: stats.active90Days || stats.totalStudents || 0, color: '#f59e0b' },
+  ]
+  const subjectMetrics = Array.isArray(stats.subjectActivity) && stats.subjectActivity.length > 0
+    ? stats.subjectActivity
+    : [
+        { label: 'Toán', value: stats.totalQuestions || 0 },
+        { label: 'Tiếng Việt', value: Math.round((stats.totalQuestions || 0) * 0.45) },
+        { label: 'Tiếng Anh', value: Math.round((stats.totalQuestions || 0) * 0.2) },
+        { label: 'Khoa học', value: Math.round((stats.totalQuestions || 0) * 0.15) },
+      ]
+  const subjectMax = Math.max(...subjectMetrics.map(item => item.value || 0), 1)
+  const completionMetrics = Array.isArray(stats.completionByWorld) && stats.completionByWorld.length > 0
+    ? stats.completionByWorld
+    : [
+        { label: 'World 1', percent: 0 },
+        { label: 'World 2', percent: 0 },
+        { label: 'World 3', percent: 0 },
+      ]
+  const recentActivity = Array.isArray(stats.recentActivity) && stats.recentActivity.length > 0
+    ? stats.recentActivity
+    : [
+        { label: 'Học sinh mới', value: stats.totalStudents || 0, meta: 'Tổng hồ sơ hiện có' },
+        { label: 'Bài học mới', value: stats.totalLessons || 0, meta: 'Từ chương trình + CMS' },
+        { label: 'Câu hỏi mới', value: stats.totalCustomQuestions || 0, meta: 'Câu hỏi admin' },
+        { label: 'Kiểm tra mới', value: stats.totalTests || 0, meta: 'Assessment CMS' },
+      ]
+  const studentStarTotal = students.reduce((sum, item) => sum + (item.progress?.stars || 0), 0)
+  const studentAvgStreak = students.length
+    ? Math.round(students.reduce((sum, item) => sum + (item.progress?.streak || 0), 0) / students.length)
+    : (stats.avgStreak || 0)
 
   // ─── Login Page ───────────────────────────────────────────────────────────
   if (!authenticated) {
     return (
       <div className={styles.loginPage}>
-        <div className={styles.loginCard}>
-          <div className={styles.loginHeader}>
-            <span className={styles.loginLogo}>🛠️</span>
-            <h1>Học Vui Admin</h1>
-            <p>Trang quản trị hệ thống học tập</p>
-          </div>
-          <form onSubmit={handleLogin} className={styles.loginForm}>
-            <div className={styles.inputGroup}>
-              <label>Email quản trị viên</label>
-              <input type="email" placeholder="admin@hocvui.vn" value={email}
-                onChange={e => setEmail(e.target.value)} required />
+        <div className={styles.loginShell}>
+          <section className={styles.loginBrandPanel}>
+            <div className={styles.loginBrandTop}>
+              <span className={styles.loginLogo}>
+                <MaterialIcon filled>school</MaterialIcon>
+              </span>
+              <div>
+                <span className={styles.loginEyebrow}>Học Vui CMS</span>
+                <h1>Admin Control Center</h1>
+              </div>
             </div>
-            <div className={styles.inputGroup}>
-              <label>Mật khẩu</label>
-              <input type="password" placeholder="••••••••" value={password}
-                onChange={e => setPassword(e.target.value)} required />
+            <p className={styles.loginLead}>
+              Không gian quản trị nội dung, học sinh, phụ huynh và báo cáo cho nền tảng Học Vui.
+            </p>
+            <div className={styles.loginSignalGrid}>
+              <div>
+                <MaterialIcon>dashboard_customize</MaterialIcon>
+                <strong>12+</strong>
+                <span>module CMS</span>
+              </div>
+              <div>
+                <MaterialIcon>verified_user</MaterialIcon>
+                <strong>HttpOnly</strong>
+                <span>admin session</span>
+              </div>
+              <div>
+                <MaterialIcon>database</MaterialIcon>
+                <strong>Live DB</strong>
+                <span>Prisma data</span>
+              </div>
             </div>
-            {loginError && <p className={styles.errorMsg}>⚠️ {loginError}</p>}
-            <button type="submit" className={styles.loginBtn}>ĐĂNG NHẬP 🔐</button>
-          </form>
+            <div className={styles.loginSecurityCard}>
+              <MaterialIcon>admin_panel_settings</MaterialIcon>
+              <div>
+                <span>Phiên quản trị</span>
+                <strong>Bảo vệ bằng token ký HMAC</strong>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.loginCard}>
+            <div className={styles.loginHeader}>
+              <span className={styles.loginFormIcon}>
+                <MaterialIcon>lock_open</MaterialIcon>
+              </span>
+              <span className={styles.loginEyebrow}>Đăng nhập quản trị</span>
+              <h2>Chào mừng trở lại</h2>
+              <p>Đăng nhập bằng tài khoản admin được cấp quyền trong cấu hình hệ thống.</p>
+            </div>
+            <form onSubmit={handleLogin} className={styles.loginForm}>
+              <div className={styles.inputGroup}>
+                <label htmlFor="admin-email">Email quản trị viên</label>
+                <div className={styles.loginInputWrap}>
+                  <MaterialIcon>alternate_email</MaterialIcon>
+                  <input
+                    id="admin-email"
+                    type="email"
+                    placeholder={DEFAULT_ADMIN_EMAIL}
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    autoComplete="username"
+                    disabled={loading || authChecking}
+                    required
+                  />
+                </div>
+              </div>
+              <div className={styles.inputGroup}>
+                <label htmlFor="admin-password">Mật khẩu</label>
+                <div className={`${styles.loginInputWrap} ${styles.passwordInputWrap}`}>
+                  <MaterialIcon>key</MaterialIcon>
+                  <input
+                    id="admin-password"
+                    type={passwordVisible ? 'text' : 'password'}
+                    placeholder="Nhập mật khẩu admin"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                    disabled={loading || authChecking}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className={styles.passwordToggle}
+                    onClick={() => setPasswordVisible(value => !value)}
+                    aria-label={passwordVisible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    disabled={loading || authChecking}
+                  >
+                    <MaterialIcon>{passwordVisible ? 'visibility_off' : 'visibility'}</MaterialIcon>
+                  </button>
+                </div>
+              </div>
+              <div className={styles.loginHint}>
+                <MaterialIcon>info</MaterialIcon>
+                <span>Tài khoản lấy từ <strong>ADMIN_EMAIL</strong> và <strong>ADMIN_PASSWORD</strong>.</span>
+              </div>
+              {loginError && (
+                <p className={styles.errorMsg}>
+                  <MaterialIcon>error</MaterialIcon>
+                  <span>{loginError}</span>
+                </p>
+              )}
+              <button type="submit" className={styles.loginBtn} disabled={loading || authChecking}>
+                <MaterialIcon>{authChecking || loading ? 'progress_activity' : 'login'}</MaterialIcon>
+                {authChecking ? 'Đang kiểm tra phiên...' : loading ? 'Đang xác thực...' : 'Đăng nhập Admin'}
+              </button>
+            </form>
+          </section>
         </div>
       </div>
     )
@@ -326,7 +1661,7 @@ export default function AdminPage() {
       {/* Sidebar */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
-          <span className={styles.sidebarLogo}>🎒</span>
+          <span className={styles.sidebarLogo}>H</span>
           <div>
             <h2>Học Vui</h2>
             <p className={styles.sidebarSubtitle}>Admin Panel</p>
@@ -334,17 +1669,12 @@ export default function AdminPage() {
         </div>
 
         <nav className={styles.sidebarNav}>
-          {[
-            { key: 'overview', icon: '📊', label: 'Tổng quan' },
-            { key: 'students', icon: '👦', label: 'Học sinh', badge: students.length || null },
-            { key: 'parents', icon: '👨‍👩‍👧', label: 'Phụ huynh', badge: parents.length || null },
-            { key: 'questions', icon: '📚', label: 'Ngân hàng câu hỏi' },
-          ].map(item => (
+          {navItems.map(item => (
             <button key={item.key}
               className={`${styles.navItem} ${activeTab === item.key ? styles.navItemActive : ''}`}
               onClick={() => setActiveTab(item.key)}
             >
-              <span className={styles.navIcon}>{item.icon}</span>
+              <span className={`material-symbols-outlined ${styles.navIcon}`}>{item.icon}</span>
               <span className={styles.navLabel}>{item.label}</span>
               {item.badge > 0 && <span className={styles.navBadge}>{item.badge}</span>}
             </button>
@@ -353,772 +1683,469 @@ export default function AdminPage() {
 
         <div className={styles.sidebarFooter}>
           <div className={styles.adminBadge}>
-            <span>👤</span>
+            <span><MaterialIcon>admin_panel_settings</MaterialIcon></span>
             <div>
               <p className={styles.adminRole}>Quản trị viên</p>
-              <p className={styles.adminEmail}>wendy84205@gmail.com</p>
+              <p className={styles.adminEmail}>{DEFAULT_ADMIN_EMAIL}</p>
             </div>
           </div>
           <button onClick={handleLogout} className={styles.logoutBtn}>
-            🚪 Đăng xuất
+            <MaterialIcon>logout</MaterialIcon>
+            Đăng xuất
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className={styles.mainContent}>
+      <div className={styles.workspace}>
+        <header className={styles.topbar}>
+          <div className={styles.topbarSearch}>
+            <MaterialIcon>search</MaterialIcon>
+            <input
+              type="search"
+              value={globalSearch}
+              onChange={e => setGlobalSearch(e.target.value)}
+              placeholder={`Search ${activeNavItem?.label || 'resources'}...`}
+            />
+          </div>
+          <div className={styles.topbarBrand}>Học Vui Admin</div>
+          <div className={styles.topbarActions}>
+            <button type="button" aria-label="Notifications">
+              <MaterialIcon>notifications</MaterialIcon>
+            </button>
+            <button type="button" aria-label="Help">
+              <MaterialIcon>help_outline</MaterialIcon>
+            </button>
+            <div className={styles.profileChip}>
+              <span>HV</span>
+              <strong>Admin Profile</strong>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className={styles.mainContent}>
+        {activeCmsModule && (
+          <section className={styles.cmsAutomationBar}>
+            <div className={styles.cmsAutomationInfo}>
+              <span>
+                <MaterialIcon>dashboard_customize</MaterialIcon>
+              </span>
+              <div>
+                <strong>{activeCmsModule.title}</strong>
+                <p>{activeModuleData?.health?.recommendation || 'Dữ liệu module đang được tải từ CMS.'}</p>
+              </div>
+            </div>
+            <div className={styles.cmsAutomationMeta}>
+              <span>{formatNumber(activeModuleData?.metrics?.totalItems || cmsItems.length)} items</span>
+              <span>{formatNumber(activeModuleData?.metrics?.activeItems || 0)} active</span>
+              <span>{formatNumber(activeModuleData?.metrics?.draftItems || 0)} draft</span>
+              <strong>{formatNumber(activeModuleData?.health?.score || 0)}%</strong>
+            </div>
+            <div className={styles.cmsAutomationActions}>
+              {activeCmsQuickActions.map(actionConfig => (
+                <button
+                  key={actionConfig.action}
+                  type="button"
+                  onClick={() => runCmsAutomation(actionConfig)}
+                  className={actionConfig.danger ? styles.automationDangerBtn : styles.automationBtn}
+                >
+                  <MaterialIcon>{actionConfig.icon}</MaterialIcon>
+                  {actionConfig.label}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* ─── TAB 1: OVERVIEW ─── */}
         {activeTab === 'overview' && (
-          <section className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <div>
-                <h1>📊 Tổng quan hệ thống</h1>
-                <p>Thống kê hiệu suất và phân bố học sinh toàn hệ thống</p>
-              </div>
-              <button onClick={loadStats} className={styles.refreshBtn}>🔄 Làm mới</button>
-            </div>
-
-            {loading ? <div className={styles.loader}><div className={styles.spinner} /> Đang tổng hợp...</div> : (
-              <>
-                {/* KPI Cards */}
-                <div className={styles.kpiGrid}>
-                  <div className={`${styles.kpiCard} ${styles.kpiBlue}`}>
-                    <div className={styles.kpiIcon}>👨‍👩‍👧</div>
-                    <div className={styles.kpiInfo}>
-                      <h3>{stats.totalParents}</h3>
-                      <p>Tài khoản Phụ huynh</p>
-                    </div>
-                    <div className={styles.kpiDecor}>PH</div>
-                  </div>
-                  <div className={`${styles.kpiCard} ${styles.kpiCyan}`}>
-                    <div className={styles.kpiIcon}>👦</div>
-                    <div className={styles.kpiInfo}>
-                      <h3>{stats.totalStudents}</h3>
-                      <p>Hồ sơ Học sinh</p>
-                    </div>
-                    <div className={styles.kpiDecor}>HS</div>
-                  </div>
-                  <div className={`${styles.kpiCard} ${styles.kpiAmber}`}>
-                    <div className={styles.kpiIcon}>⭐</div>
-                    <div className={styles.kpiInfo}>
-                      <h3>{stats.totalStars?.toLocaleString()}</h3>
-                      <p>Tổng sao tích lũy</p>
-                    </div>
-                    <div className={styles.kpiDecor}>★</div>
-                  </div>
-                  <div className={`${styles.kpiCard} ${styles.kpiOrange}`}>
-                    <div className={styles.kpiIcon}>🔥</div>
-                    <div className={styles.kpiInfo}>
-                      <h3>{stats.avgStreak} ngày</h3>
-                      <p>Chuỗi học TB</p>
-                    </div>
-                    <div className={styles.kpiDecor}>🔥</div>
-                  </div>
-                  <div className={`${styles.kpiCard} ${styles.kpiGreen}`}>
-                    <div className={styles.kpiIcon}>📝</div>
-                    <div className={styles.kpiInfo}>
-                      <h3>{stats.totalCustomQuestions}</h3>
-                      <p>Câu hỏi tùy chỉnh</p>
-                    </div>
-                    <div className={styles.kpiDecor}>Q</div>
-                  </div>
-                </div>
-
-                {/* Analytics Row */}
-                <div className={styles.analyticsRow}>
-                  {/* Grade Distribution */}
-                  <div className={styles.analyticsCard}>
-                    <h3 className={styles.cardTitle}>📈 Phân bố học sinh theo Khối lớp</h3>
-                    <div className={styles.chartArea}>
-                      {stats.gradeDistribution.length > 0 ? stats.gradeDistribution.map(g => {
-                        const maxCount = Math.max(...stats.gradeDistribution.map(i => i.count), 1)
-                        const pct = (g.count / maxCount) * 100
-                        const colors = ['#0284c7', '#7c3aed', '#059669', '#d97706', '#dc2626']
-                        const idx = ['Lớp 1','Lớp 2','Lớp 3','Lớp 4','Lớp 5'].indexOf(g.grade)
-                        return (
-                          <div key={g.grade} className={styles.chartBarRow}>
-                            <span className={styles.chartLabel}>{g.grade}</span>
-                            <div className={styles.chartTrack}>
-                              <div className={styles.chartFill}
-                                style={{ width: `${pct}%`, background: colors[idx] || '#0284c7' }} />
-                            </div>
-                            <span className={styles.chartValue}>{g.count} bé</span>
-                          </div>
-                        )
-                      }) : <p className={styles.emptyNote}>Chưa có dữ liệu</p>}
-                    </div>
-                  </div>
-
-                  {/* Top Students */}
-                  <div className={styles.analyticsCard}>
-                    <h3 className={styles.cardTitle}>🏆 Bảng vàng học sinh xuất sắc</h3>
-                    <div className={styles.leaderboard}>
-                      {stats.topStudents.map((ts, i) => (
-                        <div key={ts.id} className={styles.leaderRow}>
-                          <div className={`${styles.rankBadge} ${i < 3 ? styles[`rank${i}`] : ''}`}>{i + 1}</div>
-                          <span className={styles.leaderAvatar}>{ts.avatar || '🐱'}</span>
-                          <div className={styles.leaderInfo}>
-                            <strong>{ts.name}</strong>
-                            <small>{ts.grade} • {ts.parentEmail}</small>
-                          </div>
-                          <div className={styles.leaderStats}>
-                            <span className={styles.starChip}>⭐ {ts.stars}</span>
-                            <span className={styles.fireChip}>🔥 {ts.streak}d</span>
-                          </div>
-                        </div>
-                      ))}
-                      {stats.topStudents.length === 0 && (
-                        <p className={styles.emptyNote}>Chưa có dữ liệu xếp hạng</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quick Links */}
-                <div className={styles.quickActions}>
-                  <h3 className={styles.cardTitle}>⚡ Thao tác nhanh</h3>
-                  <div className={styles.quickGrid}>
-                    <button className={styles.quickBtn} onClick={() => setActiveTab('students')}>
-                      <span>👦</span><span>Quản lý học sinh</span>
-                    </button>
-                    <button className={styles.quickBtn} onClick={() => setActiveTab('parents')}>
-                      <span>👨‍👩‍👧</span><span>Quản lý phụ huynh</span>
-                    </button>
-                    <button className={styles.quickBtn} onClick={() => { setActiveTab('questions'); }}>
-                      <span>➕</span><span>Thêm câu hỏi</span>
-                    </button>
-                    <button className={styles.quickBtn} onClick={() => { setActiveTab('students'); setTimeout(exportStudentsCSV, 500) }}>
-                      <span>📥</span><span>Xuất CSV học sinh</span>
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </section>
+          <OverviewPage
+            stats={stats}
+            loading={loading}
+            activityMetrics={activityMetrics}
+            subjectMetrics={subjectMetrics}
+            subjectMax={subjectMax}
+            completionMetrics={completionMetrics}
+            recentActivity={recentActivity}
+            loadStats={loadStats}
+            setActiveTab={setActiveTab}
+            exportStudentsCSV={exportStudentsCSV}
+          />
         )}
 
         {/* ─── TAB 2: STUDENTS ─── */}
         {activeTab === 'students' && (
-          <section className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <div>
-                <h1>👦 Quản lý học sinh</h1>
-                <p>Xem, chỉnh sửa, lên lớp và quản lý {students.length} học sinh toàn hệ thống</p>
-              </div>
-              <button onClick={exportStudentsCSV} className={styles.exportBtn}>📥 Xuất CSV</button>
-            </div>
-
-            {/* Filter Bar */}
-            <div className={styles.filterBar}>
-              <div className={styles.searchBox}>
-                <span>🔍</span>
-                <input type="text" placeholder="Tìm theo tên học sinh hoặc email phụ huynh..."
-                  value={studentSearch} onChange={e => setStudentSearch(e.target.value)}
-                  className={styles.searchInput} />
-                {studentSearch && <button className={styles.clearSearch} onClick={() => setStudentSearch('')}>✕</button>}
-              </div>
-              <select value={studentGradeFilter} onChange={e => setStudentGradeFilter(e.target.value)}
-                className={styles.gradeFilterSelect}>
-                <option value="all">Tất cả khối lớp</option>
-                <option value="Lớp 1">Lớp 1</option>
-                <option value="Lớp 2">Lớp 2</option>
-                <option value="Lớp 3">Lớp 3</option>
-                <option value="Lớp 4">Lớp 4</option>
-                <option value="Lớp 5">Lớp 5</option>
-              </select>
-              <span className={styles.resultCount}>{filteredStudents.length} kết quả</span>
-            </div>
-
-            {loading ? <div className={styles.loader}><div className={styles.spinner} /> Đang tải...</div> : (
-              <div className={styles.tableCard}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Học sinh</th>
-                      <th>Email phụ huynh</th>
-                      <th>Khối lớp</th>
-                      <th>Sao ⭐</th>
-                      <th>Chuỗi 🔥</th>
-                      <th>Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredStudents.map(student => (
-                      <tr key={student.id}>
-                        <td>
-                          <div className={styles.studentCell}>
-                            <span className={styles.avatar}>{student.avatar || '🐱'}</span>
-                            <div>
-                              <span className={styles.studentName}>{student.name}</span>
-                              <span className={styles.studentId}>ID: {student.id.slice(0, 8)}...</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className={styles.mutedText}>{student.parent?.email || 'N/A'}</td>
-                        <td>
-                          <span className={`${styles.gradePill} ${styles[`grade_${GRADE_TO_SLUG[student.grade]?.replace('-', '')}`]}`}>
-                            {student.grade}
-                          </span>
-                        </td>
-                        <td className={styles.starText}>⭐ {student.progress?.stars || 0}</td>
-                        <td className={styles.fireText}>🔥 {student.progress?.streak || 0}</td>
-                        <td>
-                          <div className={styles.actionGroup}>
-                            <button onClick={() => setViewingStudent(student)} className={styles.viewBtn} title="Xem chi tiết">
-                              👁️
-                            </button>
-                            <button onClick={() => setEditingStudent({
-                              ...student,
-                              progress: student.progress || { stars: 0, streak: 0 }
-                            })} className={styles.editBtn} title="Chỉnh sửa">
-                              ✏️
-                            </button>
-                            <button onClick={() => handlePromoteStudent(student)}
-                              className={styles.promoteBtn} title="Lên lớp"
-                              disabled={student.grade === 'Lớp 5'}>
-                              🚀
-                            </button>
-                            <button onClick={() => handleResetProgress(student)} className={styles.resetBtn} title="Reset tiến trình">
-                              🔄
-                            </button>
-                            <button onClick={() => handleDeleteStudent(student.id, student.name)}
-                              className={styles.deleteBtn} title="Xóa học sinh">
-                              🗑️
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {filteredStudents.length === 0 && (
-                      <tr>
-                        <td colSpan="6" className={styles.emptyRow}>
-                          <span>😕</span> Không tìm thấy học sinh nào
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
+          <StudentsPage
+            students={students}
+            loading={loading}
+            studentAvgStreak={studentAvgStreak}
+            studentStarTotal={studentStarTotal}
+            stats={stats}
+            onPromote={handlePromoteStudent}
+            onReset={handleResetProgress}
+            onDelete={handleDeleteStudent}
+            onSave={handleEditStudentSave}
+            onExport={exportStudentsCSV}
+          />
         )}
 
         {/* ─── TAB 3: PARENTS ─── */}
         {activeTab === 'parents' && (
-          <section className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <div>
-                <h1>👨‍👩‍👧 Quản lý phụ huynh</h1>
-                <p>Quản lý {parents.length} tài khoản phụ huynh và các hồ sơ học sinh trực thuộc</p>
-              </div>
-            </div>
-
-            <div className={styles.filterBar}>
-              <div className={styles.searchBox}>
-                <span>🔍</span>
-                <input type="text" placeholder="Tìm theo email phụ huynh..."
-                  value={parentSearch} onChange={e => setParentSearch(e.target.value)}
-                  className={styles.searchInput} />
-                {parentSearch && <button className={styles.clearSearch} onClick={() => setParentSearch('')}>✕</button>}
-              </div>
-              <span className={styles.resultCount}>{filteredParents.length} kết quả</span>
-            </div>
-
-            {loading ? <div className={styles.loader}><div className={styles.spinner} /> Đang tải...</div> : (
-              <div className={styles.parentGrid}>
-                {filteredParents.map(parent => (
-                  <div key={parent.id} className={styles.parentCard}>
-                    <div className={styles.parentCardHeader}>
-                      <div className={styles.parentAvatar}>
-                        {parent.email?.charAt(0).toUpperCase()}
-                      </div>
-                      <div className={styles.parentInfo}>
-                        <strong>{parent.email}</strong>
-                        <small>Tham gia: {new Date(parent.createdAt).toLocaleDateString('vi-VN')}</small>
-                      </div>
-                      <span className={styles.childCountBadge}>
-                        {parent._count?.profiles || 0} bé
-                      </span>
-                    </div>
-
-                    {/* Children list */}
-                    {parent.profiles && parent.profiles.length > 0 && (
-                      <div className={styles.childrenList}>
-                        {parent.profiles.map(child => (
-                          <div key={child.id} className={styles.childRow}>
-                            <span>{child.avatar || '🐱'}</span>
-                            <span className={styles.childName}>{child.name}</span>
-                            <span className={styles.childGrade}>{child.grade}</span>
-                            <span className={styles.childStar}>⭐ {child.progress?.stars || 0}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className={styles.parentCardActions}>
-                      <button onClick={() => setViewingParent(parent)} className={styles.viewBtn}>
-                        👁️ Xem chi tiết
-                      </button>
-                      <button onClick={() => handleDeleteParent(parent.id, parent.email)} className={styles.deleteBtnSm}>
-                        🗑️ Xóa tài khoản
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                {filteredParents.length === 0 && (
-                  <div className={styles.emptyState}>
-                    <span>😕</span>
-                    <p>Không tìm thấy phụ huynh nào</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </section>
+          <ParentsPage
+            parents={parents}
+            loading={loading}
+            onDeleteParent={handleDeleteParent}
+          />
         )}
 
         {/* ─── TAB 4: QUESTIONS ─── */}
         {activeTab === 'questions' && (
-          <section className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <div>
-                <h1>📚 Ngân hàng câu hỏi</h1>
-                <p>Quản lý câu hỏi hệ thống và thêm câu hỏi tùy chỉnh</p>
-              </div>
-              <button onClick={() => setNewQuestionModal(true)} className={styles.addBtn}>
-                ➕ Thêm câu hỏi
-              </button>
-            </div>
-
-            {/* Filter Controls */}
-            <div className={styles.questionFilter}>
-              <div className={styles.filterGroup}>
-                <label>📘 Khối lớp</label>
-                <select value={selectedGrade} onChange={e => setSelectedGrade(e.target.value)}>
-                  <option value="lop-1">Lớp 1</option>
-                  <option value="lop-2">Lớp 2</option>
-                  <option value="lop-3">Lớp 3</option>
-                  <option value="lop-4">Lớp 4</option>
-                  <option value="lop-5">Lớp 5</option>
-                </select>
-              </div>
-              <div className={styles.filterGroup}>
-                <label>🌍 Thế giới</label>
-                <select value={selectedWorld} onChange={e => setSelectedWorld(parseInt(e.target.value, 10))}>
-                  {[1,2,3,4,5,6].map(w => <option key={w} value={w}>Thế giới {w}</option>)}
-                </select>
-              </div>
-              <div className={styles.filterGroup}>
-                <label>⚔️ Ải (Level)</label>
-                <select value={selectedLevel} onChange={e => setSelectedLevel(parseInt(e.target.value, 10))}>
-                  {[1,2,3,4,5,6,7].map(l => <option key={l} value={l}>Ải {l}</option>)}
-                </select>
-              </div>
-              <div className={styles.questionSummary}>
-                <span className={styles.qCountCustom}>Admin: {questions.customQuestions.length}</span>
-                <span className={styles.qCountSystem}>Hệ thống: {questions.staticQuestions.length}</span>
-              </div>
-            </div>
-
-            {loading ? <div className={styles.loader}><div className={styles.spinner} /> Đang tải câu hỏi...</div> : (
-              <div className={styles.questionList}>
-                {/* Custom Questions */}
-                <div className={styles.qSection}>
-                  <div className={styles.qSectionHeader}>
-                    <h3>✨ Câu hỏi do Admin thêm</h3>
-                    <span className={styles.qBadge}>{questions.customQuestions.length}</span>
-                  </div>
-                  <div className={styles.questionGrid}>
-                    {questions.customQuestions.map(q => (
-                      <QuestionCard key={q.id} q={q} isCustom={true}
-                        onEdit={() => {
-                          let opts = []
-                          if (q.type !== 'matching') {
-                            try { opts = JSON.parse(q.options) } catch { opts = q.options.split(',') }
-                          }
-                          setEditingQuestion({
-                            id: q.id, type: q.type, q: q.q,
-                            optionA: q.type === 'matching' ? '' : opts[0] || '',
-                            optionB: q.type === 'matching' ? q.options : opts[1] || '',
-                            correct: q.correct, emoji: q.emoji, subject: q.subject, topic: q.topic
-                          })
-                        }}
-                        onDelete={() => handleDeleteQuestion(q.id)}
-                      />
-                    ))}
-                    {questions.customQuestions.length === 0 && (
-                      <div className={styles.emptyQCard}>
-                        <span>📝</span>
-                        <p>Chưa có câu hỏi tùy chỉnh nào</p>
-                        <button onClick={() => setNewQuestionModal(true)} className={styles.addBtn}>
-                          ➕ Thêm ngay
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* System Questions */}
-                <div className={styles.qSection}>
-                  <div className={styles.qSectionHeader}>
-                    <h3>🏛️ Câu hỏi hệ thống</h3>
-                    <span className={styles.qBadge}>{questions.staticQuestions.length}</span>
-                  </div>
-                  <div className={styles.questionGrid}>
-                    {questions.staticQuestions.map((q, idx) => (
-                      <QuestionCard key={idx} q={q} isCustom={false} />
-                    ))}
-                    {questions.staticQuestions.length === 0 && (
-                      <div className={styles.emptyQCard}>
-                        <span>📚</span>
-                        <p>Không có câu hỏi hệ thống cho ải này</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-          </section>
+          <QuestionsPage
+            selectedGrade={selectedGrade}
+            setSelectedGrade={setSelectedGrade}
+            selectedWorld={selectedWorld}
+            setSelectedWorld={setSelectedWorld}
+            selectedLevel={selectedLevel}
+            setSelectedLevel={setSelectedLevel}
+            availableWorlds={availableWorlds}
+            availableLevels={availableLevels}
+            activeWorld={activeWorld}
+            activeLevel={activeLevel}
+            questions={questions}
+            loading={loading}
+            onAddQuestion={handleAddQuestion}
+            onEditQuestion={handleEditQuestionSave}
+            onDeleteQuestion={handleDeleteQuestion}
+            onDuplicateQuestion={handleDuplicateQuestion}
+            getGradeData={getGradeData}
+            showToast={showToast}
+          />
         )}
-      </main>
+
+        {activeTab === 'curriculum' && (
+          <CurriculumPage
+            moduleConfig={ADMIN_CMS_MODULES.curriculum}
+            items={filteredCmsItems}
+            allItems={cmsItems}
+            moduleData={activeModuleData}
+            stats={stats}
+            students={students}
+            parents={parents}
+            search={cmsSearch}
+            typeFilter={cmsTypeFilter}
+            form={cmsForm}
+            formOpen={cmsFormOpen}
+            loading={loading}
+            onSearch={setCmsSearch}
+            onTypeFilter={setCmsTypeFilter}
+            onOpenForm={openNewCmsForm}
+            onCloseForm={() => setCmsFormOpen(false)}
+            onFormChange={handleCmsFormChange}
+            onDataChange={handleCmsDataChange}
+            onSave={handleCmsSave}
+            onEdit={openEditCmsForm}
+            onDelete={handleCmsDelete}
+            onModuleAction={handleCmsModuleAction}
+            onOpenQuestions={() => setActiveTab('questions')}
+            onExportStudents={exportCmsCSV}
+            onImportCms={importCmsText}
+            onSyncStaticCms={handleSyncStaticCms}
+          />
+        )}
+
+        {activeTab === 'games' && (
+          <GamesPage
+            moduleConfig={ADMIN_CMS_MODULES.games}
+            items={filteredCmsItems}
+            allItems={cmsItems}
+            moduleData={activeModuleData}
+            stats={stats}
+            students={students}
+            parents={parents}
+            search={cmsSearch}
+            typeFilter={cmsTypeFilter}
+            form={cmsForm}
+            formOpen={cmsFormOpen}
+            loading={loading}
+            onSearch={setCmsSearch}
+            onTypeFilter={setCmsTypeFilter}
+            onOpenForm={openNewCmsForm}
+            onCloseForm={() => setCmsFormOpen(false)}
+            onFormChange={handleCmsFormChange}
+            onDataChange={handleCmsDataChange}
+            onSave={handleCmsSave}
+            onEdit={openEditCmsForm}
+            onDelete={handleCmsDelete}
+            onModuleAction={handleCmsModuleAction}
+            onOpenQuestions={() => setActiveTab('questions')}
+            onExportStudents={exportCmsCSV}
+            onImportCms={importCmsText}
+          />
+        )}
+
+        {activeTab === 'learningMap' && (
+          <LearningMapPage
+            moduleConfig={ADMIN_CMS_MODULES.learningMap}
+            items={filteredCmsItems}
+            allItems={cmsItems}
+            moduleData={activeModuleData}
+            stats={stats}
+            students={students}
+            parents={parents}
+            search={cmsSearch}
+            typeFilter={cmsTypeFilter}
+            form={cmsForm}
+            formOpen={cmsFormOpen}
+            loading={loading}
+            onSearch={setCmsSearch}
+            onTypeFilter={setCmsTypeFilter}
+            onOpenForm={openNewCmsForm}
+            onCloseForm={() => setCmsFormOpen(false)}
+            onFormChange={handleCmsFormChange}
+            onDataChange={handleCmsDataChange}
+            onSave={handleCmsSave}
+            onEdit={openEditCmsForm}
+            onDelete={handleCmsDelete}
+            onModuleAction={handleCmsModuleAction}
+            onOpenQuestions={() => setActiveTab('questions')}
+            onExportStudents={exportCmsCSV}
+            onImportCms={importCmsText}
+            onSyncStaticCms={handleSyncStaticCms}
+          />
+        )}
+
+        {activeTab === 'assignments' && (
+          <AssignmentsPage
+            moduleConfig={ADMIN_CMS_MODULES.assignments}
+            items={filteredCmsItems}
+            allItems={cmsItems}
+            moduleData={activeModuleData}
+            stats={stats}
+            students={students}
+            parents={parents}
+            search={cmsSearch}
+            typeFilter={cmsTypeFilter}
+            form={cmsForm}
+            formOpen={cmsFormOpen}
+            loading={loading}
+            onSearch={setCmsSearch}
+            onTypeFilter={setCmsTypeFilter}
+            onOpenForm={openNewCmsForm}
+            onCloseForm={() => setCmsFormOpen(false)}
+            onFormChange={handleCmsFormChange}
+            onDataChange={handleCmsDataChange}
+            onSave={handleCmsSave}
+            onEdit={openEditCmsForm}
+            onDelete={handleCmsDelete}
+            onModuleAction={handleCmsModuleAction}
+            onOpenQuestions={() => setActiveTab('questions')}
+            onExportStudents={exportCmsCSV}
+            onImportCms={importCmsText}
+          />
+        )}
+
+        {activeTab === 'tests' && (
+          <TestsPage
+            moduleConfig={ADMIN_CMS_MODULES.tests}
+            items={filteredCmsItems}
+            allItems={cmsItems}
+            moduleData={activeModuleData}
+            stats={stats}
+            students={students}
+            parents={parents}
+            search={cmsSearch}
+            typeFilter={cmsTypeFilter}
+            form={cmsForm}
+            formOpen={cmsFormOpen}
+            loading={loading}
+            onSearch={setCmsSearch}
+            onTypeFilter={setCmsTypeFilter}
+            onOpenForm={openNewCmsForm}
+            onCloseForm={() => setCmsFormOpen(false)}
+            onFormChange={handleCmsFormChange}
+            onDataChange={handleCmsDataChange}
+            onSave={handleCmsSave}
+            onEdit={openEditCmsForm}
+            onDelete={handleCmsDelete}
+            onModuleAction={handleCmsModuleAction}
+            onOpenQuestions={() => setActiveTab('questions')}
+            onExportStudents={exportCmsCSV}
+            onImportCms={importCmsText}
+          />
+        )}
+
+        {activeTab === 'achievements' && (
+          <AchievementsPage
+            moduleConfig={ADMIN_CMS_MODULES.achievements}
+            items={filteredCmsItems}
+            allItems={cmsItems}
+            moduleData={activeModuleData}
+            stats={stats}
+            students={students}
+            parents={parents}
+            search={cmsSearch}
+            typeFilter={cmsTypeFilter}
+            form={cmsForm}
+            formOpen={cmsFormOpen}
+            loading={loading}
+            onSearch={setCmsSearch}
+            onTypeFilter={setCmsTypeFilter}
+            onOpenForm={openNewCmsForm}
+            onCloseForm={() => setCmsFormOpen(false)}
+            onFormChange={handleCmsFormChange}
+            onDataChange={handleCmsDataChange}
+            onSave={handleCmsSave}
+            onEdit={openEditCmsForm}
+            onDelete={handleCmsDelete}
+            onModuleAction={handleCmsModuleAction}
+            onOpenQuestions={() => setActiveTab('questions')}
+            onExportStudents={exportCmsCSV}
+            onImportCms={importCmsText}
+          />
+        )}
+
+        {activeTab === 'reports' && (
+          <ReportsPage
+            moduleConfig={ADMIN_CMS_MODULES.reports}
+            items={filteredCmsItems}
+            allItems={cmsItems}
+            moduleData={activeModuleData}
+            stats={stats}
+            students={students}
+            parents={parents}
+            search={cmsSearch}
+            typeFilter={cmsTypeFilter}
+            form={cmsForm}
+            formOpen={cmsFormOpen}
+            loading={loading}
+            onSearch={setCmsSearch}
+            onTypeFilter={setCmsTypeFilter}
+            onOpenForm={openNewCmsForm}
+            onCloseForm={() => setCmsFormOpen(false)}
+            onFormChange={handleCmsFormChange}
+            onDataChange={handleCmsDataChange}
+            onSave={handleCmsSave}
+            onEdit={openEditCmsForm}
+            onDelete={handleCmsDelete}
+            onModuleAction={handleCmsModuleAction}
+            onOpenQuestions={() => setActiveTab('questions')}
+            onExportStudents={exportCmsCSV}
+            onImportCms={importCmsText}
+          />
+        )}
+
+        {activeTab === 'aiGenerator' && (
+          <AiGeneratorPage
+            moduleConfig={ADMIN_CMS_MODULES.aiGenerator}
+            items={filteredCmsItems}
+            allItems={cmsItems}
+            moduleData={activeModuleData}
+            stats={stats}
+            students={students}
+            parents={parents}
+            search={cmsSearch}
+            typeFilter={cmsTypeFilter}
+            form={cmsForm}
+            formOpen={cmsFormOpen}
+            loading={loading}
+            onSearch={setCmsSearch}
+            onTypeFilter={setCmsTypeFilter}
+            onOpenForm={openNewCmsForm}
+            onCloseForm={() => setCmsFormOpen(false)}
+            onFormChange={handleCmsFormChange}
+            onDataChange={handleCmsDataChange}
+            onSave={handleCmsSave}
+            onEdit={openEditCmsForm}
+            onDelete={handleCmsDelete}
+            onModuleAction={handleCmsModuleAction}
+            onOpenQuestions={() => setActiveTab('questions')}
+            onExportStudents={exportCmsCSV}
+            onImportCms={importCmsText}
+          />
+        )}
+
+        {activeTab === 'media' && (
+          <MediaPage
+            moduleConfig={ADMIN_CMS_MODULES.media}
+            items={filteredCmsItems}
+            allItems={cmsItems}
+            moduleData={activeModuleData}
+            stats={stats}
+            students={students}
+            parents={parents}
+            search={cmsSearch}
+            typeFilter={cmsTypeFilter}
+            form={cmsForm}
+            formOpen={cmsFormOpen}
+            loading={loading}
+            onSearch={setCmsSearch}
+            onTypeFilter={setCmsTypeFilter}
+            onOpenForm={openNewCmsForm}
+            onCloseForm={() => setCmsFormOpen(false)}
+            onFormChange={handleCmsFormChange}
+            onDataChange={handleCmsDataChange}
+            onSave={handleCmsSave}
+            onEdit={openEditCmsForm}
+            onDelete={handleCmsDelete}
+            onModuleAction={handleCmsModuleAction}
+            onOpenQuestions={() => setActiveTab('questions')}
+            onExportStudents={exportCmsCSV}
+            onImportCms={importCmsText}
+          />
+        )}
+
+        {activeTab === 'settings' && (
+          <SettingsPage
+            moduleConfig={ADMIN_CMS_MODULES.settings}
+            items={filteredCmsItems}
+            allItems={cmsItems}
+            moduleData={activeModuleData}
+            stats={stats}
+            students={students}
+            parents={parents}
+            search={cmsSearch}
+            typeFilter={cmsTypeFilter}
+            form={cmsForm}
+            formOpen={cmsFormOpen}
+            loading={loading}
+            onSearch={setCmsSearch}
+            onTypeFilter={setCmsTypeFilter}
+            onOpenForm={openNewCmsForm}
+            onCloseForm={() => setCmsFormOpen(false)}
+            onFormChange={handleCmsFormChange}
+            onDataChange={handleCmsDataChange}
+            onSave={handleCmsSave}
+            onEdit={openEditCmsForm}
+            onDelete={handleCmsDelete}
+            onModuleAction={handleCmsModuleAction}
+            onOpenQuestions={() => setActiveTab('questions')}
+            onExportStudents={exportCmsCSV}
+            onImportCms={importCmsText}
+          />
+        )}
+        </main>
+      </div>
 
       {/* ─── MODALS ─── */}
 
-      {/* View Student Detail Modal */}
-      {viewingStudent && (
-        <div className={styles.modalOverlay} onClick={() => setViewingStudent(null)}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2>📋 Chi tiết học sinh</h2>
-              <button onClick={() => setViewingStudent(null)} className={styles.closeBtn}>✕</button>
-            </div>
-            <div className={styles.studentDetail}>
-              <div className={styles.detailAvatar}>{viewingStudent.avatar || '🐱'}</div>
-              <h3>{viewingStudent.name}</h3>
-              <span className={styles.gradePill}>{viewingStudent.grade}</span>
-              <div className={styles.detailGrid}>
-                <div className={styles.detailItem}>
-                  <label>Email phụ huynh</label>
-                  <value>{viewingStudent.parent?.email || 'N/A'}</value>
-                </div>
-                <div className={styles.detailItem}>
-                  <label>Tổng sao tích lũy</label>
-                  <value>⭐ {viewingStudent.progress?.stars || 0}</value>
-                </div>
-                <div className={styles.detailItem}>
-                  <label>Chuỗi ngày học</label>
-                  <value>🔥 {viewingStudent.progress?.streak || 0} ngày</value>
-                </div>
-                <div className={styles.detailItem}>
-                  <label>Khối lớp tiếp theo</label>
-                  <value>{NEXT_GRADE[viewingStudent.grade] || '🎓 Đã tốt nghiệp'}</value>
-                </div>
-              </div>
-              <div className={styles.detailActions}>
-                <button onClick={() => {
-                  setViewingStudent(null)
-                  setEditingStudent({ ...viewingStudent, progress: viewingStudent.progress || { stars: 0, streak: 0 } })
-                }} className={styles.saveBtn}>✏️ Chỉnh sửa</button>
-                <button onClick={() => { handlePromoteStudent(viewingStudent); setViewingStudent(null) }}
-                  className={styles.promoteModalBtn}
-                  disabled={viewingStudent.grade === 'Lớp 5'}>
-                  🚀 Lên lớp
-                </button>
-              </div>
+      {/* Confirm Action Modal */}
+      {confirmDialog && (
+        <div className={styles.modalOverlay} onClick={() => setConfirmDialog(null)}>
+          <div className={`${styles.modalContent} ${styles.confirmModal}`} onClick={e => e.stopPropagation()}>
+            <div className={styles.confirmIcon}>{confirmDialog.danger ? '⚠️' : '✅'}</div>
+            <h2>{confirmDialog.title}</h2>
+            <p>{confirmDialog.message}</p>
+            <div className={styles.modalActions}>
+              <button type="button" onClick={() => setConfirmDialog(null)} className={styles.cancelBtn}>Hủy</button>
+              <button
+                type="button"
+                onClick={runConfirmedAction}
+                className={confirmDialog.danger ? styles.dangerConfirmBtn : styles.saveBtn}
+              >
+                {confirmDialog.confirmLabel || 'Xác nhận'}
+              </button>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Edit Student Modal */}
-      {editingStudent && (
-        <div className={styles.modalOverlay} onClick={() => setEditingStudent(null)}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2>✏️ Chỉnh sửa học sinh</h2>
-              <button onClick={() => setEditingStudent(null)} className={styles.closeBtn}>✕</button>
-            </div>
-            <form onSubmit={handleEditStudentSave} className={styles.modalForm}>
-              <div className={styles.inputGroup}>
-                <label>Tên học sinh</label>
-                <input type="text" value={editingStudent.name}
-                  onChange={e => setEditingStudent({ ...editingStudent, name: e.target.value })} required />
-              </div>
-              <div className={styles.inputGroup}>
-                <label>Khối lớp</label>
-                <select value={editingStudent.grade}
-                  onChange={e => setEditingStudent({ ...editingStudent, grade: e.target.value })}>
-                  {['Lớp 1','Lớp 2','Lớp 3','Lớp 4','Lớp 5'].map(g => (
-                    <option key={g} value={g}>{g}</option>
-                  ))}
-                </select>
-              </div>
-              <div className={styles.inputRow}>
-                <div className={styles.inputGroup}>
-                  <label>⭐ Sao tích lũy</label>
-                  <input type="number" min="0"
-                    value={editingStudent.progress.stars}
-                    onChange={e => setEditingStudent({
-                      ...editingStudent,
-                      progress: { ...editingStudent.progress, stars: parseInt(e.target.value, 10) || 0 }
-                    })} />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>🔥 Chuỗi ngày học</label>
-                  <input type="number" min="0"
-                    value={editingStudent.progress.streak}
-                    onChange={e => setEditingStudent({
-                      ...editingStudent,
-                      progress: { ...editingStudent.progress, streak: parseInt(e.target.value, 10) || 0 }
-                    })} />
-                </div>
-              </div>
-              <div className={styles.modalActions}>
-                <button type="button" onClick={() => setEditingStudent(null)} className={styles.cancelBtn}>Hủy</button>
-                <button type="submit" className={styles.saveBtn}>💾 Lưu thay đổi</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* View Parent Modal */}
-      {viewingParent && (
-        <div className={styles.modalOverlay} onClick={() => setViewingParent(null)}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2>👨‍👩‍👧 Chi tiết phụ huynh</h2>
-              <button onClick={() => setViewingParent(null)} className={styles.closeBtn}>✕</button>
-            </div>
-            <div className={styles.parentDetail}>
-              <div className={styles.parentDetailAvatar}>{viewingParent.email?.charAt(0).toUpperCase()}</div>
-              <h3>{viewingParent.email}</h3>
-              <p className={styles.mutedText}>Tham gia: {new Date(viewingParent.createdAt).toLocaleDateString('vi-VN')}</p>
-              <div className={styles.qSectionHeader} style={{marginTop:'20px'}}>
-                <h4>Danh sách học sinh</h4>
-                <span className={styles.qBadge}>{viewingParent._count?.profiles || 0}</span>
-              </div>
-              {viewingParent.profiles?.map(child => (
-                <div key={child.id} className={styles.childRowDetailed}>
-                  <span className={styles.childAvatar}>{child.avatar || '🐱'}</span>
-                  <div>
-                    <strong>{child.name}</strong>
-                    <p>{child.grade} • ⭐ {child.progress?.stars || 0} • 🔥 {child.progress?.streak || 0} ngày</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Add Question Modal */}
-      {newQuestionModal && (
-        <div className={styles.modalOverlay} onClick={() => setNewQuestionModal(false)}>
-          <div className={`${styles.modalContent} ${styles.largeModal}`} onClick={e => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2>➕ Thêm câu hỏi tùy chỉnh</h2>
-              <button onClick={() => setNewQuestionModal(false)} className={styles.closeBtn}>✕</button>
-            </div>
-            <div className={styles.modalMeta}>
-              Đang thêm vào: <strong>{GRADES_MAP[selectedGrade]}</strong> → Thế giới <strong>{selectedWorld}</strong> → Ải <strong>{selectedLevel}</strong>
-            </div>
-            <form onSubmit={handleAddQuestion} className={styles.modalForm}>
-              <div className={styles.inputGroup}>
-                <label>Loại trò chơi</label>
-                <select value={newQuestion.type}
-                  onChange={e => setNewQuestion({ ...newQuestion, type: e.target.value, optionA: '', optionB: '' })}>
-                  <option value="choose">🎯 Trắc nghiệm (Choose 1 of 2)</option>
-                  <option value="listen">🎧 Nghe viết từ vựng (Listen & Select)</option>
-                  <option value="matching">🔗 Ghép cặp (Matching)</option>
-                </select>
-              </div>
-              <div className={styles.inputGroup}>
-                <label>
-                  {newQuestion.type === 'choose' && 'Nội dung câu hỏi'}
-                  {newQuestion.type === 'listen' && 'Từ vựng cần đọc/phát âm'}
-                  {newQuestion.type === 'matching' && 'Nội dung thẻ vế trái'}
-                </label>
-                <input type="text" placeholder="Nhập nội dung..." value={newQuestion.q}
-                  onChange={e => setNewQuestion({ ...newQuestion, q: e.target.value })} required />
-              </div>
-              {newQuestion.type === 'matching' ? (
-                <div className={styles.inputGroup}>
-                  <label>Nội dung thẻ vế phải</label>
-                  <input type="text" placeholder="Nội dung tương ứng..."
-                    value={newQuestion.optionB}
-                    onChange={e => setNewQuestion({ ...newQuestion, optionB: e.target.value })} required />
-                </div>
-              ) : (
-                <>
-                  <div className={styles.inputRow}>
-                    <div className={styles.inputGroup}>
-                      <label>Lựa chọn A</label>
-                      <input type="text" placeholder="Đáp án A..."
-                        value={newQuestion.optionA}
-                        onChange={e => setNewQuestion({ ...newQuestion, optionA: e.target.value })} required />
-                    </div>
-                    <div className={styles.inputGroup}>
-                      <label>Lựa chọn B</label>
-                      <input type="text" placeholder="Đáp án B..."
-                        value={newQuestion.optionB}
-                        onChange={e => setNewQuestion({ ...newQuestion, optionB: e.target.value })} required />
-                    </div>
-                  </div>
-                  <div className={styles.inputGroup}>
-                    <label>Đáp án đúng</label>
-                    <select value={newQuestion.correct}
-                      onChange={e => setNewQuestion({ ...newQuestion, correct: parseInt(e.target.value, 10) })}>
-                      <option value={0}>✅ Đáp án A</option>
-                      <option value={1}>✅ Đáp án B</option>
-                    </select>
-                  </div>
-                </>
-              )}
-              <div className={styles.inputRow}>
-                <div className={styles.inputGroup}>
-                  <label>Emoji biểu tượng</label>
-                  <input type="text" placeholder="🍎" value={newQuestion.emoji}
-                    onChange={e => setNewQuestion({ ...newQuestion, emoji: e.target.value })} />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>Môn học</label>
-                  <input type="text" value={newQuestion.subject}
-                    onChange={e => setNewQuestion({ ...newQuestion, subject: e.target.value })} required />
-                </div>
-              </div>
-              <div className={styles.inputGroup}>
-                <label>Chủ đề (Topic)</label>
-                <input type="text" placeholder="Ví dụ: Phân số bằng nhau..."
-                  value={newQuestion.topic}
-                  onChange={e => setNewQuestion({ ...newQuestion, topic: e.target.value })} required />
-              </div>
-              <div className={styles.modalActions}>
-                <button type="button" onClick={() => setNewQuestionModal(false)} className={styles.cancelBtn}>Hủy</button>
-                <button type="submit" className={styles.saveBtn}>💾 Thêm câu hỏi</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Question Modal */}
-      {editingQuestion && (
-        <div className={styles.modalOverlay} onClick={() => setEditingQuestion(null)}>
-          <div className={`${styles.modalContent} ${styles.largeModal}`} onClick={e => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2>✏️ Sửa câu hỏi</h2>
-              <button onClick={() => setEditingQuestion(null)} className={styles.closeBtn}>✕</button>
-            </div>
-            <form onSubmit={handleEditQuestionSave} className={styles.modalForm}>
-              <div className={styles.inputGroup}>
-                <label>Loại trò chơi</label>
-                <input type="text" disabled
-                  value={editingQuestion.type === 'choose' ? '🎯 Trắc nghiệm' : editingQuestion.type === 'listen' ? '🎧 Nghe viết' : '🔗 Ghép cặp'} />
-              </div>
-              <div className={styles.inputGroup}>
-                <label>Nội dung câu hỏi / thẻ trái</label>
-                <input type="text" value={editingQuestion.q}
-                  onChange={e => setEditingQuestion({ ...editingQuestion, q: e.target.value })} required />
-              </div>
-              {editingQuestion.type === 'matching' ? (
-                <div className={styles.inputGroup}>
-                  <label>Nội dung thẻ vế phải</label>
-                  <input type="text" value={editingQuestion.optionB}
-                    onChange={e => setEditingQuestion({ ...editingQuestion, optionB: e.target.value })} required />
-                </div>
-              ) : (
-                <>
-                  <div className={styles.inputRow}>
-                    <div className={styles.inputGroup}>
-                      <label>Lựa chọn A</label>
-                      <input type="text" value={editingQuestion.optionA}
-                        onChange={e => setEditingQuestion({ ...editingQuestion, optionA: e.target.value })} required />
-                    </div>
-                    <div className={styles.inputGroup}>
-                      <label>Lựa chọn B</label>
-                      <input type="text" value={editingQuestion.optionB}
-                        onChange={e => setEditingQuestion({ ...editingQuestion, optionB: e.target.value })} required />
-                    </div>
-                  </div>
-                  <div className={styles.inputGroup}>
-                    <label>Đáp án đúng</label>
-                    <select value={editingQuestion.correct}
-                      onChange={e => setEditingQuestion({ ...editingQuestion, correct: parseInt(e.target.value, 10) })}>
-                      <option value={0}>✅ Đáp án A</option>
-                      <option value={1}>✅ Đáp án B</option>
-                    </select>
-                  </div>
-                </>
-              )}
-              <div className={styles.inputRow}>
-                <div className={styles.inputGroup}>
-                  <label>Emoji</label>
-                  <input type="text" value={editingQuestion.emoji}
-                    onChange={e => setEditingQuestion({ ...editingQuestion, emoji: e.target.value })} />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>Môn học</label>
-                  <input type="text" value={editingQuestion.subject}
-                    onChange={e => setEditingQuestion({ ...editingQuestion, subject: e.target.value })} required />
-                </div>
-              </div>
-              <div className={styles.inputGroup}>
-                <label>Chủ đề</label>
-                <input type="text" value={editingQuestion.topic}
-                  onChange={e => setEditingQuestion({ ...editingQuestion, topic: e.target.value })} required />
-              </div>
-              <div className={styles.modalActions}>
-                <button type="button" onClick={() => setEditingQuestion(null)} className={styles.cancelBtn}>Hủy</button>
-                <button type="submit" className={styles.saveBtn}>💾 Lưu thay đổi</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Question Card Sub-component ─────────────────────────────────────────────
-function QuestionCard({ q, isCustom, onEdit, onDelete }) {
-  const typeLabel = q.type === 'choose' ? '🎯 Trắc nghiệm' : q.type === 'listen' ? '🎧 Nghe viết' : '🔗 Ghép cặp'
-  let opts = []
-  if (q.type !== 'matching') {
-    try { opts = q.options ? JSON.parse(q.options) : (q.options_array || []) } catch { opts = q.options?.split(',') || [] }
-  }
-  return (
-    <div className={`${styles.qCard} ${isCustom ? styles.qCardCustom : styles.qCardSystem}`}>
-      <div className={styles.qCardTop}>
-        <span className={isCustom ? styles.badgeAdmin : styles.badgeSys}>{isCustom ? 'Admin' : 'Hệ thống'}</span>
-        <span className={styles.typeBadge}>{typeLabel}</span>
-        <span className={styles.qEmoji}>{q.emoji || '❓'}</span>
-      </div>
-      <p className={styles.qText}>{q.q || q.word || q.left}</p>
-      {q.type === 'matching' ? (
-        <div className={styles.matchingRow}>
-          <span className={styles.leftCard}>{q.q || q.left}</span>
-          <span className={styles.matchArrow}>⟶</span>
-          <span className={styles.rightCard}>{q.options || q.right}</span>
-        </div>
-      ) : (
-        <div className={styles.optsList}>
-          {opts.map((opt, i) => (
-            <span key={i} className={`${styles.optChip} ${i === (q.correct ?? -1) ? styles.correctChip : ''}`}>
-              {i === 0 ? 'A' : 'B'}. {opt} {i === (q.correct ?? -1) ? '✓' : ''}
-            </span>
-          ))}
-        </div>
-      )}
-      <div className={styles.qMeta}>
-        <span>📚 {q.subject}</span>
-        <span>•</span>
-        <span>🏷️ {q.topic}</span>
-      </div>
-      {isCustom && (
-        <div className={styles.qActions}>
-          <button onClick={onEdit} className={styles.editBtnSm}>✏️ Sửa</button>
-          <button onClick={onDelete} className={styles.deleteBtnSm}>🗑️ Xóa</button>
         </div>
       )}
     </div>

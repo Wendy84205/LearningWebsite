@@ -27,7 +27,7 @@ function GameContent() {
 
   // Khởi tạo cặp thẻ dựa trên World và Level
   useEffect(() => {
-    fetch(`/api/questions?grade=${gradeSlug}&world=${worldId}&level=${levelId}&boss=${isBoss}`)
+    fetch(`/api/questions?grade=${gradeSlug}&world=${worldId}&level=${levelId}&boss=${isBoss}&game=simple-matching`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -156,13 +156,14 @@ function GameContent() {
 
   return (
     <div className={styles.page}>
-      {/* Background Blobs */}
-      <div className={styles.blob1} />
-      <div className={styles.blob2} />
+      <div className={styles.blob1} aria-hidden="true" />
+      <div className={styles.blob2} aria-hidden="true" />
 
       {/* Header */}
       <header className={styles.header}>
-        <Link href={`/learning/${gradeSlug}/map`} className={styles.closeBtn}>✕</Link>
+        <Link href={`/learning/${gradeSlug}/map`} className={styles.closeBtn} aria-label="Thoát trò chơi">
+          <span className="material-symbols-outlined">close</span>
+        </Link>
         <div className={styles.progressWrap}>
           <div className={styles.progressContainer}>
             <div className={styles.progressFill} style={{ width: `${progress}%` }} />
@@ -176,7 +177,7 @@ function GameContent() {
       </header>
 
       {/* Subject Badge */}
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}>
+      <div className={styles.subjectBadgeWrap} style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}>
         <span style={{
           background: currentWorld.bgColor,
           color: currentWorld.textColor,
@@ -187,13 +188,16 @@ function GameContent() {
           fontWeight: 700,
           boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
         }}>
-          {currentWorld.name} · {isBoss ? 'Trận đấu Trùm 🏆' : `Ải ${levelId}`}
+          {currentWorld.name} · {isBoss ? 'Trận đấu Trùm' : `Ải ${levelId}`}
         </span>
       </div>
 
       {/* Game Area */}
       <div className={styles.gameArea}>
-        <h2 className={styles.instruction}>🧩 Ghép hình với chữ đúng!</h2>
+        <h2 className={styles.instruction}>
+          <span className="material-symbols-outlined" style={{ fontSize: '30px', color: 'var(--primary)' }}>extension</span>
+          Ghép hình với chữ đúng!
+        </h2>
 
         <div className={styles.matchGrid}>
           {/* Cột trái - Hình/Số/Từ gợi ý */}

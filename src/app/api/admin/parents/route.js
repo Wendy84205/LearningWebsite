@@ -1,14 +1,14 @@
 import prisma from '@/lib/db'
 import { getAdminSession } from '@/lib/admin-auth'
 
-function checkAdminAccess(request) {
-  const session = getAdminSession(request)
+async function checkAdminAccess(request) {
+  const session = await getAdminSession(request)
   return !!session
 }
 
 // GET /api/admin/parents - Get all parents with child counts + profiles
 export async function GET(request) {
-  if (!checkAdminAccess(request)) {
+  if (!(await checkAdminAccess(request))) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -44,7 +44,7 @@ export async function GET(request) {
 
 // DELETE /api/admin/parents - Delete a parent account (cascades to profiles & progress)
 export async function DELETE(request) {
-  if (!checkAdminAccess(request)) {
+  if (!(await checkAdminAccess(request))) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

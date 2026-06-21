@@ -15,6 +15,17 @@ const ALL_ACCESSORIES = [
   { id: 'wand', label: 'Cây phép', icon: '🪄', cost: 60, category: 'misc' },
 ]
 
+function MaterialIcon({ children, className = '', filled = false }) {
+  return (
+    <span
+      className={`material-symbols-outlined ${className}`}
+      style={filled ? { fontVariationSettings: "'FILL' 1" } : undefined}
+    >
+      {children}
+    </span>
+  )
+}
+
 export default function KidsClosetPage() {
   const router = useRouter()
   const [equipped, setEquipped] = useState([])
@@ -157,7 +168,12 @@ export default function KidsClosetPage() {
             disabled={saving}
             style={{ width: '100%', justifyContent: 'center' }}
           >
-            {saving ? '⏳ Đang lưu...' : '💾 Lưu trang phục'}
+            {saving ? 'Đang lưu...' : (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <MaterialIcon>save</MaterialIcon>
+                Lưu trang phục
+              </span>
+            )}
           </button>
         </div>
 

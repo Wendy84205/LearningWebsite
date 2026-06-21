@@ -1,0 +1,1135 @@
+/* ═══════════════════════════════════════════════════════
+   HỌC VUI – ADMIN PANEL OVERVIEW STYLESHEET
+   ═══════════════════════════════════════════════════════ */
+
+.section {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.sectionHeader h1 {
+  margin: 0 0 6px 0;
+  color: #191b23;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.sectionHeader p {
+  margin: 0;
+  color: #737686;
+  font-size: 14px;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.refreshBtn,
+.exportBtn,
+.quickBtn {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  border-radius: 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.refreshBtn {
+  border: 1px solid rgba(115, 118, 134, 0.24);
+  background: #ffffff;
+  color: #434655;
+}
+
+.refreshBtn:hover {
+  background: #faf8ff;
+  border-color: #004ac6;
+  color: #004ac6;
+  transform: translateY(-2px);
+}
+
+.exportBtn {
+  border: 0;
+  background: #004ac6;
+  color: #ffffff;
+}
+
+.exportBtn:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 280px;
+  color: #737686;
+  font-size: 14px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3.5px solid #ededf9;
+  border-top-color: #004ac6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* KPI Grid */
+.dashboardKpiGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 1024px) {
+  .dashboardKpiGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboardKpiGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboardKpiCard {
+  position: relative;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 24px;
+  border: 1px solid rgba(225, 226, 237, 0.78);
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dashboardKpiCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+}
+
+.dashboardKpiTop {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.dashboardKpiTop>span {
+  color: #737686;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.dashboardKpiIcon {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: rgba(37, 99, 235, 0.1);
+  color: #004ac6;
+}
+
+.dashboardKpiCard>strong {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 8px;
+  color: #191b23;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.dashboardKpiDelta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  color: #737686;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.dashboardKpiDelta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 600;
+}
+
+.goodDelta {
+  color: #16a34a;
+}
+
+.neutralDelta {
+  color: #737686;
+}
+
+.dashboardSparkline {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 48px;
+  opacity: 0.18;
+  background: linear-gradient(to top, #2563eb 0%, rgba(37, 99, 235, 0) 100%);
+  clip-path: polygon(0 100%, 0 62%, 18% 72%, 38% 42%, 58% 54%, 78% 24%, 100% 34%, 100% 100%);
+}
+
+.dashboardKpi_orange .dashboardKpiIcon {
+  background: rgba(188, 72, 0, 0.1);
+  color: #bc4800;
+}
+
+.dashboardKpi_orange .dashboardSparkline {
+  background: linear-gradient(to top, #bc4800 0%, rgba(188, 72, 0, 0) 100%);
+}
+
+.dashboardKpi_yellow .dashboardKpiIcon {
+  background: rgba(250, 204, 21, 0.15);
+  color: #a16207;
+}
+
+.dashboardKpi_yellow .dashboardSparkline {
+  background: linear-gradient(to top, #fed01b 0%, rgba(254, 208, 27, 0) 100%);
+}
+
+.dashboardKpi_slate .dashboardKpiIcon {
+  background: #e1e2ed;
+  color: #434655;
+}
+
+.dashboardKpi_slate .dashboardSparkline {
+  background: linear-gradient(to top, #737686 0%, rgba(115, 118, 134, 0) 100%);
+}
+
+/* Mini Stats */
+.dashboardMiniStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 1024px) {
+  .dashboardMiniStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboardMiniStats {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboardMiniStats div {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 12px 18px;
+  border: 1px solid rgba(225, 226, 237, 0.78);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+.dashboardMiniStats span {
+  color: #737686;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.dashboardMiniStats strong {
+  color: #191b23;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.cmsDashboardPanel {
+  margin-bottom: 24px;
+  padding: 24px;
+  border: 1px solid rgba(225, 226, 237, 0.78);
+  border-bottom: 5px solid rgba(0, 93, 167, 0.18);
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 8px 18px -10px rgba(0, 93, 167, 0.24);
+}
+
+.cmsDashboardHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.cmsEyebrow {
+  display: inline-flex;
+  margin-bottom: 8px;
+  color: #005da7;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cmsDashboardHeader h2 {
+  margin: 0;
+  color: #191b23;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.cmsDashboardHeader p {
+  margin: 6px 0 0;
+  color: #737686;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.cmsDashboardHeader button,
+.cmsIssueList button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(0, 93, 167, 0.18);
+  border-bottom: 4px solid rgba(0, 93, 167, 0.22);
+  border-radius: 999px;
+  background: #d4e3ff;
+  color: #005da7;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cmsDashboardHeader button {
+  min-height: 40px;
+  padding: 0 14px;
+}
+
+.cmsHealthGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.cmsScoreCard {
+  padding: 18px;
+  border-radius: 20px;
+  background: #f8f9fa;
+  border: 1px solid rgba(193, 199, 211, 0.72);
+}
+
+.cmsScoreCard span,
+.cmsScoreCard small {
+  display: block;
+  color: #737686;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cmsScoreCard strong {
+  display: block;
+  margin: 8px 0 6px;
+  color: #005da7;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.cmsWorkflowGrid,
+.cmsCoverageGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cmsWorkflowItem {
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid rgba(193, 199, 211, 0.72);
+}
+
+.cmsWorkflowItem :global(.material-symbols-outlined) {
+  color: #005da7;
+}
+
+.cmsWorkflowItem span,
+.cmsCoverageItem span {
+  color: #737686;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cmsWorkflowItem strong,
+.cmsCoverageItem strong {
+  color: #191b23;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.cmsCoverageItem {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 18px;
+  background: #f8f9fa;
+  border: 1px solid rgba(193, 199, 211, 0.72);
+}
+
+.cmsCoverageItem>div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cmsIssueList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cmsIssueList button {
+  min-width: 0;
+  min-height: 48px;
+  justify-content: flex-start;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: #ffdad6;
+  color: #93000a;
+  text-align: left;
+}
+
+.cmsIssueList span,
+.cmsIssueList small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cmsIssueList span {
+  flex: 0 0 34%;
+  font-weight: 900;
+}
+
+.cmsIssueList small {
+  flex: 1;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cmsOpsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.75fr);
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.cmsOpsGrid+.cmsOpsGrid {
+  grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.45fr);
+}
+
+.cmsOpsCard {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid rgba(193, 199, 211, 0.72);
+  border-radius: 22px;
+  background: #f8f9fa;
+}
+
+.cmsOpsCardWide {
+  min-width: 0;
+}
+
+.cmsOpsHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.cmsOpsHeader span {
+  display: block;
+  margin-bottom: 3px;
+  color: #005da7;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cmsOpsHeader h3 {
+  margin: 0;
+  color: #191b23;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.cmsOpsHeader button {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid rgba(0, 93, 167, 0.18);
+  border-bottom: 3px solid rgba(0, 93, 167, 0.25);
+  border-radius: 999px;
+  background: #d4e3ff;
+  color: #005da7;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.cmsOpsHeader> :global(.material-symbols-outlined) {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #005da7;
+  box-shadow: 0 8px 18px -12px rgba(0, 93, 167, 0.35);
+}
+
+.editorialBoard {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(144px, 1fr));
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.editorialColumn {
+  min-width: 144px;
+  padding: 10px;
+  border: 1px solid rgba(193, 199, 211, 0.72);
+  border-top: 5px solid #717783;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.editorialColumn[data-status='in_review'] {
+  border-top-color: #facc15;
+}
+
+.editorialColumn[data-status='scheduled'] {
+  border-top-color: #a06900;
+}
+
+.editorialColumn[data-status='active'] {
+  border-top-color: #10b981;
+}
+
+.editorialColumn[data-status='disabled'] {
+  border-top-color: #c1c7d3;
+}
+
+.editorialColumn[data-status='archived'] {
+  border-top-color: #93000a;
+}
+
+.editorialColumnHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.editorialColumnHeader span {
+  color: #414751;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.editorialColumnHeader strong {
+  min-width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #f7e61a;
+  color: #4e4800;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.editorialItems {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editorialItems button,
+.calendarList button {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid rgba(193, 199, 211, 0.62);
+  border-radius: 14px;
+  background: #ffffff;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.18s ease;
+}
+
+.editorialItems button:hover,
+.calendarList button:hover,
+.cmsOpsHeader button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px -14px rgba(0, 93, 167, 0.45);
+}
+
+.editorialItems strong,
+.calendarList strong,
+.activityFeedItem strong,
+.contentModelCard strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #191b23;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editorialItems span,
+.calendarList small,
+.activityFeedItem small,
+.contentModelCard small {
+  min-width: 0;
+  overflow: hidden;
+  color: #737686;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendarList,
+.activityFeed,
+.moduleHealthList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.calendarList>button>span,
+.activityFeedItem>span,
+.contentModelCard>span {
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #d4e3ff;
+  color: #005da7;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.activityFeedItem,
+.contentModelCard,
+.moduleHealthItem {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid rgba(193, 199, 211, 0.62);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.modelAndModuleGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(220px, 0.85fr);
+  gap: 14px;
+}
+
+.contentModelGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.moduleHealthItem {
+  gap: 8px;
+}
+
+.moduleHealthItem>div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.moduleHealthItem span {
+  color: #414751;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.moduleHealthItem strong {
+  color: #005da7;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.cmsEmptyState {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border: 1px dashed rgba(113, 119, 131, 0.45);
+  border-radius: 14px;
+  background: #ffffff;
+  color: #737686;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+
+@media (max-width: 1024px) {
+  .cmsDashboardHeader,
+  .cmsHealthGrid,
+  .cmsWorkflowGrid,
+  .cmsCoverageGrid,
+  .cmsIssueList,
+  .cmsOpsGrid,
+  .cmsOpsGrid+.cmsOpsGrid,
+  .modelAndModuleGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .cmsDashboardHeader {
+    display: grid;
+  }
+
+  .editorialBoard {
+    grid-template-columns: repeat(6, minmax(156px, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .contentModelGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .cmsOpsHeader {
+    display: grid;
+  }
+}
+
+/* Charts and grids */
+.dashboardChartGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.dashboardChartGrid+.dashboardChartGrid {
+  grid-template-columns: minmax(320px, 1fr) minmax(0, 2fr);
+}
+
+@media (max-width: 900px) {
+
+  .dashboardChartGrid,
+  .dashboardChartGrid+.dashboardChartGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.analyticsCard {
+  background: #ffffff;
+  border: 1px solid rgba(225, 226, 237, 0.78);
+  border-radius: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+}
+
+.chartCardWide {
+  min-width: 0;
+}
+
+.chartCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.chartCardHeader h3 {
+  margin: 0;
+  color: #191b23;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.chartCardHeader select,
+.chartCardHeader button {
+  min-height: 32px;
+  border: 0;
+  border-radius: 10px;
+  background: #f0f0fb;
+  color: #434655;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  outline: none;
+}
+
+.chartCardHeader select {
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.chartCardHeader button {
+  padding: 0 14px;
+  color: #004ac6;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.chartCardHeader button:hover {
+  background: #e1e2ed;
+}
+
+/* Line Chart SVG */
+.lineChartWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lineChartWrap svg {
+  width: 100%;
+  height: 220px;
+  overflow: visible;
+}
+
+.lineChartLabels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.lineChartLabels span {
+  padding: 12px;
+  border-radius: 14px;
+  background: #f3f3fe;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lineChartLabels strong {
+  color: #191b23;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.lineChartLabels small {
+  color: #737686;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Subject bar list */
+.subjectBarList {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  height: calc(100% - 48px);
+  min-height: 220px;
+}
+
+.subjectBarItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.subjectBarItem>div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #737686;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.subjectBarItem strong {
+  color: #191b23;
+}
+
+.chartTrack {
+  height: 8px;
+  background: #f0f0fb;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.chartFill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Completion Grid */
+.completionGrid {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+  height: calc(100% - 48px);
+  min-height: 220px;
+}
+
+.completionItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.completionItem strong {
+  color: #191b23;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.completionItem span {
+  color: #737686;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Recent Activity Table */
+.activityTableWrap {
+  overflow-x: auto;
+}
+
+.activityTable {
+  width: 100%;
+  min-width: 500px;
+  border-collapse: collapse;
+}
+
+.activityTable th,
+.activityTable td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(225, 226, 237, 0.78);
+  text-align: left;
+}
+
+.activityTable th {
+  color: #737686;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.activityTable td {
+  color: #434655;
+  font-size: 13px;
+}
+
+.activityTable tr:last-child td {
+  border-bottom: 0;
+}
+
+.activityCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.activityCell>span {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background: rgba(37, 99, 235, 0.1);
+  color: #004ac6;
+}
+
+.activityCell strong {
+  display: block;
+  color: #191b23;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.activityCell small {
+  display: block;
+  margin-top: 2px;
+  color: #737686;
+  font-size: 11px;
+}
+
+.tableStatus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Quick Actions */
+.quickActions {
+  margin-top: 24px;
+  background: #ffffff;
+  border: 1px solid rgba(225, 226, 237, 0.78);
+  border-radius: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+}
+
+.cardTitle {
+  margin: 0 0 18px 0;
+  color: #191b23;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.quickGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .quickGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .quickGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.quickBtn {
+  border: 1px solid rgba(225, 226, 237, 0.78);
+  border-radius: 20px;
+  background: #faf8ff;
+  color: #191b23;
+  font-weight: 600;
+  width: 100%;
+}
+
+.quickBtn:hover {
+  background: #004ac6;
+  border-color: #004ac6;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 74, 198, 0.15);
+}
+
+.quickBtn :global(.material-symbols-outlined) {
+  font-size: 20px;
+}

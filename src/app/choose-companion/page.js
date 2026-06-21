@@ -104,7 +104,10 @@ export default function ChooseCompanionPage() {
             <span>{selected.name} đã sẵn sàng cùng bạn nhỏ!</span>
           </div>
         ) : (
-          <span className={styles.hint}>Chọn một người bạn để tiếp tục học tập nào →</span>
+          <span className={styles.hint}>
+            Chọn một người bạn để tiếp tục học tập nào
+            <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginLeft: '6px' }}>arrow_forward</span>
+          </span>
         )}
         <button
           id="btn-confirm-companion"
@@ -112,7 +115,12 @@ export default function ChooseCompanionPage() {
           onClick={handleConfirm}
           disabled={!selected || loading}
         >
-          {loading ? '⏳ Đang lưu...' : 'Bắt đầu học ngay! 🚀'}
+          {loading ? 'Đang lưu...' : (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              Bắt đầu học ngay!
+              <span className="material-symbols-outlined">rocket_launch</span>
+            </span>
+          )}
         </button>
       </div>
     </div>

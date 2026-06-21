@@ -77,13 +77,11 @@ export default function HomePage() {
       </header>
 
       <main>
-        {/* Hero */}
         <section className={styles.hero}>
+          <div className={styles.heroBackdrop} aria-hidden="true" />
           <div className={styles.heroContent}>
-            <span className={`badge badge-amber ${styles.heroBadge}`}>🎉 Dành cho học sinh Tiểu học Lớp 1–5</span>
-            <h1 className={styles.heroTitle}>
-              Giúp con <span className={styles.heroHighlight}>học vui</span> mỗi ngày
-            </h1>
+            <span className={`badge badge-amber ${styles.heroBadge}`}>Dành cho học sinh Tiểu học Lớp 1-5</span>
+            <h1 className={styles.heroTitle}>Học Vui</h1>
             <p className={styles.heroSub}>
               Nền tảng luyện tập Toán, Tiếng Việt, Khoa học và Kỹ năng sống cho học sinh <strong>lớp 1 đến lớp 5</strong> thông qua hệ thống trò chơi hấp dẫn, giúp trẻ tự giác và yêu thích học tập mỗi ngày.
             </p>
@@ -94,16 +92,25 @@ export default function HomePage() {
                 Xem demo
               </Link>
             </div>
-          </div>
-          <div className={styles.heroVisual}>
-            <div className={styles.heroBlob1} />
-            <div className={styles.heroBlob2} />
-            <div className={`card ${styles.heroCard}`}>
-              <img
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaoZ3wcKMR5ITLfHyVKukSU83Pp0PIJMMn84VQeuY46jh8Upuco9ED0XyEYOsTnaJQv7BO4HYBZ0HhLrDbL6rDBGNLA6gvTBDGUiHOxml4SPVM5pylKdUa7nqWzEDCT9uAitU0Ru-7J3vtbjAssjaKZBBOsl1qNYUbHHDpjeMZVCj5zNCQKnvgAPm4q8p-vrdbrcnyhMX2vT-tOhel56voFFCHTBr37d5hqB1PnwXVrPMIIcUBWECAvk9AVEjqkw2CGCheKBrIjzw"
-                alt="Trẻ em đang học vui vẻ"
-                className={styles.heroImg}
-              />
+            <div className={styles.heroStats} aria-label="Tổng quan chương trình">
+              <div className={styles.heroStat}>
+                <strong>5</strong>
+                <span>khối lớp</span>
+              </div>
+              <div className={styles.heroStat}>
+                <strong>4+</strong>
+                <span>môn học</span>
+              </div>
+              <div className={styles.heroStat}>
+                <strong>100%</strong>
+                <span>dữ liệu tiến độ thật</span>
+              </div>
+            </div>
+            <div className={styles.heroSubjects} aria-label="Môn học nổi bật">
+              <span className={styles.heroSubject}>Toán</span>
+              <span className={styles.heroSubject}>Tiếng Việt</span>
+              <span className={styles.heroSubject}>Khoa học</span>
+              <span className={styles.heroSubject}>Kỹ năng sống</span>
             </div>
           </div>
         </section>
@@ -130,7 +137,10 @@ export default function HomePage() {
         {/* Curriculum Showcase – Grades 1-5 */}
         <section id="curriculum" className={styles.featuresSection} style={{ background: 'var(--surface-container-low)' }}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Nội dung học Tiểu học Lớp 1–5 📚</h2>
+            <h2 className={styles.sectionTitle}>
+              Nội dung học Tiểu học Lớp 1–5
+              <span className="material-symbols-outlined" style={{ marginLeft: '8px', verticalAlign: 'middle' }}>menu_book</span>
+            </h2>
             <p className={styles.sectionSub}>Toàn bộ nội dung bám sát chương trình sách giáo khoa Bộ GD&ĐT hiện hành cho tất cả 5 khối lớp tiểu học</p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', maxWidth: '1100px', margin: '0 auto', padding: '0 16px' }}>
@@ -234,7 +244,11 @@ export default function HomePage() {
         </div>
         <div className={styles.footerBottom}>
           <p>© 2026 Học Vui – Học tập là niềm vui</p>
-          <span>Made with ❤️ for children</span>
+          <span>
+            Made with
+            <span className="material-symbols-outlined" style={{ color: 'red', fontSize: '16px', verticalAlign: 'middle', margin: '0 4px', fontVariationSettings: "'FILL' 1" }}>favorite</span>
+            for children
+          </span>
         </div>
       </footer>
     </div>

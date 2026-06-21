@@ -1,15 +1,15 @@
 import prisma from '@/lib/db'
 import { getAdminSession } from '@/lib/admin-auth'
 
-// Helper to check admin access
-function checkAdminAccess(request) {
-  const session = getAdminSession(request)
+// Helper to check admin access (async)
+async function checkAdminAccess(request) {
+  const session = await getAdminSession(request)
   return !!session
 }
 
 // GET /api/admin/students - List all students
 export async function GET(request) {
-  if (!checkAdminAccess(request)) {
+  if (!(await checkAdminAccess(request))) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -31,7 +31,7 @@ export async function GET(request) {
 
 // PUT /api/admin/students - Update a student's profile and progress
 export async function PUT(request) {
-  if (!checkAdminAccess(request)) {
+  if (!(await checkAdminAccess(request))) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -73,7 +73,7 @@ export async function PUT(request) {
 
 // DELETE /api/admin/students - Delete a student profile
 export async function DELETE(request) {
-  if (!checkAdminAccess(request)) {
+  if (!(await checkAdminAccess(request))) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

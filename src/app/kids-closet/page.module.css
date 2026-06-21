@@ -17,7 +17,7 @@
   justify-content: space-between;
   padding: 16px 48px;
   background-color: var(--surface-container-lowest);
-  border-bottom: 1px solid var(--outline-variant);
+  border-bottom: 2px solid var(--outline-variant);
   box-shadow: 0 4px 16px rgba(0, 96, 172, 0.07);
 }
 
@@ -34,16 +34,23 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  background-color: var(--primary-container);
-  color: var(--on-primary-container);
-  border: none;
+  border: 2px solid var(--outline-variant);
+  border-bottom: 4px solid var(--outline-variant);
+  background-color: var(--surface-container-lowest);
+  color: var(--primary);
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   text-decoration: none;
 }
 
 .backBtn:hover {
-  transform: scale(1.05);
+  transform: translateY(-2px);
+  background-color: var(--surface-container-low);
+}
+
+.backBtn:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
 }
 
 .title {
@@ -61,8 +68,9 @@
   padding: 8px 16px;
   border-radius: var(--radius-full);
   gap: 8px;
+  border: 2px solid var(--outline-variant);
   border-bottom: 4px solid var(--secondary-container);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 16px;
   color: var(--on-surface);
 }
@@ -103,7 +111,8 @@
   position: sticky;
   top: 112px;
   background-color: var(--surface-container-lowest);
-  border: 1px solid var(--outline-variant);
+  border: 2px solid var(--outline-variant);
+  border-bottom: 5px solid var(--outline-variant);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-tactile);
 }
@@ -126,13 +135,14 @@
   position: relative;
   width: 180px;
   height: 180px;
-  background-color: var(--surface);
+  background-color: var(--surface-container-low);
   border: 2px solid var(--outline-variant);
+  border-bottom: 5px solid var(--outline-variant);
   border-radius: var(--radius-xl);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-tactile);
 }
 
 .mascotBig {
@@ -152,7 +162,6 @@
   justify-content: center;
   animation: float-mascot 3s ease-in-out infinite;
 }
-
 
 /* Equipped Accessory Overlay Positioning */
 .equippedOverlay {
@@ -230,12 +239,13 @@
   border-radius: var(--radius-xl);
   background-color: var(--surface-container-lowest);
   border: 2px solid var(--outline-variant);
+  border-bottom: 5px solid var(--outline-variant);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   font-family: var(--font-body);
 }
 
@@ -247,6 +257,7 @@
 
 .accOn {
   border-color: var(--primary);
+  border-bottom: 5px solid var(--primary-container);
   background-color: var(--primary-fixed);
   box-shadow: 0 8px 16px rgba(0, 96, 172, 0.15);
 }
@@ -269,7 +280,7 @@
 .accCost {
   font-size: 14px;
   line-height: 20px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--secondary);
   display: flex;
   align-items: center;

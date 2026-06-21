@@ -5,18 +5,43 @@ import Link from 'next/link'
 import { getGradeData } from '@/lib/data'
 import styles from './page.module.css'
 
+const EMOJI_TO_MATERIAL_ICON = {
+  // Worlds
+  "🏡": "home",
+  "📖": "menu_book",
+  "🧩": "extension",
+  "➕": "calculate",
+  "🌎": "public",
+
+  // Medals / Badge
+  "🥉": { name: "workspace_premium", color: "#cd7f32" },
+  "🥈": { name: "workspace_premium", color: "#c0c0c0" },
+  "⭐": { name: "star", color: "#ffc800" },
+  "💎": { name: "diamond", color: "#00b0ff" },
+  "🌟": { name: "stars", color: "#ff9100" },
+  "🏆": { name: "emoji_events", color: "#ffc800" }
+}
+
+function getMaterialIcon(emoji, defaultIcon = "help") {
+  const match = EMOJI_TO_MATERIAL_ICON[emoji]
+  if (!match) return defaultIcon
+  return typeof match === "string" ? match : match.name
+}
+
+
 export default function GradeMapPage() {
   const router = useRouter()
   const params = useParams()
   const gradeSlug = params.gradeSlug || 'lop-1'
 
-  const { WORLDS } = getGradeData(gradeSlug)
+  const { WORLDS: STATIC_WORLDS } = getGradeData(gradeSlug)
 
   const [completed, setCompleted] = useState([]) // danh sách các màn đã hoàn thành (ví dụ: 'w1-l1', 'w1-boss')
   const [stars, setStars] = useState(0)
   const [streak, setStreak] = useState(0)
   const [profileName, setProfileName] = useState('Học sinh')
   const [avatar, setAvatar] = useState('🐱')
+  const [worlds, setWorlds] = useState(STATIC_WORLDS)
   const [speechSpeaking, setSpeechSpeaking] = useState(false)
 
   // State điều khiển Modals
@@ -65,6 +90,15 @@ export default function GradeMapPage() {
         .catch(err => console.error('Error fetching profile:', err))
     }
 
+    fetch(`/api/cms?module=learning-map&grade=${gradeSlug}`, { cache: 'no-store' })
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data.worlds) && data.worlds.length > 0) {
+          setWorlds(data.worlds)
+        }
+      })
+      .catch(err => console.error('Error fetching CMS learning map:', err))
+
     // Sinh confetti động bằng CSS sau khi mount
     const pieces = Array.from({ length: 40 }).map((_, i) => ({
       id: i,
@@ -77,7 +111,7 @@ export default function GradeMapPage() {
     setTimeout(() => {
       setConfettiPieces(pieces)
     }, 0)
-  }, [])
+  }, [gradeSlug])
 
   // Kiểm tra thế giới có được mở khóa
   const isWorldUnlocked = (world) => {
@@ -102,9 +136,9 @@ export default function GradeMapPage() {
 
   // Kiểm tra đã hoàn tất toàn bộ thế giới của lớp này
   const isAllWorldsCompleted = useMemo(() => {
-    if (WORLDS.length === 0) return false
-    return WORLDS.every(w => completed.includes(`w${w.id}-boss`))
-  }, [completed, WORLDS])
+    if (worlds.length === 0) return false
+    return worlds.every(w => completed.includes(`w${w.id}-boss`))
+  }, [completed, worlds])
 
   const handleSpeakerClick = () => {
     if ('speechSynthesis' in window) {
@@ -256,30 +290,29 @@ export default function GradeMapPage() {
       </header>
 
       {/* Progress Summary */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '30px',
-        padding: '12px 16px',
-        background: '#ffffff',
-        borderBottom: '2px solid #e0e0e0',
-        marginTop: '80px',
-        zIndex: 10,
-        boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--primary, #0060ac)' }}>
-            {WORLDS.filter(w => completed.includes(`w${w.id}-boss`)).length}/{WORLDS.length}
+      <div className={styles.progressSummary}>
+        <div className={styles.summaryItem}>
+          <span className={`material-symbols-outlined ${styles.summaryIcon}`} style={{ color: 'var(--primary, #1cb0f6)' }}>map</span>
+          <div className={styles.summaryInfo}>
+            <div className={styles.summaryVal}>
+              {worlds.filter(w => completed.includes(`w${w.id}-boss`)).length}/{worlds.length}
+            </div>
+            <div className={styles.summaryLabel}>Thế giới xong</div>
           </div>
-          <div style={{ fontSize: '11px', color: '#78909c', fontWeight: 700 }}>Thế giới xong</div>
         </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '18px', fontWeight: 900, color: '#f59f00' }}>{stars}⭐</div>
-          <div style={{ fontSize: '11px', color: '#78909c', fontWeight: 700 }}>Tổng số sao</div>
+        <div className={styles.summaryItem}>
+          <span className={`material-symbols-outlined ${styles.summaryIcon}`} style={{ color: '#ffc800', fontVariationSettings: "'FILL' 1" }}>star</span>
+          <div className={styles.summaryInfo}>
+            <div className={styles.summaryVal}>{stars}</div>
+            <div className={styles.summaryLabel}>Tổng số sao</div>
+          </div>
         </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '18px', fontWeight: 900, color: '#e65100' }}>{streak}🔥</div>
-          <div style={{ fontSize: '11px', color: '#78909c', fontWeight: 700 }}>Chuỗi ngày</div>
+        <div className={styles.summaryItem}>
+          <span className={`material-symbols-outlined ${styles.summaryIcon}`} style={{ color: '#ff9100', fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
+          <div className={styles.summaryInfo}>
+            <div className={styles.summaryVal}>{streak}</div>
+            <div className={styles.summaryLabel}>Chuỗi ngày</div>
+          </div>
         </div>
       </div>
 
@@ -301,7 +334,7 @@ export default function GradeMapPage() {
           </svg>
 
           {/* Render Grade World Nodes */}
-          {WORLDS.map((world, idx) => {
+          {worlds.map((world, idx) => {
             const unlocked = isWorldUnlocked(world)
             const isDone = completed.includes(`w${world.id}-boss`)
             const current = unlocked && !isDone
@@ -317,7 +350,29 @@ export default function GradeMapPage() {
                 <div className={styles.nodeCol}>
                   {/* Huy chương treo trên đầu thế giới */}
                   <div className={styles.medalPlacement}>
-                    {isDone ? world.medal : current ? '🎯' : ''}
+                    {isDone ? (
+                      <span
+                        className="material-symbols-outlined"
+                        style={{
+                          fontSize: '32px',
+                          color: EMOJI_TO_MATERIAL_ICON[world.medal]?.color || '#ffc800',
+                          fontVariationSettings: "'FILL' 1"
+                        }}
+                      >
+                        {getMaterialIcon(world.medal, 'workspace_premium')}
+                      </span>
+                    ) : current ? (
+                      <span
+                        className="material-symbols-outlined"
+                        style={{
+                          fontSize: '32px',
+                          color: 'var(--error, #ea4335)',
+                          fontVariationSettings: "'FILL' 1"
+                        }}
+                      >
+                        track_changes
+                      </span>
+                    ) : null}
                   </div>
 
                   {/* World Circle Button */}
@@ -333,14 +388,23 @@ export default function GradeMapPage() {
                         <span className={`material-symbols-outlined ${styles.lockIcon}`}>lock</span>
                       </div>
                     )}
-                    <span style={{ fontSize: '42px', lineHeight: 1 }}>{world.icon}</span>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: '44px',
+                        color: world.borderColor,
+                        fontVariationSettings: "'FILL' 1"
+                      }}
+                    >
+                      {getMaterialIcon(world.icon, 'sports_esports')}
+                    </span>
                   </div>
 
                   {/* Label Thế giới */}
                   <div className={styles.worldLabel}>
                     <div className={styles.worldTitle}>{world.name}</div>
                     <div className={styles.worldStatus}>
-                      {isDone ? '✓ ĐÃ XONG' : unlocked ? 'ĐANG CHƠI' : '🔒 ĐANG KHÓA'}
+                      {isDone ? 'ĐÃ XONG' : unlocked ? 'ĐANG CHƠI' : 'ĐANG KHÓA'}
                     </div>
                   </div>
                 </div>
@@ -351,17 +415,26 @@ export default function GradeMapPage() {
           {/* Huy chương Vàng Boss cuối */}
           <div
             className={styles.nodeContainer}
-            style={{ top: `${80 + WORLDS.length * 200}px`, left: '50%', transform: 'translateX(-50%)' }}
+            style={{ top: `${80 + worlds.length * 200}px`, left: '50%', transform: 'translateX(-50%)' }}
             onClick={handleGoldMedalClick}
           >
             <div className={styles.nodeCol}>
               <div className={`${styles.bossCircle} ${isAllWorldsCompleted ? styles.bossCircleActive : styles.bossCircleLocked}`}>
-                <span style={{ fontSize: '72px' }}>🏆</span>
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: '72px',
+                    color: isAllWorldsCompleted ? '#ffc800' : '#90a4ae',
+                    fontVariationSettings: "'FILL' 1"
+                  }}
+                >
+                  emoji_events
+                </span>
               </div>
               <div
                 className={styles.bossBadge}
                 style={{
-                  background: isAllWorldsCompleted ? '#92400e' : '#b0bec5',
+                  background: isAllWorldsCompleted ? 'var(--primary, #1cb0f6)' : '#b0bec5',
                   color: 'white'
                 }}
               >
@@ -379,12 +452,23 @@ export default function GradeMapPage() {
         <div className={styles.modalOverlay} onClick={() => setActiveWorld(null)}>
           <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <div style={{ fontSize: '40px' }}>{activeWorld.icon}</div>
+              <span
+                className="material-symbols-outlined"
+                style={{
+                  fontSize: '44px',
+                  color: activeWorld.borderColor,
+                  fontVariationSettings: "'FILL' 1"
+                }}
+              >
+                {getMaterialIcon(activeWorld.icon, 'sports_esports')}
+              </span>
               <div>
                 <h3 style={{ fontSize: '20px', fontWeight: 900, color: activeWorld.textColor }}>{activeWorld.name}</h3>
                 <p style={{ fontSize: '12px', color: '#666', marginTop: '2px' }}>{activeWorld.desc}</p>
               </div>
-              <button className={styles.modalCloseBtn} onClick={() => setActiveWorld(null)}>✕</button>
+              <button className={styles.modalCloseBtn} onClick={() => setActiveWorld(null)}>
+                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+              </button>
             </div>
 
             <div className={styles.modalBody}>
@@ -422,11 +506,24 @@ export default function GradeMapPage() {
                             color: 'white'
                           }}
                         >
-                          {isDone ? 'CHƠI LẠI' : '▶ BẮT ĐẦU'}
+                          {isDone ? (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>replay</span>
+                              CHƠI LẠI
+                            </span>
+                          ) : (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <span className="material-symbols-outlined" style={{ fontSize: '18px', fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
+                              BẮT ĐẦU
+                            </span>
+                          )}
                         </Link>
                       ) : (
                         <button className={`${styles.playBtn} ${styles.playBtnLocked}`} disabled>
-                          🔒 KHÓA
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>lock</span>
+                            KHÓA
+                          </span>
                         </button>
                       )}
                     </div>
@@ -440,9 +537,20 @@ export default function GradeMapPage() {
                 >
                   <div className={styles.levelInfo}>
                     <div className={styles.levelTitleRow}>
-                      <span className={styles.levelTitle} style={{ color: '#b45309', fontWeight: 900 }}>🏆 BOSS: {activeWorld.bossName}</span>
+                      <span className={styles.levelTitle} style={{ color: '#b45309', fontWeight: 900 }}>BOSS: {activeWorld.bossName}</span>
                       {completed.includes(`w${activeWorld.id}-boss`) && (
-                        <span style={{ fontSize: '20px', marginLeft: '8px' }}>{activeWorld.medal}</span>
+                        <span
+                          className="material-symbols-outlined"
+                          style={{
+                            fontSize: '24px',
+                            marginLeft: '8px',
+                            color: EMOJI_TO_MATERIAL_ICON[activeWorld.medal]?.color || '#ffc800',
+                            fontVariationSettings: "'FILL' 1",
+                            verticalAlign: 'middle'
+                          }}
+                        >
+                          {getMaterialIcon(activeWorld.medal, 'workspace_premium')}
+                        </span>
                       )}
                     </div>
                     <span className={styles.levelDesc}>{activeWorld.bossDesc}</span>
@@ -457,11 +565,24 @@ export default function GradeMapPage() {
                         color: 'white'
                       }}
                     >
-                      {completed.includes(`w${activeWorld.id}-boss`) ? 'ĐẤU LẠI' : '🔥 CHIẾN BOSS'}
+                      {completed.includes(`w${activeWorld.id}-boss`) ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>replay</span>
+                          ĐẤU LẠI
+                        </span>
+                      ) : (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#ffc800', fontVariationSettings: "'FILL' 1" }}>bolt</span>
+                          CHIẾN BOSS
+                        </span>
+                      )}
                     </Link>
                   ) : (
                     <button className={`${styles.playBtn} ${styles.playBtnLocked}`} disabled>
-                      🔒 CẦN XONG ẢI
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>lock</span>
+                        CẦN XONG ẢI
+                      </span>
                     </button>
                   )}
                 </div>
@@ -496,13 +617,26 @@ export default function GradeMapPage() {
             className={`${styles.modalContent} ${styles.goldModalContent}`}
             onClick={e => e.stopPropagation()}
           >
-            <button className={styles.modalCloseBtn} onClick={() => setGoldMedalModalOpen(false)}>✕</button>
+            <button className={styles.modalCloseBtn} onClick={() => setGoldMedalModalOpen(false)}>
+              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+            </button>
             <div style={{ textAlign: 'center', padding: '16px' }}>
-              <div className={styles.goldMedalAnimation}>🏆</div>
+              <div className={styles.goldMedalAnimation}>
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: '96px',
+                    color: '#ffc800',
+                    fontVariationSettings: "'FILL' 1"
+                  }}
+                >
+                  emoji_events
+                </span>
+              </div>
               <h2 className={styles.goldMedalTitle}>CHIẾN THẮNG HUY CHƯƠNG VÀNG!</h2>
               <p className={styles.goldMedalText}>
                 Chúc mừng bé <strong>{profileName}</strong> đã xuất sắc hoàn thành toàn bộ hành trình học tập {getGradeNameVi(gradeSlug)}!<br /><br />
-                Con là một <strong>Nhà Thám Hiểm Tri Thức</strong> tuyệt vời. Hãy tiếp tục khám phá những điều mới mẻ mỗi ngày nhé! 🎉🌟
+                Con là một <strong>Nhà Thám Hiểm Tri Thức</strong> tuyệt vời. Hãy tiếp tục khám phá những điều mới mẻ mỗi ngày nhé!
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
                 {gradeSlug !== 'lop-5' && (
@@ -522,7 +656,14 @@ export default function GradeMapPage() {
                     onClick={handlePromote}
                     disabled={promoting}
                   >
-                    {promoting ? 'ĐANG LÊN LỚP...' : 'LÊN LỚP KẾ TIẾP! 🚀'}
+                    {promoting ? (
+                      'ĐANG LÊN LỚP...'
+                    ) : (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                        LÊN LỚP KẾ TIẾP!
+                        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>rocket_launch</span>
+                      </span>
+                    )}
                   </button>
                 )}
                 <button
@@ -536,7 +677,10 @@ export default function GradeMapPage() {
                   }}
                   onClick={() => setGoldMedalModalOpen(false)}
                 >
-                  ĐÓNG 💖
+                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    ĐÓNG
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#ff4081', fontVariationSettings: "'FILL' 1" }}>favorite</span>
+                  </span>
                 </button>
               </div>
             </div>
@@ -552,7 +696,7 @@ export default function GradeMapPage() {
               ? `Chào ${profileName}! Nhấn vào thế giới đầu tiên để bắt đầu cuộc hành trình nhé! 🎉`
               : isAllWorldsCompleted
               ? `Tuyệt vời ông mặt trời ${profileName}! Nhấn vào Huy chương Vàng 🏆 để nhận giải thưởng thôi!`
-              : `Cố lên ${profileName}! Đã hoàn thành ${completed.filter(c => c.endsWith('-boss')).length}/${WORLDS.length} thế giới rồi! 💪`}
+              : `Cố lên ${profileName}! Đã hoàn thành ${completed.filter(c => c.endsWith('-boss')).length}/${worlds.length} thế giới rồi! 💪`}
           </p>
           <div className={styles.mascotBubbleArrow} />
         </div>

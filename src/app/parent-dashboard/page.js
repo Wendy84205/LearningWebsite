@@ -4,10 +4,79 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from './page.module.css'
 
+function MaterialIcon({ children, className = '', filled = false, style }) {
+  return (
+    <span
+      className={`material-symbols-outlined ${className}`}
+      style={{
+        ...(filled ? { fontVariationSettings: "'FILL' 1" } : {}),
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  )
+}
+
+function CustomIcon({ icon, className = '' }) {
+  if (!icon) return null
+  const isEmoji = /[\uD800-\uDFFF\u2600-\u27BF]/.test(icon)
+  if (isEmoji) {
+    const emojiMap = {
+      '✍️': 'edit',
+      '🧮': 'calculate',
+      '🎵': 'music_note',
+      '⭐': 'star',
+      '🔥': 'local_fire_department',
+      '🏆': 'trophy',
+      '🎯': 'ads_click',
+      '🗺️': 'map',
+      '💡': 'lightbulb',
+      '📚': 'menu_book',
+      '🧩': 'extension',
+      '🗣️': 'record_voice_over',
+      '🎧': 'hearing',
+      '🔊': 'volume_up',
+    }
+    const mapped = emojiMap[icon] || emojiMap[icon.trim()]
+    if (mapped) {
+      return <MaterialIcon className={className}>{mapped}</MaterialIcon>
+    }
+    return <span style={{ fontSize: '1.4rem' }}>{icon}</span>
+  }
+  return <MaterialIcon className={className}>{icon}</MaterialIcon>
+}
+
+function ProfileAvatar({ avatar, className = '' }) {
+  const value = avatar || '🙂'
+  const isImage = typeof value === 'string' && (value.startsWith('http') || value.startsWith('/'))
+
+  if (isImage) {
+    return <img src={value} alt="" className={className} />
+  }
+
+  return <span className={className}>{value}</span>
+}
+
+function formatGradeLabel(grade) {
+  if (!grade) return 'lớp hiện tại'
+  const normalized = String(grade).toLowerCase()
+  const labels = {
+    'nha-tre': 'Nhà trẻ',
+    'mam-non': 'Mầm non',
+    'lop-1': 'Lớp 1',
+    'lop-2': 'Lớp 2',
+    'lop-3': 'Lớp 3',
+    'lop-4': 'Lớp 4',
+    'lop-5': 'Lớp 5',
+  }
+  return labels[normalized] || grade
+}
+
 // Danh sách gợi ý tổng quát của chuyên gia
 const GENERAL_RECS = [
   {
-    icon: '✍️',
+    icon: 'edit',
     title: 'Luyện viết chữ đều đẹp',
     desc: 'Hướng dẫn bé cầm bút đúng cách và tập viết theo dòng kẻ ô ly. Bắt đầu từ nét cơ bản rồi sang chữ cái đơn.',
     level: 'Tiếng Việt',
@@ -15,7 +84,7 @@ const GENERAL_RECS = [
     textColor: '#5c4a00'
   },
   {
-    icon: '🧮',
+    icon: 'calculate',
     title: 'Nhận biết hình học cơ bản',
     desc: 'Chỉ cho bé thấy hình vuông, hình tròn, hình tam giác trong cuộc sống hằng ngày (cửa sổ, bánh xe, biển báo...).',
     level: 'Toán học',
@@ -23,7 +92,7 @@ const GENERAL_RECS = [
     textColor: '#005da7'
   },
   {
-    icon: '🎵',
+    icon: 'music_note',
     title: 'Học qua bài hát thiếu nhi',
     desc: 'Các bài hát về số đếm, con vật, màu sắc giúp bé ghi nhớ từ vựng một cách tự nhiên và vui vẻ.',
     level: 'Bổ trợ',
@@ -98,13 +167,10 @@ export default function ParentDashboardPage() {
   }
   const worldProgress = selected?.worldProgress || []
   const activeFocusRec = selected?.focusRecommendation
+  const selectedGradeLabel = formatGradeLabel(selected?.grade)
 
   return (
     <div className={styles.page}>
-      {/* Background decoration */}
-      <div className={styles.blob1} />
-      <div className={styles.blob2} />
-
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerLeft}>
@@ -118,8 +184,8 @@ export default function ParentDashboardPage() {
             <span className="material-symbols-outlined">account_circle</span>
             {parentEmail}
           </span>
-          <button onClick={handleLogout} className="btn btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', border: 'none', background: 'transparent', fontWeight: 'bold' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>logout</span>
+          <button type="button" onClick={handleLogout} className={styles.logoutBtn}>
+            <MaterialIcon style={{ fontSize: '18px' }}>logout</MaterialIcon>
             Đăng xuất
           </button>
         </div>
@@ -127,7 +193,7 @@ export default function ParentDashboardPage() {
 
       <div className={styles.content}>
         {loading ? (
-          <div className={styles.loading}>⏳ Đang tải dữ liệu báo cáo...</div>
+          <div className={styles.loading}>Đang tải dữ liệu báo cáo...</div>
         ) : error ? (
           <div className={styles.empty}>
             <span className="material-symbols-outlined" style={{ fontSize: '48px', color: 'var(--error)' }}>error</span>
@@ -145,39 +211,76 @@ export default function ParentDashboardPage() {
             <div className={styles.profileRow}>
               {profiles.map(p => (
                 <button
+                  type="button"
                   key={p.id}
                   id={`profile-tab-${p.id}`}
                   className={`${styles.profileTab} ${selected?.id === p.id ? styles.profileTabActive : ''}`}
                   onClick={() => selectProfile(p)}
                 >
-                  <span style={{ fontSize: '24px' }}>{p.avatar}</span>
+                  <ProfileAvatar avatar={p.avatar} className={styles.profileAvatar} />
                   <span>{p.name}</span>
                 </button>
               ))}
-              <Link href="/add-profile" className="btn btn-ghost btn-sm" style={{ textDecoration: 'none', fontWeight: 'bold', color: 'var(--primary)' }}>+ Thêm bé</Link>
+              <Link href="/add-profile" className={styles.addBabyBtn}>
+                <MaterialIcon>add</MaterialIcon>
+                Thêm bé
+              </Link>
             </div>
 
             {selected && (
               <div className={styles.dashboard}>
+                <section className={styles.parentHero}>
+                  <div className={styles.parentHeroMain}>
+                    <div className={styles.parentHeroAvatar}>
+                      <ProfileAvatar avatar={selected.avatar} className={styles.parentHeroAvatarVisual} />
+                    </div>
+                    <div className={styles.parentHeroCopy}>
+                      <span className={styles.parentHeroEyebrow}>Hồ sơ đang xem</span>
+                      <h2>{selected.name}</h2>
+                      <p>
+                        Bé đã hoàn thành <strong>{summary.normalLevelsCompleted}</strong> ải thường,
+                        tích lũy <strong>{summary.stars}</strong> sao và duy trì chuỗi <strong>{summary.streak}</strong> ngày học.
+                      </p>
+                    </div>
+                  </div>
+                  <div className={styles.parentHeroProgress}>
+                    <span className={styles.parentHeroPct}>{summary.progressPct}%</span>
+                    <div className={styles.parentHeroTrack}>
+                      <div className={styles.parentHeroFill} style={{ width: `${summary.progressPct}%` }} />
+                    </div>
+                    <span className={styles.parentHeroNote}>
+                      {activeFocusRec ? `Nên ưu tiên: ${activeFocusRec.subject}` : 'Chưa có gợi ý trọng tâm'}
+                    </span>
+                  </div>
+                </section>
+
                 {/* Summary Grid Cards */}
                 <div className={styles.summaryGrid}>
                   <div className={styles.summaryCard}>
-                    <div className={styles.summaryIcon}>⭐</div>
+                    <div className={styles.summaryIcon}>
+                      <MaterialIcon filled style={{ color: '#ffb953', fontSize: '32px' }}>star</MaterialIcon>
+                    </div>
                     <div className={styles.summaryVal}>{summary.stars}</div>
                     <div className={styles.summaryLabel}>Tổng số sao</div>
                   </div>
                   <div className={styles.summaryCard}>
-                    <div className={styles.summaryIcon}>🔥</div>
+                    <div className={styles.summaryIcon}>
+                      <MaterialIcon filled style={{ color: '#ff6f00', fontSize: '32px' }}>local_fire_department</MaterialIcon>
+                    </div>
                     <div className={styles.summaryVal}>{summary.streak}</div>
                     <div className={styles.summaryLabel}>Ngày học chuỗi</div>
                   </div>
                   <div className={styles.summaryCard}>
-                    <div className={styles.summaryIcon}>🏆</div>
+                    <div className={styles.summaryIcon}>
+                      <MaterialIcon filled style={{ color: '#ffc800', fontSize: '32px' }}>trophy</MaterialIcon>
+                    </div>
                     <div className={styles.summaryVal}>{summary.medalCount}/{summary.totalMedals}</div>
                     <div className={styles.summaryLabel}>Huy chương World</div>
                   </div>
                   <div className={styles.summaryCard}>
-                    <div className={styles.summaryIcon}>🎯</div>
+                    <div className={styles.summaryIcon}>
+                      <MaterialIcon filled style={{ color: '#ef4444', fontSize: '32px' }}>ads_click</MaterialIcon>
+                    </div>
                     <div className={styles.summaryVal}>{summary.normalLevelsCompleted}/{summary.totalNormalLevels}</div>
                     <div className={styles.summaryLabel}>Ải thường vượt qua</div>
                   </div>
@@ -186,26 +289,29 @@ export default function ParentDashboardPage() {
                 {/* Overall Progress Section */}
                 <div className={styles.progressSection}>
                   <div className={styles.progressHeader}>
-                    <span>Tiến độ tổng thể Lớp 1</span>
+                    <span>Tiến độ tổng thể {selectedGradeLabel}</span>
                     <span className={styles.progressPct}>{summary.progressPct}%</span>
                   </div>
                   <div className="progress-track" style={{ height: '14px', backgroundColor: '#eceff1', borderRadius: '10px', overflow: 'hidden' }}>
                     <div className="progress-fill" style={{ width: `${summary.progressPct}%`, height: '100%', backgroundColor: 'var(--primary, #0060ac)', borderRadius: '10px' }} />
                   </div>
                   <div className={styles.levelInfo}>
-                    Bé đã hoàn thành <strong>{summary.normalLevelsCompleted}</strong> trên tổng số <strong>{summary.totalNormalLevels}</strong> ải thường của chương trình lớp 1.
+                    Bé đã hoàn thành <strong>{summary.normalLevelsCompleted}</strong> trên tổng số <strong>{summary.totalNormalLevels}</strong> ải thường của chương trình {selectedGradeLabel}.
                   </div>
                 </div>
 
                 {/* Detailed Worlds Progress Section */}
                 <div className={styles.worldsSection}>
-                  <h2 className={styles.sectionTitle}>🗺️ Chi tiết tiến trình 5 thế giới học tập</h2>
+                  <h2 className={styles.sectionTitle}>
+                    <MaterialIcon style={{ marginRight: '8px', verticalAlign: 'middle' }}>map</MaterialIcon>
+                    Chi tiết tiến trình thế giới học tập
+                  </h2>
                   <div className={styles.worldsGrid}>
                     {worldProgress.map(world => (
                       <div key={world.id} className={styles.worldProgressCard}>
                         <div className={styles.worldProgressLeft}>
                           <div className={styles.worldProgressTitleRow}>
-                            <span className={styles.worldCardIcon}>{world.icon}</span>
+                            <span className={styles.worldCardIcon}><CustomIcon icon={world.icon} /></span>
                             <span className={styles.worldCardName}>{world.name}</span>
                           </div>
                           <div className={styles.worldProgressBarContainer}>
@@ -227,7 +333,7 @@ export default function ParentDashboardPage() {
                           {world.bossCompleted ? (
                             <span className={styles.worldCardMedal}>{world.medal}</span>
                           ) : (
-                            <span className={styles.worldCardMedalLocked}>🔒</span>
+                            <span className={styles.worldCardMedalLocked}><MaterialIcon>lock</MaterialIcon></span>
                           )}
                           <span className={`${styles.medalLabel} ${world.bossCompleted ? styles.medalLabelCompleted : ''}`}>
                             {world.bossCompleted ? world.medalName : 'Chưa đạt'}
@@ -240,12 +346,15 @@ export default function ParentDashboardPage() {
 
                 {/* Dynamic Recommendations */}
                 <div className={styles.recsSection}>
-                  <h2 className={styles.recsTitle}>💡 Khuyên dùng & Gợi ý từ chuyên gia</h2>
+                  <h2 className={styles.recsTitle}>
+                    <MaterialIcon style={{ marginRight: '8px', verticalAlign: 'middle' }}>lightbulb</MaterialIcon>
+                    Khuyên dùng & Gợi ý từ chuyên gia
+                  </h2>
 
                   {/* Hộp gợi ý tiêu điểm động */}
                   {activeFocusRec && (
                     <div className={styles.focusRecBox}>
-                      <div className={styles.focusRecIcon}>{activeFocusRec.icon}</div>
+                      <div className={styles.focusRecIcon}><CustomIcon icon={activeFocusRec.icon} /></div>
                       <div className={styles.focusRecBody}>
                         <div className={styles.focusRecBadge}>Khuyên dùng rèn luyện: {activeFocusRec.subject}</div>
                         <div className={styles.focusRecTitle}>{activeFocusRec.title}</div>
@@ -260,7 +369,7 @@ export default function ParentDashboardPage() {
                       <div key={i} className={styles.recCard} style={{
                         borderLeft: `4px solid ${r.textColor || 'var(--primary)'}`
                       }}>
-                        <div className={styles.recIcon}>{r.icon}</div>
+                        <div className={styles.recIcon}><CustomIcon icon={r.icon} /></div>
                         <div className={styles.recBody}>
                           <div className={styles.recTitle}>{r.title}</div>
                           <div className={styles.recDesc}>{r.desc}</div>

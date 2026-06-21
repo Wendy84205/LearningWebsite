@@ -1,4 +1,4 @@
-import { signAdminJWT, getAdminSession } from '@/lib/admin-auth'
+import { signAdminToken, getAdminSession } from '@/lib/admin-auth'
 
 // POST /api/admin/auth - Admin Login
 export async function POST(request) {
@@ -8,11 +8,11 @@ export async function POST(request) {
     const expectedPassword = process.env.ADMIN_PASSWORD || 'Wendy84205!'
 
     if (email === expectedEmail && password === expectedPassword) {
-      const token = signAdminJWT()
+      const token = await signAdminToken()
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: {
-          'Set-Cookie': `hocvui_admin_token=${token}; Path=/; HttpOnly; Max-Age=86400; SameSite=Lax`,
+          'Set-Cookie': `hocvui_admin_token=${token}; Path=/; HttpOnly; Max-Age=604800; SameSite=Lax`,
           'Content-Type': 'application/json'
         }
       })
@@ -26,7 +26,7 @@ export async function POST(request) {
 
 // GET /api/admin/auth - Check admin status
 export async function GET(request) {
-  const session = getAdminSession(request)
+  const session = await getAdminSession(request)
   if (!session) {
     return Response.json({ authenticated: false }, { status: 401 })
   }

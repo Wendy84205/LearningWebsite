@@ -53,12 +53,13 @@ export default function GradeLandingPage() {
   const params = useParams()
   const gradeSlug = params.gradeSlug || 'lop-1'
 
-  const { WORLDS } = getGradeData(gradeSlug)
+  const { WORLDS: STATIC_WORLDS } = getGradeData(gradeSlug)
 
   const [profile, setProfile] = useState(DEFAULT_PROFILE)
   const [mascot, setMascot] = useState(DEFAULT_MASCOT)
   const [progress, setProgress] = useState(DEFAULT_PROGRESS)
   const [summary, setSummary] = useState(DEFAULT_SUMMARY)
+  const [worlds, setWorlds] = useState(STATIC_WORLDS)
   const [time, setTime] = useState(new Date())
 
   const greeting = useMemo(() => {
@@ -78,7 +79,11 @@ export default function GradeLandingPage() {
 
   const loadLandingData = useCallback(async () => {
     try {
-      const res = await fetch('/api/dashboard', { cache: 'no-store' })
+      const [dashboardRes, cmsRes] = await Promise.all([
+        fetch('/api/dashboard', { cache: 'no-store' }),
+        fetch(`/api/cms?module=learning-map&grade=${gradeSlug}`, { cache: 'no-store' })
+      ])
+      const res = dashboardRes
       if (res.status === 401) {
         router.push('/parent-login')
         return
@@ -88,6 +93,12 @@ export default function GradeLandingPage() {
       }
 
       const data = await res.json()
+      if (cmsRes.ok) {
+        const cmsData = await cmsRes.json()
+        if (Array.isArray(cmsData.worlds) && cmsData.worlds.length > 0) {
+          setWorlds(cmsData.worlds)
+        }
+      }
       const profileId = localStorage.getItem('profileId')
       const activeProfile = data.profiles?.find(item => item.id === profileId) || data.profiles?.[0]
 
@@ -114,7 +125,7 @@ export default function GradeLandingPage() {
     } catch (err) {
       console.error('Error fetching landing data:', err)
     }
-  }, [router])
+  }, [router, gradeSlug])
 
   useEffect(() => {
     const loadTimerId = setTimeout(() => {
@@ -161,17 +172,17 @@ export default function GradeLandingPage() {
     const completedLevels = summary.completedLevels || []
 
     // Lấy các thế giới có sẵn tùy theo cấu hình lớp
-    const worldIds = WORLDS.map(w => w.id)
-    const mathWorldIds = WORLDS.filter(w => w.name.includes('Toán') || w.name.includes('Số')).map(w => w.id)
-    const languageWorldIds = WORLDS.filter(w => w.name.includes('Chữ') || w.name.includes('Tiếng')).map(w => w.id)
-    const otherWorldIds = WORLDS.filter(w => !mathWorldIds.includes(w.id) && !languageWorldIds.includes(w.id)).map(w => w.id)
+    const worldIds = worlds.map(w => w.id)
+    const mathWorldIds = worlds.filter(w => w.name.includes('Toán') || w.name.includes('Số')).map(w => w.id)
+    const languageWorldIds = worlds.filter(w => w.name.includes('Chữ') || w.name.includes('Tiếng')).map(w => w.id)
+    const otherWorldIds = worlds.filter(w => !mathWorldIds.includes(w.id) && !languageWorldIds.includes(w.id)).map(w => w.id)
 
     return {
-      math: getNextPracticeForWorlds(mathWorldIds.length > 0 ? mathWorldIds : worldIds, completedLevels, WORLDS, gradeSlug),
-      vietnamese: getNextPracticeForWorlds(languageWorldIds.length > 0 ? languageWorldIds : worldIds, completedLevels, WORLDS, gradeSlug),
-      matching: getNextPracticeForWorlds(otherWorldIds.length > 0 ? otherWorldIds : worldIds, completedLevels, WORLDS, gradeSlug),
+      math: getNextPracticeForWorlds(mathWorldIds.length > 0 ? mathWorldIds : worldIds, completedLevels, worlds, gradeSlug),
+      vietnamese: getNextPracticeForWorlds(languageWorldIds.length > 0 ? languageWorldIds : worldIds, completedLevels, worlds, gradeSlug),
+      matching: getNextPracticeForWorlds(otherWorldIds.length > 0 ? otherWorldIds : worldIds, completedLevels, worlds, gradeSlug),
     }
-  }, [summary.completedLevels, WORLDS, gradeSlug])
+  }, [summary.completedLevels, worlds, gradeSlug])
 
   const isMascotEmoji = mascot.image && !mascot.image.startsWith('http') && !mascot.image.startsWith('/')
 
@@ -181,7 +192,8 @@ export default function GradeLandingPage() {
       <header className={styles.topBar}>
         <div className={styles.greeting}>
           <span className={styles.greetingText}>
-            {greeting}, <strong>{profile.name}</strong>! 👋
+            {greeting}, <strong>{profile.name}</strong>!
+            <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginLeft: '6px', color: '#ffb953' }}>waving_hand</span>
           </span>
         </div>
         <div className={styles.statsRow}>
@@ -196,7 +208,7 @@ export default function GradeLandingPage() {
           <Link href="/parent-dashboard" id="btn-parent-dash" className={styles.parentDashBtn} title="Báo cáo phụ huynh">
             <span className="material-symbols-outlined">monitoring</span>
           </Link>
-          <button onClick={handleLogout} className={styles.parentDashBtn} title="Đăng xuất" id="btn-logout" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+          <button type="button" onClick={handleLogout} className={styles.parentDashBtn} title="Đăng xuất" id="btn-logout">
             <span className="material-symbols-outlined" style={{ color: 'var(--error, #ba1a1a)' }}>logout</span>
           </button>
         </div>
@@ -207,7 +219,8 @@ export default function GradeLandingPage() {
         <div className={styles.mascotArea} onClick={handleMascotSpeech} style={{ cursor: 'pointer' }}>
           <div className={styles.mascotBubble}>
             <span className={styles.speechText}>
-              Chào {profile.name}! Hôm nay mình cùng học thật nhiều bài hay nhé! 🌟
+              Chào {profile.name}! Hôm nay mình cùng học thật nhiều bài hay nhé!
+              <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginLeft: '6px', color: '#ffb953' }}>star</span>
             </span>
           </div>
           <div className={styles.mascotFigure}>
@@ -229,43 +242,43 @@ export default function GradeLandingPage() {
         {/* Main Learning and Closet Actions */}
         <div className={styles.mainActions}>
           <Link href={`/learning/${gradeSlug}/map`} id="btn-learning-map" className={styles.actionCard}>
-            <span className={styles.actionIcon}>🗺️</span>
+            <span className={`material-symbols-outlined ${styles.actionIcon}`} style={{ color: 'var(--primary)' }}>map</span>
             <div className={styles.actionInfo}>
               <div className={styles.actionTitle}>Bản đồ học tập</div>
               <div className={styles.actionSub}>Cấp {progress.currentLevel} đang đợi bạn!</div>
             </div>
-            <span className={styles.actionArrow}>→</span>
+            <span className={`material-symbols-outlined ${styles.actionArrow}`}>arrow_forward</span>
           </Link>
 
           <Link href="/kids-closet" id="btn-closet" className={styles.actionCard}>
-            <span className={styles.actionIcon}>👗</span>
+            <span className={`material-symbols-outlined ${styles.actionIcon}`} style={{ color: 'var(--secondary)' }}>styler</span>
             <div className={styles.actionInfo}>
               <div className={styles.actionTitle}>Tủ đồ của bé</div>
               <div className={styles.actionSub}>Đổi phụ kiện đẹp cho {mascot.name}</div>
             </div>
-            <span className={styles.actionArrow}>→</span>
+            <span className={`material-symbols-outlined ${styles.actionArrow}`}>arrow_forward</span>
           </Link>
         </div>
 
         {/* Mini Stats Card Grid */}
         <div className={styles.miniStats}>
           <div className={styles.miniStat}>
-            <span className={styles.miniStatIcon}>📚</span>
+            <span className={`material-symbols-outlined ${styles.miniStatIcon}`} style={{ color: 'var(--primary)' }}>menu_book</span>
             <div className={styles.miniStatVal}>{progress.currentLevel}</div>
             <div className={styles.miniStatLabel}>Cấp hiện tại</div>
           </div>
           <div className={styles.miniStat}>
-            <span className={styles.miniStatIcon}>✅</span>
+            <span className={`material-symbols-outlined ${styles.miniStatIcon}`} style={{ color: '#10b981' }}>check_circle</span>
             <div className={styles.miniStatVal}>{completedCount}</div>
             <div className={styles.miniStatLabel}>Đã xong</div>
           </div>
           <div className={styles.miniStat}>
-            <span className={styles.miniStatIcon}>⭐</span>
+            <span className={`material-symbols-outlined ${styles.miniStatIcon}`} style={{ color: '#ffb953' }}>star</span>
             <div className={styles.miniStatVal}>{progress.stars}</div>
             <div className={styles.miniStatLabel}>Tổng số sao</div>
           </div>
           <div className={styles.miniStat}>
-            <span className={styles.miniStatIcon}>🔥</span>
+            <span className={`material-symbols-outlined ${styles.miniStatIcon}`} style={{ color: '#ff6f00' }}>local_fire_department</span>
             <div className={styles.miniStatVal}>{progress.streak}</div>
             <div className={styles.miniStatLabel}>Chuỗi ngày</div>
           </div>
@@ -273,24 +286,27 @@ export default function GradeLandingPage() {
 
         {/* Quick Start – Môn học */}
         <div className={styles.quickStart}>
-          <h2 className={styles.quickStartTitle}>Luyện tập nhanh 🚀</h2>
+          <h2 className={styles.quickStartTitle}>
+            Luyện tập nhanh
+            <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginLeft: '8px', color: 'var(--primary)' }}>rocket_launch</span>
+          </h2>
           <div className={styles.quickGrid}>
             <Link href={quickPractices.math.href} id="btn-game-1" className={styles.quickCard}>
-              <span className={styles.quickIcon}>🔢</span>
+              <span className={`material-symbols-outlined ${styles.quickIcon}`} style={{ color: 'var(--primary)' }}>calculate</span>
               <span className={styles.quickName}>Toán học</span>
               <span className={styles.quickSub}>{quickPractices.math.title}</span>
               <span className={styles.quickMeta}>{quickPractices.math.worldName}</span>
             </Link>
 
             <Link href={quickPractices.vietnamese.href} id="btn-game-2" className={styles.quickCard}>
-              <span className={styles.quickIcon}>📖</span>
+              <span className={`material-symbols-outlined ${styles.quickIcon}`} style={{ color: '#10b981' }}>menu_book</span>
               <span className={styles.quickName}>Tiếng Việt</span>
               <span className={styles.quickSub}>{quickPractices.vietnamese.title}</span>
               <span className={styles.quickMeta}>{quickPractices.vietnamese.worldName}</span>
             </Link>
 
             <Link href={quickPractices.matching.href} id="btn-game-3" className={styles.quickCard}>
-              <span className={styles.quickIcon}>🧩</span>
+              <span className={`material-symbols-outlined ${styles.quickIcon}`} style={{ color: 'var(--secondary)' }}>extension</span>
               <span className={styles.quickName}>Ghép đôi & Khám phá</span>
               <span className={styles.quickSub}>{quickPractices.matching.title}</span>
               <span className={styles.quickMeta}>{quickPractices.matching.worldName}</span>

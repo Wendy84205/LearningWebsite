@@ -65,6 +65,7 @@
   height: 36px;
   border-radius: var(--radius-full);
   border: 2px solid var(--outline-variant);
+  border-bottom: 4px solid var(--outline-variant);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -72,13 +73,14 @@
   font-size: 16px;
   color: var(--on-surface-variant);
   background: var(--surface-container-lowest);
-  transition: all 0.3s;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .stepActive {
   background-color: var(--primary);
   color: var(--on-primary);
   border-color: var(--primary);
+  border-bottom: 4px solid var(--on-primary-fixed-var);
   box-shadow: 0 4px 12px rgba(0, 93, 167, 0.25);
 }
 
@@ -122,7 +124,7 @@
 .header p {
   font-size: 18px;
   line-height: 28px;
-  color: var(--on-surface-variant);
+  color: var(--outline);
 }
 
 /* Companion Grid */
@@ -142,12 +144,13 @@
   border-radius: var(--radius-xl);
   background-color: var(--surface-container-lowest);
   border: 2px solid var(--outline-variant);
+  border-bottom: 6px solid var(--outline-variant);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   text-align: center;
   font-family: var(--font-body);
 }
@@ -160,9 +163,10 @@
 
 .cardSelected {
   border-color: var(--card-color, var(--primary));
+  border-bottom: 6px solid var(--card-color, var(--primary));
   background-color: var(--primary-fixed);
   box-shadow: 0 12px 24px -4px rgba(0, 96, 172, 0.2);
-  transform: translateY(-6px) scale(1.02);
+  transform: translateY(-6px) scale(1.04);
 }
 
 .emoji {
@@ -183,14 +187,14 @@
 .cardType {
   font-size: 14px;
   line-height: 20px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--on-surface-variant);
 }
 
 .cardDesc {
   font-size: 14px;
   line-height: 20px;
-  color: var(--on-surface-variant);
+  color: var(--outline);
 }
 
 .selectedCheck {
@@ -234,14 +238,16 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 16px;
   line-height: 24px;
   color: var(--on-primary-fixed);
   background-color: var(--primary-fixed);
   border: 2px solid var(--primary-fixed-dim);
+  border-bottom: 5px solid var(--primary-fixed-dim);
   padding: 12px 24px;
   border-radius: var(--radius-full);
+  box-shadow: var(--shadow-tactile);
 }
 
 .selectedEmoji {
@@ -249,10 +255,10 @@
 }
 
 .hint {
-  color: var(--on-surface-variant);
+  color: var(--outline);
   font-size: 16px;
   line-height: 24px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Animations */

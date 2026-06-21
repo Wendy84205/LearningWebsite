@@ -49,21 +49,35 @@ export function getSlug(gradeOrSlug) {
   return GRADE_SLUGS[gradeOrSlug] || String(gradeOrSlug).toLowerCase()
 }
 
-export function parseCompletedLevels(completedLevels, gradeOrSlug = 'lop-1') {
+function getWorldsForSummary(gradeOrSlug, options = {}) {
+  if (Array.isArray(options.worlds)) return options.worlds
+  const slug = getSlug(gradeOrSlug)
+  const gradeData = getGradeData(slug)
+  return gradeData.WORLDS || []
+}
+
+function getNormalLevelTokens(worlds) {
+  return worlds.flatMap(world =>
+    (world.levels || []).map(level => `w${world.id}-l${level.id}`)
+  )
+}
+
+export function parseCompletedLevels(completedLevels, gradeOrSlug = 'lop-1', options = {}) {
   if (!completedLevels) return []
 
   const slug = getSlug(gradeOrSlug)
+  const worlds = getWorldsForSummary(slug, options)
   const normalized = String(completedLevels)
     .split(',')
     .map(item => item.trim())
     .filter(Boolean)
-    .map(item => normalizeCompletedLevelToken(item, slug))
+    .map(item => normalizeCompletedLevelToken(item, slug, { worlds }))
     .filter(Boolean)
 
   return [...new Set(normalized)]
 }
 
-export function normalizeCompletedLevelToken(completedLevel, gradeOrSlug = 'lop-1') {
+export function normalizeCompletedLevelToken(completedLevel, gradeOrSlug = 'lop-1', options = {}) {
   if (completedLevel === null || completedLevel === undefined) return null
 
   const raw = String(completedLevel).trim()
@@ -74,40 +88,32 @@ export function normalizeCompletedLevelToken(completedLevel, gradeOrSlug = 'lop-
   if (/^\d+$/.test(raw)) {
     const legacyIndex = Number(raw) - 1
     const slug = getSlug(gradeOrSlug)
-    const gradeData = getGradeData(slug)
-    const worlds = gradeData.WORLDS || []
-    const normalLevelTokens = worlds.flatMap(world =>
-      world.levels.map(level => `w${world.id}-l${level.id}`)
-    )
+    const worlds = getWorldsForSummary(slug, options)
+    const normalLevelTokens = getNormalLevelTokens(worlds)
     return normalLevelTokens[legacyIndex] || null
   }
 
   return null
 }
 
-export function getNormalLevelPosition(completedLevel, gradeOrSlug = 'lop-1') {
+export function getNormalLevelPosition(completedLevel, gradeOrSlug = 'lop-1', options = {}) {
   const slug = getSlug(gradeOrSlug)
-  const normalized = normalizeCompletedLevelToken(completedLevel, slug)
-  const gradeData = getGradeData(slug)
-  const worlds = gradeData.WORLDS || []
-  const normalLevelTokens = worlds.flatMap(world =>
-    world.levels.map(level => `w${world.id}-l${level.id}`)
-  )
+  const worlds = getWorldsForSummary(slug, options)
+  const normalized = normalizeCompletedLevelToken(completedLevel, slug, { worlds })
+  const normalLevelTokens = getNormalLevelTokens(worlds)
   const index = normalLevelTokens.indexOf(normalized)
 
   return index >= 0 ? index + 1 : null
 }
 
-export function buildProgressSummary(progress, gradeOrSlug = 'lop-1') {
+export function buildProgressSummary(progress, gradeOrSlug = 'lop-1', options = {}) {
   const slug = getSlug(gradeOrSlug)
   const gradeData = getGradeData(slug)
-  const worlds = gradeData.WORLDS || []
-  const normalLevelTokens = worlds.flatMap(world =>
-    world.levels.map(level => `w${world.id}-l${level.id}`)
-  )
+  const worlds = getWorldsForSummary(slug, options)
+  const normalLevelTokens = getNormalLevelTokens(worlds)
   const totalNormalLevels = normalLevelTokens.length
 
-  const completedList = parseCompletedLevels(progress?.completedLevels, slug)
+  const completedList = parseCompletedLevels(progress?.completedLevels, slug, { worlds })
   const medalCount = completedList.filter(item => item.endsWith('-boss')).length
   const normalLevelsCompleted = completedList.filter(item => item.includes('-l')).length
   const progressPct = totalNormalLevels > 0
@@ -115,10 +121,11 @@ export function buildProgressSummary(progress, gradeOrSlug = 'lop-1') {
     : 0
 
   const worldProgress = worlds.map(world => {
-    const completedLevelsCount = world.levels.filter(level =>
+    const levels = world.levels || []
+    const completedLevelsCount = levels.filter(level =>
       completedList.includes(`w${world.id}-l${level.id}`)
     ).length
-    const totalLevelsCount = world.levels.length
+    const totalLevelsCount = levels.length
     const bossCompleted = completedList.includes(`w${world.id}-boss`)
     const pct = totalLevelsCount > 0
       ? Math.round((completedLevelsCount / totalLevelsCount) * 100)
@@ -146,7 +153,7 @@ export function buildProgressSummary(progress, gradeOrSlug = 'lop-1') {
     return a.id - b.id
   })[0]
 
-  const focusRecommendations = gradeData.FOCUS_RECOMMENDATIONS || FOCUS_RECOMMENDATIONS
+  const focusRecommendations = options.focusRecommendations || gradeData.FOCUS_RECOMMENDATIONS || FOCUS_RECOMMENDATIONS
 
   return {
     stars: progress?.stars ?? 0,
@@ -160,7 +167,17 @@ export function buildProgressSummary(progress, gradeOrSlug = 'lop-1') {
     worldProgress,
     weakestWorldId: weakestWorld?.id ?? worlds[0]?.id ?? null,
     focusRecommendation: weakestWorld
-      ? focusRecommendations[weakestWorld.id]
+      ? focusRecommendations[weakestWorld.id] || buildDefaultFocusRecommendation(weakestWorld)
       : focusRecommendations[worlds[0]?.id]
+  }
+}
+
+function buildDefaultFocusRecommendation(world) {
+  if (!world) return null
+  return {
+    icon: world.icon || 'menu_book',
+    title: `Ôn tập ${world.name}`,
+    desc: world.desc || 'Bé nên luyện thêm các bài trong thế giới này để củng cố kiến thức.',
+    subject: `${world.name} ${world.icon || ''}`.trim()
   }
 }

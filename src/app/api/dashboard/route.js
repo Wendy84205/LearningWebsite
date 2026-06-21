@@ -1,6 +1,7 @@
 import { getSessionUser } from '@/lib/auth'
 import prisma from '@/lib/db'
-import { buildProgressSummary } from '@/lib/progress-summary'
+import { getCmsLearningMap } from '@/lib/cms-content'
+import { buildProgressSummary, getSlug } from '@/lib/progress-summary'
 
 // GET /api/dashboard
 export async function GET(request) {
@@ -24,8 +25,19 @@ export async function GET(request) {
       return Response.json({ error: 'Parent not found' }, { status: 404 })
     }
 
+    const learningMapByGrade = {}
+    await Promise.all(parent.profiles.map(async (profile) => {
+      const grade = getSlug(profile.grade || 'lop-1')
+      if (learningMapByGrade[grade]) return
+      learningMapByGrade[grade] = await getCmsLearningMap(grade)
+    }))
+
     const profiles = parent.profiles.map(profile => {
-      const summary = buildProgressSummary(profile.progress, profile.grade)
+      const gradeSlug = getSlug(profile.grade || 'lop-1')
+      const learningMap = learningMapByGrade[gradeSlug]
+      const summary = buildProgressSummary(profile.progress, profile.grade, {
+        worlds: learningMap?.worlds,
+      })
 
       return {
         id: profile.id,
@@ -39,6 +51,10 @@ export async function GET(request) {
         summary,
         worldProgress: summary.worldProgress,
         focusRecommendation: summary.focusRecommendation,
+        cms: {
+          learningMapItems: learningMap?.cmsItems?.length || 0,
+          source: learningMap?.cmsItems?.length ? 'cms' : 'static-fallback'
+        }
       }
     })
 
