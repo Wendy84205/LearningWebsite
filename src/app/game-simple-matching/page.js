@@ -123,13 +123,45 @@ function GameContent() {
         const profileId = localStorage.getItem('profileId')
         if (profileId) {
           try {
-            await fetch('/api/progress', {
+            const submitRes = await fetch('/api/student/submit', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ profileId, completedLevel: completedLevelStr, starsEarned }),
+              body: JSON.stringify({
+                profileId,
+                activityType: 'game',
+                title: isBoss ? `Trận đấu Trùm: ${currentWorld.bossName || 'Siêu trí nhớ'}` : 'Ghép đôi: Luyện trí nhớ',
+                grade: gradeSlug,
+                subject: currentWorld.name,
+                topic: 'Ghép đôi',
+                skill: pairs[0]?.skill || 'matching',
+                gameType: 'simple-matching',
+                completedLevel: completedLevelStr,
+                worldId,
+                levelId,
+                isBoss,
+                starsEarned,
+                correct: pairs.length,
+                total: pairs.length,
+                answers: pairs.map(pair => ({
+                  questionId: pair.id,
+                  selected: pair.right,
+                  correctAnswer: pair.right,
+                  isCorrect: true,
+                  difficulty: pair.difficulty,
+                  subject: pair.subject || currentWorld.name,
+                  topic: pair.topic || 'Ghép đôi',
+                  skill: pair.skill || 'matching',
+                })),
+              }),
             })
+            const submitData = await submitRes.json()
+            if (submitRes.ok) {
+              localStorage.setItem('lastXp', String(submitData.result?.xp || 0))
+              localStorage.setItem('lastScorePct', String(submitData.result?.scorePct || 0))
+              localStorage.setItem('lastLevelNumber', String(submitData.result?.level?.level || 1))
+            }
           } catch (err) {
-            console.error('Error saving progress:', err)
+            console.error('Error saving activity:', err)
           }
         }
         localStorage.setItem('lastStars', starsEarned)
@@ -139,7 +171,7 @@ function GameContent() {
       }
       setTimeout(finish, 800)
     }
-  }, [matched, pairs.length, router, isBoss, worldId, levelId, currentWorld.name])
+  }, [matched, pairs, router, isBoss, worldId, levelId, gradeSlug, currentWorld.name, currentWorld.bossName])
 
   if (loading || pairs.length === 0) {
     return (

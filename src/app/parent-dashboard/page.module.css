@@ -742,3 +742,201 @@
   line-height: 1.5;
   color: var(--outline);
 }
+
+.learningReportGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.reportCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 112px;
+  padding: 18px;
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--outline-variant);
+  border-bottom: 5px solid var(--outline-variant);
+  background: var(--surface-container-lowest);
+  box-shadow: var(--shadow-tactile);
+}
+
+.reportIcon {
+  width: 50px;
+  height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: var(--primary-fixed);
+  color: var(--primary);
+}
+
+.reportIcon :global(.material-symbols-outlined) {
+  font-size: 30px;
+}
+
+.reportCard span:not(.reportIcon) {
+  display: block;
+  color: var(--on-surface-variant);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.reportCard strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--primary);
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.activitySection {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 20px;
+}
+
+.activityColumn,
+.badgeSection {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--outline-variant);
+  border-bottom: 5px solid var(--outline-variant);
+  background: var(--surface-container-lowest);
+  box-shadow: var(--shadow-tactile);
+}
+
+.activityList,
+.skillList,
+.badgeGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.activityItem {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 2px solid var(--outline-variant);
+  background: var(--surface-container-low);
+}
+
+.activityKind {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: var(--primary-fixed);
+  color: var(--primary);
+}
+
+.activityKind :global(.material-symbols-outlined) {
+  font-size: 24px;
+}
+
+.activityItem strong,
+.activityItem small,
+.skillItem strong,
+.skillItem small {
+  display: block;
+}
+
+.activityItem strong,
+.skillItem strong {
+  color: var(--on-surface);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.activityItem small,
+.skillItem small {
+  margin-top: 3px;
+  color: var(--on-surface-variant);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.activityItem b {
+  color: #f59f00;
+  font-size: 18px;
+}
+
+.skillItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 2px solid var(--outline-variant);
+  background: var(--surface-container-low);
+}
+
+.skillItem span {
+  min-width: 58px;
+  padding: 7px 10px;
+  border-radius: var(--radius-full);
+  background: #fff7ed;
+  color: #c2410c;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.emptyActivity {
+  padding: 24px;
+  border-radius: 18px;
+  border: 2px dashed var(--outline-variant);
+  color: var(--on-surface-variant);
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 750;
+  text-align: center;
+}
+
+.badgeGrid {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.badgeCard {
+  min-height: 110px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 20px;
+  border: 2px solid #fed01b;
+  border-bottom: 5px solid #eec200;
+  background: #fff9db;
+  color: #574500;
+  text-align: center;
+}
+
+.badgeCard :global(.material-symbols-outlined) {
+  color: #f59f00;
+  font-size: 34px;
+}
+
+.badgeCard strong {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+@media (max-width: 860px) {
+  .learningReportGrid,
+  .activitySection {
+    grid-template-columns: 1fr;
+  }
+}

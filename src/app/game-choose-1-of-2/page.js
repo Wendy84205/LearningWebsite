@@ -19,6 +19,7 @@ function GameContent() {
   const [qIndex, setQIndex] = useState(0)
   const [chosen, setChosen] = useState(null)
   const [correct, setCorrect] = useState(0)
+  const [answerLog, setAnswerLog] = useState([])
   const [shake, setShake] = useState(false)
   const [pulse, setPulse] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -58,6 +59,17 @@ function GameContent() {
     if (chosen !== null) return
     setChosen(optIdx)
     const isRight = optIdx === q.correct
+    const currentAnswer = {
+      questionId: q.id,
+      selected: optIdx,
+      correctAnswer: q.correct,
+      isCorrect: isRight,
+      difficulty: q.difficulty,
+      subject: q.subject,
+      topic: q.topic,
+      skill: q.skill,
+    }
+    setAnswerLog(prev => [...prev, currentAnswer])
 
     if (isRight) {
       setCorrect(c => c + 1)
@@ -90,13 +102,35 @@ function GameContent() {
         const profileId = localStorage.getItem('profileId')
         if (profileId) {
           try {
-            await fetch('/api/progress', {
+            const submitRes = await fetch('/api/student/submit', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ profileId, completedLevel: completedLevelStr, starsEarned }),
+              body: JSON.stringify({
+                profileId,
+                activityType: 'game',
+                title: isBoss ? `Trận đấu Trùm: ${currentWorld.bossName}` : `Bài học: ${q.topic || currentWorld.name}`,
+                grade: gradeSlug,
+                subject: q.subject || currentWorld.name,
+                topic: q.topic || currentWorld.name,
+                skill: q.skill || '',
+                difficulty: q.difficulty || '',
+                gameType: 'choose-1-of-2',
+                completedLevel: completedLevelStr,
+                worldId,
+                levelId,
+                isBoss,
+                starsEarned,
+                answers: [...answerLog, currentAnswer],
+              }),
             })
+            const submitData = await submitRes.json()
+            if (submitRes.ok) {
+              localStorage.setItem('lastXp', String(submitData.result?.xp || 0))
+              localStorage.setItem('lastScorePct', String(submitData.result?.scorePct || 0))
+              localStorage.setItem('lastLevelNumber', String(submitData.result?.level?.level || 1))
+            }
           } catch (err) {
-            console.error('Error saving progress:', err)
+            console.error('Error saving activity:', err)
           }
         }
         localStorage.setItem('lastStars', starsEarned)

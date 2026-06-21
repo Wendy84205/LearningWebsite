@@ -2,6 +2,7 @@ import { getSessionUser } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { getCmsLearningMap } from '@/lib/cms-content'
 import { buildProgressSummary, getSlug } from '@/lib/progress-summary'
+import { buildActivityStats } from '@/lib/activity-service'
 
 // GET /api/dashboard
 export async function GET(request) {
@@ -32,12 +33,18 @@ export async function GET(request) {
       learningMapByGrade[grade] = await getCmsLearningMap(grade)
     }))
 
+    const activityStatsByProfile = {}
+    await Promise.all(parent.profiles.map(async (profile) => {
+      activityStatsByProfile[profile.id] = await buildActivityStats(profile.id)
+    }))
+
     const profiles = parent.profiles.map(profile => {
       const gradeSlug = getSlug(profile.grade || 'lop-1')
       const learningMap = learningMapByGrade[gradeSlug]
       const summary = buildProgressSummary(profile.progress, profile.grade, {
         worlds: learningMap?.worlds,
       })
+      const activityStats = activityStatsByProfile[profile.id]
 
       return {
         id: profile.id,
@@ -51,6 +58,10 @@ export async function GET(request) {
         summary,
         worldProgress: summary.worldProgress,
         focusRecommendation: summary.focusRecommendation,
+        activityStats,
+        recentActivities: activityStats?.attempts || [],
+        weakSkills: activityStats?.weakSkills || [],
+        badges: activityStats?.badges || [],
         cms: {
           learningMapItems: learningMap?.cmsItems?.length || 0,
           source: learningMap?.cmsItems?.length ? 'cms' : 'static-fallback'

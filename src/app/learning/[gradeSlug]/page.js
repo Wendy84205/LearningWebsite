@@ -60,6 +60,7 @@ export default function GradeLandingPage() {
   const [progress, setProgress] = useState(DEFAULT_PROGRESS)
   const [summary, setSummary] = useState(DEFAULT_SUMMARY)
   const [worlds, setWorlds] = useState(STATIC_WORLDS)
+  const [studentDashboard, setStudentDashboard] = useState(null)
   const [time, setTime] = useState(new Date())
 
   const greeting = useMemo(() => {
@@ -122,6 +123,13 @@ export default function GradeLandingPage() {
       localStorage.setItem('profileName', activeProfile.name || DEFAULT_PROFILE.name)
       localStorage.setItem('mascotName', activeProfile.mascotName || DEFAULT_MASCOT.name)
       localStorage.setItem('mascotEmoji', activeProfile.mascotImage || DEFAULT_MASCOT.image)
+      localStorage.setItem('gradeSlug', gradeSlug)
+
+      const studentRes = await fetch(`/api/student/dashboard?profileId=${activeProfile.id}&grade=${gradeSlug}`, { cache: 'no-store' })
+      if (studentRes.ok) {
+        const studentData = await studentRes.json()
+        setStudentDashboard(studentData)
+      }
     } catch (err) {
       console.error('Error fetching landing data:', err)
     }
@@ -168,6 +176,11 @@ export default function GradeLandingPage() {
   }
 
   const completedCount = summary.normalLevelsCompleted ?? 0
+  const activityStats = studentDashboard?.activityStats
+  const levelInfo = activityStats?.level || { level: 1, xp: 0, progressPct: 0, nextLevelXp: 80 }
+  const recentActivities = activityStats?.attempts || []
+  const weakSkills = activityStats?.weakSkills || []
+  const missions = studentDashboard?.missions
   const quickPractices = useMemo(() => {
     const completedLevels = summary.completedLevels || []
 
@@ -264,8 +277,8 @@ export default function GradeLandingPage() {
         <div className={styles.miniStats}>
           <div className={styles.miniStat}>
             <span className={`material-symbols-outlined ${styles.miniStatIcon}`} style={{ color: 'var(--primary)' }}>menu_book</span>
-            <div className={styles.miniStatVal}>{progress.currentLevel}</div>
-            <div className={styles.miniStatLabel}>Cấp hiện tại</div>
+            <div className={styles.miniStatVal}>{levelInfo.level}</div>
+            <div className={styles.miniStatLabel}>Level XP</div>
           </div>
           <div className={styles.miniStat}>
             <span className={`material-symbols-outlined ${styles.miniStatIcon}`} style={{ color: '#10b981' }}>check_circle</span>
@@ -274,8 +287,8 @@ export default function GradeLandingPage() {
           </div>
           <div className={styles.miniStat}>
             <span className={`material-symbols-outlined ${styles.miniStatIcon}`} style={{ color: '#ffb953' }}>star</span>
-            <div className={styles.miniStatVal}>{progress.stars}</div>
-            <div className={styles.miniStatLabel}>Tổng số sao</div>
+            <div className={styles.miniStatVal}>{levelInfo.xp}</div>
+            <div className={styles.miniStatLabel}>XP đã nhận</div>
           </div>
           <div className={styles.miniStat}>
             <span className={`material-symbols-outlined ${styles.miniStatIcon}`} style={{ color: '#ff6f00' }}>local_fire_department</span>
@@ -312,6 +325,69 @@ export default function GradeLandingPage() {
               <span className={styles.quickMeta}>{quickPractices.matching.worldName}</span>
             </Link>
           </div>
+        </div>
+
+        <div className={styles.missionPanel}>
+          <div className={styles.panelHeader}>
+            <div>
+              <span className={styles.panelEyebrow}>Học thật từ Question Bank</span>
+              <h2 className={styles.quickStartTitle}>Nhiệm vụ & kiểm tra</h2>
+            </div>
+            <div className={styles.xpProgress}>
+              <span>Level {levelInfo.level}</span>
+              <div className={styles.xpTrack}>
+                <div className={styles.xpFill} style={{ width: `${levelInfo.progressPct}%` }} />
+              </div>
+            </div>
+          </div>
+          <div className={styles.missionGrid}>
+            <Link href={missions?.daily?.href || `/learning/${gradeSlug}/test?mode=daily`} className={styles.missionCard}>
+              <span className="material-symbols-outlined">emoji_events</span>
+              <strong>Nhiệm vụ hôm nay</strong>
+              <small>{missions?.daily?.count || 0} câu gợi ý</small>
+            </Link>
+            <Link href={`/learning/${gradeSlug}/test?mode=test`} className={styles.missionCard}>
+              <span className="material-symbols-outlined">assignment</span>
+              <strong>Bài kiểm tra</strong>
+              <small>Lấy câu hỏi published</small>
+            </Link>
+            <Link href={missions?.review?.href || `/learning/${gradeSlug}/test?mode=review`} className={styles.missionCard}>
+              <span className="material-symbols-outlined">psychology</span>
+              <strong>Ôn tập thông minh</strong>
+              <small>{weakSkills[0]?.skill ? `Cần luyện: ${weakSkills[0].skill}` : 'Dựa trên lỗi sai'}</small>
+            </Link>
+          </div>
+        </div>
+
+        <div className={styles.historyPanel}>
+          <div className={styles.panelHeader}>
+            <div>
+              <span className={styles.panelEyebrow}>Theo dõi tiến bộ</span>
+              <h2 className={styles.quickStartTitle}>Lịch sử học gần đây</h2>
+            </div>
+            <span className={styles.averageBadge}>{activityStats?.averageScore || 0}% trung bình</span>
+          </div>
+          {recentActivities.length === 0 ? (
+            <div className={styles.emptyHistory}>
+              <span className="material-symbols-outlined">history_edu</span>
+              <p>Chưa có lượt học nào. Hãy chơi game hoặc làm bài kiểm tra đầu tiên nhé!</p>
+            </div>
+          ) : (
+            <div className={styles.historyList}>
+              {recentActivities.slice(0, 4).map(item => (
+                <div key={item.id} className={styles.historyItem}>
+                  <span className="material-symbols-outlined">
+                    {item.activityType === 'test' ? 'assignment' : item.activityType === 'review' ? 'psychology' : 'sports_esports'}
+                  </span>
+                  <div>
+                    <strong>{item.title}</strong>
+                    <small>{item.correct}/{item.total} đúng · {item.scorePct}% · +{item.xp} XP</small>
+                  </div>
+                  <b>{item.stars}★</b>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

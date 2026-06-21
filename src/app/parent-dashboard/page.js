@@ -168,6 +168,10 @@ export default function ParentDashboardPage() {
   const worldProgress = selected?.worldProgress || []
   const activeFocusRec = selected?.focusRecommendation
   const selectedGradeLabel = formatGradeLabel(selected?.grade)
+  const activityStats = selected?.activityStats || {}
+  const recentActivities = selected?.recentActivities || []
+  const weakSkills = selected?.weakSkills || []
+  const badges = selected?.badges || []
 
   return (
     <div className={styles.page}>
@@ -286,6 +290,30 @@ export default function ParentDashboardPage() {
                   </div>
                 </div>
 
+                <div className={styles.learningReportGrid}>
+                  <div className={styles.reportCard}>
+                    <span className={styles.reportIcon}><MaterialIcon>bolt</MaterialIcon></span>
+                    <div>
+                      <span>XP tích lũy</span>
+                      <strong>{activityStats.totalXp || 0}</strong>
+                    </div>
+                  </div>
+                  <div className={styles.reportCard}>
+                    <span className={styles.reportIcon}><MaterialIcon>analytics</MaterialIcon></span>
+                    <div>
+                      <span>Điểm trung bình</span>
+                      <strong>{activityStats.averageScore || 0}%</strong>
+                    </div>
+                  </div>
+                  <div className={styles.reportCard}>
+                    <span className={styles.reportIcon}><MaterialIcon>history_edu</MaterialIcon></span>
+                    <div>
+                      <span>Lượt học đã lưu</span>
+                      <strong>{activityStats.totalAttempts || 0}</strong>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Overall Progress Section */}
                 <div className={styles.progressSection}>
                   <div className={styles.progressHeader}>
@@ -342,6 +370,74 @@ export default function ParentDashboardPage() {
                       </div>
                     ))}
                   </div>
+                </div>
+
+                <div className={styles.activitySection}>
+                  <div className={styles.activityColumn}>
+                    <h2 className={styles.sectionTitle}>
+                      <MaterialIcon style={{ marginRight: '8px', verticalAlign: 'middle' }}>timeline</MaterialIcon>
+                      Lịch sử học tập gần đây
+                    </h2>
+                    {recentActivities.length === 0 ? (
+                      <div className={styles.emptyActivity}>Chưa có lượt làm bài/game nào được lưu.</div>
+                    ) : (
+                      <div className={styles.activityList}>
+                        {recentActivities.slice(0, 6).map(item => (
+                          <div key={item.id} className={styles.activityItem}>
+                            <span className={styles.activityKind}>
+                              <MaterialIcon>{item.activityType === 'test' ? 'assignment' : item.activityType === 'review' ? 'psychology' : 'sports_esports'}</MaterialIcon>
+                            </span>
+                            <div>
+                              <strong>{item.title}</strong>
+                              <small>{item.correct}/{item.total} đúng · {item.scorePct}% · +{item.xp} XP</small>
+                            </div>
+                            <b>{item.stars}★</b>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={styles.activityColumn}>
+                    <h2 className={styles.sectionTitle}>
+                      <MaterialIcon style={{ marginRight: '8px', verticalAlign: 'middle' }}>psychology</MaterialIcon>
+                      Kỹ năng cần luyện
+                    </h2>
+                    {weakSkills.length === 0 ? (
+                      <div className={styles.emptyActivity}>Chưa đủ dữ liệu lỗi sai để gợi ý kỹ năng yếu.</div>
+                    ) : (
+                      <div className={styles.skillList}>
+                        {weakSkills.slice(0, 5).map(skill => (
+                          <div key={skill.skill} className={styles.skillItem}>
+                            <div>
+                              <strong>{skill.skill}</strong>
+                              <small>{skill.correct}/{skill.total} câu đúng</small>
+                            </div>
+                            <span>{skill.accuracy}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.badgeSection}>
+                  <h2 className={styles.sectionTitle}>
+                    <MaterialIcon style={{ marginRight: '8px', verticalAlign: 'middle' }}>military_tech</MaterialIcon>
+                    Huy hiệu học tập
+                  </h2>
+                  {badges.length === 0 ? (
+                    <div className={styles.emptyActivity}>Bé sẽ mở huy hiệu sau khi hoàn thành thêm bài học, game hoặc bài kiểm tra.</div>
+                  ) : (
+                    <div className={styles.badgeGrid}>
+                      {badges.map(badge => (
+                        <div key={badge.id} className={styles.badgeCard}>
+                          <MaterialIcon filled>workspace_premium</MaterialIcon>
+                          <strong>{badge.name}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Dynamic Recommendations */}

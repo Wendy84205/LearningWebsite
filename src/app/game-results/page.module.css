@@ -86,6 +86,10 @@
     padding: 32px 16px;
     margin: 16px;
   }
+
+  .rewardGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .mascotWrap {
@@ -173,6 +177,38 @@
   line-height: 28px;
   color: var(--secondary);
   font-weight: 800;
+}
+
+.rewardGrid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.rewardGrid div {
+  min-height: 82px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  padding: 10px;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--outline-variant);
+  border-bottom: 5px solid var(--outline-variant);
+  background: var(--surface-container-lowest);
+}
+
+.rewardGrid span {
+  color: var(--on-surface-variant);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.rewardGrid strong {
+  color: var(--primary);
+  font-size: 24px;
+  font-weight: 950;
 }
 
 .actions {

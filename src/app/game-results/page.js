@@ -15,6 +15,9 @@ export default function GameResultsPage() {
   const [showStars, setShowStars] = useState(0)
   const [confettiDots, setConfettiDots] = useState([])
   const [gradeSlug, setGradeSlug] = useState('lop-1')
+  const [xp, setXp] = useState(0)
+  const [scorePct, setScorePct] = useState(0)
+  const [levelNumber, setLevelNumber] = useState(1)
 
   useEffect(() => {
     const s = parseInt(localStorage.getItem('lastStars') || '0')
@@ -22,27 +25,19 @@ export default function GameResultsPage() {
     const mn = localStorage.getItem('mascotName') || 'Tin Tin'
     const me = localStorage.getItem('mascotEmoji') || '🤖'
     const gs = localStorage.getItem('gradeSlug') || 'lop-1'
+    const lastXp = parseInt(localStorage.getItem('lastXp') || '0', 10)
+    const lastScorePct = parseInt(localStorage.getItem('lastScorePct') || '0', 10)
+    const lastLevelNumber = parseInt(localStorage.getItem('lastLevelNumber') || '1', 10)
     
     setTimeout(() => {
       setStars(s)
       setGameName(g)
       setMascot({ name: mn, image: me })
       setGradeSlug(gs)
+      setXp(Number.isFinite(lastXp) ? lastXp : 0)
+      setScorePct(Number.isFinite(lastScorePct) ? lastScorePct : 0)
+      setLevelNumber(Number.isFinite(lastLevelNumber) ? lastLevelNumber : 1)
     }, 0)
-
-    // Save progress to DB if not already saved by game page
-    const profileId = localStorage.getItem('profileId')
-    const lastLevel = parseInt(localStorage.getItem('lastLevel') || '0')
-    const savedKey = `progress_saved_${lastLevel}_${Date.now().toString().slice(0, -4)}`
-    const alreadySaved = localStorage.getItem('lastProgressSaved') === savedKey
-    if (profileId && lastLevel > 0 && !alreadySaved) {
-      localStorage.setItem('lastProgressSaved', savedKey)
-      fetch('/api/progress', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profileId, completedLevel: lastLevel, starsEarned: s }),
-      }).catch(err => console.error('Error saving progress:', err))
-    }
 
     // Confetti and Audio Narration
     if ('speechSynthesis' in window) {
@@ -125,6 +120,21 @@ export default function GameResultsPage() {
         </div>
 
         <p className={styles.message}>{msg}</p>
+
+        <div className={styles.rewardGrid}>
+          <div>
+            <span>XP nhận được</span>
+            <strong>+{xp}</strong>
+          </div>
+          <div>
+            <span>Điểm đúng</span>
+            <strong>{scorePct}%</strong>
+          </div>
+          <div>
+            <span>Level hiện tại</span>
+            <strong>{levelNumber}</strong>
+          </div>
+        </div>
 
         <div className={styles.actions}>
           <Link href={`/learning/${gradeSlug}/map`} id="btn-back-map" className={`btn btn-primary btn-lg ${styles.actionsBtn}`}>
