@@ -18,23 +18,31 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 48px;
+  gap: 12px;
+  padding: 12px 32px;
   background-color: var(--surface-container-lowest);
   border-bottom: 2px solid var(--outline-variant);
   box-shadow: 0 4px 16px rgba(0, 96, 172, 0.07);
+  min-height: 64px;
 }
 
 @media (max-width: 768px) {
   .topBar {
-    padding: 12px 16px;
+    padding: 10px 16px;
+    gap: 8px;
   }
 }
 
 .greeting {
-  font-size: 18px;
-  line-height: 28px;
+  font-size: 17px;
+  line-height: 24px;
   font-weight: 700;
   color: var(--on-surface-variant);
+  min-width: 0;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .greetingText strong {
@@ -45,7 +53,8 @@
 .statsRow {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .stat {
