@@ -1,9 +1,12 @@
 'use client'
-import { useState, useEffect, useMemo, Suspense } from 'react'
+import { useState, useEffect, useMemo, Suspense, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { getGradeData } from '@/lib/data'
 import styles from './page.module.css'
+
+const MASCOT_IMG = 'https://lh3.googleusercontent.com/aida-public/AB6AXuC2NFSY-SBYXNcMqP_ktL-rpOuzhBlXjFLoSPz3QrhveKP_cAEe1db4z7mgL9hlGFHNz2ZA6E7qdmKChcaHK_ObrWivF76fDG00KLURFR4vyNh7Ng5Jl23m4YRHce9qT47Ouw1Rb8cRZoIHVGvQ3MY9h95_xc2KgUahFd8CHOCgiuNFgcnO8TOGXyCryTPjmwc20y-Q7sjkCPIxyfp94q7JUvukPpFoOeyA2OaclfHitMXv3CWDnWsoqk5sMjePhlQFn1yet2LRXf4'
+const MASCOT_SAD = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDe-gm_Khrg4SS_V0FeN7jfmDwqbgqkmHJ9TwASNEiJOWCVCfc-8uJatHGFMtv_VgJadl9FH-zNGq6x6nfr79RTEfoofWXt8nCco6N2nu8ldHFrkMW07YgPRogMUmtGc2UR2jnv1GszSU9VkJcNKPq99YzqaRoi9R6OMiGkIueKFx7cfDnRI9Vu0BSvJsWfQ4DpzjxDlwl-AAbusbE1iDXrhPNDH8NJyw_iM76Y6OXHu6qw-pr2ys4hYQsgPMdUypHP28jgdi9GzzA'
 
 function GameContent() {
   const router = useRouter()
@@ -23,6 +26,8 @@ function GameContent() {
   const [shake, setShake] = useState(false)
   const [pulse, setPulse] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [showIncorrect, setShowIncorrect] = useState(false)
 
   useEffect(() => {
     fetch(`/api/questions?grade=${gradeSlug}&world=${worldId}&level=${levelId}&boss=${isBoss}&game=choose-1-of-2`)
@@ -43,8 +48,8 @@ function GameContent() {
     return (
       <div className={styles.page} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
         <div style={{ textAlign: 'center' }}>
-          <div className={styles.pulse} style={{ fontSize: '48px', marginBottom: '16px' }}>🎮</div>
-          <h2 style={{ color: 'var(--primary)', fontWeight: 800 }}>Đang chuẩn bị câu hỏi...</h2>
+          <img src={MASCOT_IMG} alt="Mascot" style={{ width: 120, height: 120, objectFit: 'contain', animation: 'none' }} />
+          <h2 style={{ color: '#005da7', fontWeight: 800, marginTop: 16 }}>Đang chuẩn bị câu hỏi...</h2>
         </div>
       </div>
     )
@@ -54,6 +59,15 @@ function GameContent() {
   const isLast = qIndex === questions.length - 1
   const progress = (qIndex / questions.length) * 100
   const currentWorld = WORLDS.find(w => w.id === worldId) || WORLDS[0]
+
+  const handleSpeaker = () => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel()
+      const utterance = new SpeechSynthesisUtterance(q.q)
+      utterance.lang = 'vi-VN'
+      window.speechSynthesis.speak(utterance)
+    }
+  }
 
   const handleAnswer = async (optIdx) => {
     if (chosen !== null) return
@@ -74,28 +88,20 @@ function GameContent() {
     if (isRight) {
       setCorrect(c => c + 1)
       setPulse(true)
+      setShowSuccess(true)
       setTimeout(() => setPulse(false), 600)
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel()
-        const utterance = new SpeechSynthesisUtterance('Đúng rồi! Bạn giỏi quá!')
-        utterance.lang = 'vi-VN'
-        window.speechSynthesis.speak(utterance)
-      }
     } else {
       setShake(true)
+      setShowIncorrect(true)
       setTimeout(() => setShake(false), 600)
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel()
-        const utterance = new SpeechSynthesisUtterance('Chưa chính xác! Cố gắng lên nhé!')
-        utterance.lang = 'vi-VN'
-        window.speechSynthesis.speak(utterance)
-      }
     }
 
     setTimeout(async () => {
+      setShowSuccess(false)
+      setShowIncorrect(false)
+
       if (isLast) {
         const finalCorrect = correct + (isRight ? 1 : 0)
-        // 3 sao nếu đúng hết hoặc sai 1 câu, 2 sao nếu đúng quá nửa, còn lại 1 sao
         const starsEarned = finalCorrect === questions.length ? 3 : finalCorrect >= Math.ceil(questions.length / 2) ? 2 : 1
         const completedLevelStr = isBoss ? `w${worldId}-boss` : `w${worldId}-l${levelId}`
 
@@ -141,7 +147,7 @@ function GameContent() {
         setQIndex(i => i + 1)
         setChosen(null)
       }
-    }, 1400)
+    }, 1600)
   }
 
   return (
@@ -156,9 +162,10 @@ function GameContent() {
         </Link>
         <div className={styles.progressWrap}>
           <div className={styles.progressContainer}>
-            <div className={styles.progressFill} style={{ width: `${progress}%` }} />
+            <div className={styles.progressFill} style={{ width: `${progress}%` }}>
+              <div className={styles.progressDot} />
+            </div>
           </div>
-          <span className={styles.qCounter}>{qIndex + 1}/{questions.length}</span>
         </div>
         <div className={styles.starBadge}>
           <span className={`material-symbols-outlined ${styles.starIcon}`}>monetization_on</span>
@@ -167,13 +174,13 @@ function GameContent() {
       </header>
 
       {/* Subject Badge */}
-      <div className={styles.subjectBadgeWrap} style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}>
+      <div className={styles.subjectBadgeWrap}>
         <span style={{
-          background: currentWorld.bgColor,
-          color: currentWorld.textColor,
-          border: `1px solid ${currentWorld.borderColor}`,
+          background: currentWorld.bgColor || '#d4e3ff',
+          color: currentWorld.textColor || '#005da7',
+          border: `1px solid ${currentWorld.borderColor || '#a4c9ff'}`,
           borderRadius: '999px',
-          padding: '4px 14px',
+          padding: '4px 16px',
           fontSize: '13px',
           fontWeight: 700,
           boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
@@ -184,11 +191,20 @@ function GameContent() {
 
       {/* Game Area */}
       <div className={styles.gameArea}>
-        <div className={`${styles.questionCard} ${shake ? styles.shake : ''} ${pulse ? styles.pulse : ''}`}>
-          <div className={styles.questionEmoji}>{q.emoji || '❓'}</div>
-          <h2 className={styles.questionText}>{q.q}</h2>
+        {/* Mascot + Question */}
+        <div className={styles.mascotSection}>
+          <div className={styles.mascotWrapper}>
+            <img src={MASCOT_IMG} alt="Mascot" />
+            <button className={styles.speakerBtn} onClick={handleSpeaker} aria-label="Đọc câu hỏi">
+              <span className="material-symbols-outlined" style={{ fontSize: 28, fontVariationSettings: "'FILL' 1" }}>volume_up</span>
+            </button>
+          </div>
+          <h1 className={`${styles.questionText} ${shake ? styles.shake : ''} ${pulse ? styles.pulse : ''}`}>
+            {q.q}
+          </h1>
         </div>
 
+        {/* Options */}
         <div className={styles.optionsGrid}>
           {q.options.map((opt, i) => {
             let stateClass = ''
@@ -210,6 +226,26 @@ function GameContent() {
           })}
         </div>
       </div>
+
+      {/* Success Overlay */}
+      <div className={`${styles.successOverlay} ${showSuccess ? styles.visible : ''}`}>
+        <div className={styles.feedbackContent}>
+          <span className={`material-symbols-outlined ${styles.successStar}`}>auto_awesome</span>
+          <div className={styles.feedbackBubble}>
+            <h2>Tuyệt vời!</h2>
+          </div>
+        </div>
+      </div>
+
+      {/* Incorrect Overlay */}
+      <div className={`${styles.incorrectOverlay} ${showIncorrect ? styles.visible : ''}`}>
+        <div className={styles.feedbackContent}>
+          <img src={MASCOT_SAD} alt="Mascot buồn" className={styles.mascotFeedbackImg} />
+          <div className={styles.feedbackBubbleWrong}>
+            <p>Gần đúng rồi, thử lại nhé!</p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -217,8 +253,8 @@ function GameContent() {
 export default function GameChoose1of2Page() {
   return (
     <Suspense fallback={
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'var(--surface)' }}>
-        <h3>Đang tải trò chơi...</h3>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#FFF9F2' }}>
+        <h3 style={{ color: '#005da7', fontWeight: 800 }}>Đang tải trò chơi...</h3>
       </div>
     }>
       <GameContent />

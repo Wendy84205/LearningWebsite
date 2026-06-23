@@ -184,38 +184,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Pricing */}
-        <section id="pricing" className={styles.pricingSection}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Chọn gói học phù hợp</h2>
-          </div>
-          <div className={styles.pricingGrid}>
-            <div className={`card ${styles.pricingCard}`}>
-              <h3 className={styles.pricingName}>Miễn phí</h3>
-              <p className={styles.pricingSub}>Trải nghiệm cơ bản</p>
-              <div className={styles.pricingAmount}><span>0đ</span><small>/tháng</small></div>
-              <ul className={styles.pricingFeatures}>
-                <li><span className="material-symbols-outlined" style={{ color: 'var(--primary)' }}>check_circle</span> 10 bài tập mỗi ngày</li>
-                <li><span className="material-symbols-outlined" style={{ color: 'var(--primary)' }}>check_circle</span> 1 tài khoản học sinh</li>
-                <li style={{ opacity: 0.4 }}><span className="material-symbols-outlined">cancel</span> Báo cáo tiến độ chi tiết</li>
-              </ul>
-              <Link href="/parent-login" className="btn btn-outline-primary" style={{ width: '100%', justifyContent: 'center' }}>Dùng thử ngay</Link>
-            </div>
-            <div className={`${styles.pricingCard} ${styles.pricingFeatured}`}>
-              <div className={styles.pricingBadge}>Phổ biến nhất</div>
-              <h3 className={styles.pricingName}>Gia đình</h3>
-              <p className={styles.pricingSub}>Đầy đủ tính năng cao cấp</p>
-              <div className={styles.pricingAmount}><span>199.000đ</span><small>/tháng</small></div>
-              <ul className={styles.pricingFeatures}>
-                <li><span className="material-symbols-outlined" style={{ color: 'var(--primary)' }}>check_circle</span> Không giới hạn bài tập</li>
-                <li><span className="material-symbols-outlined" style={{ color: 'var(--primary)' }}>check_circle</span> 3 tài khoản học sinh</li>
-                <li><span className="material-symbols-outlined" style={{ color: 'var(--primary)' }}>check_circle</span> Báo cáo & Phân tích AI</li>
-                <li><span className="material-symbols-outlined" style={{ color: 'var(--primary)' }}>check_circle</span> Hỗ trợ gia sư trực tuyến</li>
-              </ul>
-              <Link href="/parent-login" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>Nâng cấp ngay</Link>
-            </div>
-          </div>
-        </section>
       </main>
 
       {/* Footer */}

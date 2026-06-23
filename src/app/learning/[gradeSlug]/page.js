@@ -210,13 +210,20 @@ export default function GradeLandingPage() {
           </span>
         </div>
         <div className={styles.statsRow}>
-          <div className="badge badge-yellow stat-badge">
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", color: 'var(--secondary)' }}>monetization_on</span>
-            <span>{progress.stars}</span>
+          {/* XP */}
+          <div className={styles.statChip}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", color: 'var(--primary)', fontSize: '18px' }}>star</span>
+            <span style={{ fontWeight: 700, fontSize: 13 }}>{levelInfo.xp} XP</span>
           </div>
-          <div className="badge badge-blue stat-badge">
-            <span className="material-symbols-outlined" style={{ color: 'var(--primary)' }}>local_fire_department</span>
-            <span>{progress.streak} ngày</span>
+          {/* Coins */}
+          <div className={styles.statChip}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", color: '#ffc800', fontSize: '18px' }}>monetization_on</span>
+            <span style={{ fontWeight: 700, fontSize: 13 }}>{progress.stars}</span>
+          </div>
+          {/* Streak */}
+          <div className={styles.statChip}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", color: '#ff4b4b', fontSize: '18px' }}>local_fire_department</span>
+            <span style={{ fontWeight: 700, fontSize: 13 }}>{progress.streak} ngày</span>
           </div>
           <Link href="/parent-dashboard" id="btn-parent-dash" className={styles.parentDashBtn} title="Báo cáo phụ huynh">
             <span className="material-symbols-outlined">monitoring</span>
@@ -297,35 +304,88 @@ export default function GradeLandingPage() {
           </div>
         </div>
 
-        {/* Quick Start – Môn học */}
-        <div className={styles.quickStart}>
-          <h2 className={styles.quickStartTitle}>
-            Luyện tập nhanh
-            <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginLeft: '8px', color: 'var(--primary)' }}>rocket_launch</span>
-          </h2>
-          <div className={styles.quickGrid}>
-            <Link href={quickPractices.math.href} id="btn-game-1" className={styles.quickCard}>
-              <span className={`material-symbols-outlined ${styles.quickIcon}`} style={{ color: 'var(--primary)' }}>calculate</span>
-              <span className={styles.quickName}>Toán học</span>
-              <span className={styles.quickSub}>{quickPractices.math.title}</span>
-              <span className={styles.quickMeta}>{quickPractices.math.worldName}</span>
-            </Link>
-
-            <Link href={quickPractices.vietnamese.href} id="btn-game-2" className={styles.quickCard}>
-              <span className={`material-symbols-outlined ${styles.quickIcon}`} style={{ color: '#10b981' }}>menu_book</span>
-              <span className={styles.quickName}>Tiếng Việt</span>
-              <span className={styles.quickSub}>{quickPractices.vietnamese.title}</span>
-              <span className={styles.quickMeta}>{quickPractices.vietnamese.worldName}</span>
-            </Link>
-
-            <Link href={quickPractices.matching.href} id="btn-game-3" className={styles.quickCard}>
-              <span className={`material-symbols-outlined ${styles.quickIcon}`} style={{ color: 'var(--secondary)' }}>extension</span>
-              <span className={styles.quickName}>Ghép đôi & Khám phá</span>
-              <span className={styles.quickSub}>{quickPractices.matching.title}</span>
-              <span className={styles.quickMeta}>{quickPractices.matching.worldName}</span>
+        {/* Stitch Subject Tiles */}
+        <section className={styles.subjectSection}>
+          <div className={styles.subjectHeader}>
+            <h2 className={styles.subjectTitle}>Học kỳ này</h2>
+            <Link href={`/learning/${gradeSlug}/map`} className={styles.subjectViewAll}>
+              Xem tất cả <span className="material-symbols-outlined" style={{ fontSize: 18, verticalAlign: 'middle' }}>arrow_forward</span>
             </Link>
           </div>
-        </div>
+          <div className={styles.subjectGrid}>
+            {/* Toán */}
+            <Link href={quickPractices.math.href} id="btn-game-1" className={styles.subjectCard} style={{ '--subject-color': '#1cb0f6', '--subject-bg': 'rgba(28,176,246,0.08)' }}>
+              <div className={styles.subjectCardTop}>
+                <div className={styles.subjectCardTopLeft} style={{ background: 'rgba(28,176,246,0.1)' }}>
+                  <span className="material-symbols-outlined" style={{ color: '#1cb0f6', fontSize: 28 }}>calculate</span>
+                </div>
+                <span className={styles.subjectPct} style={{ color: '#1cb0f6' }}>{completedCount > 0 ? Math.min(Math.round((completedCount / 20) * 100), 100) : 0}%</span>
+              </div>
+              <div>
+                <div className={styles.subjectName}>Toán học</div>
+                <div className={styles.subjectSub}>{quickPractices.math.worldName}</div>
+              </div>
+              <div className={styles.subjectProgressTrack}>
+                <div className={styles.subjectProgressFill} style={{ width: `${completedCount > 0 ? Math.min(Math.round((completedCount / 20) * 100), 100) : 0}%`, background: '#1cb0f6' }} />
+              </div>
+              <div className={styles.subjectBtn} style={{ background: '#1cb0f6' }}>Tiếp tục</div>
+            </Link>
+
+            {/* Tiếng Việt */}
+            <Link href={quickPractices.vietnamese.href} id="btn-game-2" className={styles.subjectCard} style={{ '--subject-color': '#ff4b4b', '--subject-bg': 'rgba(255,75,75,0.08)' }}>
+              <div className={styles.subjectCardTop}>
+                <div className={styles.subjectCardTopLeft} style={{ background: 'rgba(255,75,75,0.1)' }}>
+                  <span className="material-symbols-outlined" style={{ color: '#ff4b4b', fontSize: 28 }}>history_edu</span>
+                </div>
+                <span className={styles.subjectPct} style={{ color: '#ff4b4b' }}>{completedCount > 0 ? Math.min(Math.round((completedCount / 30) * 100), 100) : 0}%</span>
+              </div>
+              <div>
+                <div className={styles.subjectName}>Tiếng Việt</div>
+                <div className={styles.subjectSub}>{quickPractices.vietnamese.worldName}</div>
+              </div>
+              <div className={styles.subjectProgressTrack}>
+                <div className={styles.subjectProgressFill} style={{ width: `${completedCount > 0 ? Math.min(Math.round((completedCount / 30) * 100), 100) : 0}%`, background: '#ff4b4b' }} />
+              </div>
+              <div className={styles.subjectBtn} style={{ background: '#ff4b4b' }}>Tiếp tục</div>
+            </Link>
+
+            {/* Tiếng Anh */}
+            <Link href={quickPractices.matching.href} id="btn-game-3" className={styles.subjectCard} style={{ '--subject-color': '#58cc02', '--subject-bg': 'rgba(88,204,2,0.08)' }}>
+              <div className={styles.subjectCardTop}>
+                <div className={styles.subjectCardTopLeft} style={{ background: 'rgba(88,204,2,0.1)' }}>
+                  <span className="material-symbols-outlined" style={{ color: '#58cc02', fontSize: 28 }}>translate</span>
+                </div>
+                <span className={styles.subjectPct} style={{ color: '#58cc02' }}>{completedCount > 0 ? Math.min(Math.round((completedCount / 40) * 100), 100) : 0}%</span>
+              </div>
+              <div>
+                <div className={styles.subjectName}>Tiếng Anh</div>
+                <div className={styles.subjectSub}>{quickPractices.matching.worldName}</div>
+              </div>
+              <div className={styles.subjectProgressTrack}>
+                <div className={styles.subjectProgressFill} style={{ width: `${completedCount > 0 ? Math.min(Math.round((completedCount / 40) * 100), 100) : 0}%`, background: '#58cc02' }} />
+              </div>
+              <div className={styles.subjectBtn} style={{ background: '#58cc02' }}>Tiếp tục</div>
+            </Link>
+
+            {/* Khoa học */}
+            <Link href={`/learning/${gradeSlug}/games`} id="btn-game-4" className={styles.subjectCard} style={{ '--subject-color': '#ffa500', '--subject-bg': 'rgba(255,165,0,0.08)' }}>
+              <div className={styles.subjectCardTop}>
+                <div className={styles.subjectCardTopLeft} style={{ background: 'rgba(255,165,0,0.1)' }}>
+                  <span className="material-symbols-outlined" style={{ color: '#ffa500', fontSize: 28 }}>biotech</span>
+                </div>
+                <span className={styles.subjectPct} style={{ color: '#ffa500' }}>Mới</span>
+              </div>
+              <div>
+                <div className={styles.subjectName}>Khoa học</div>
+                <div className={styles.subjectSub}>Trò chơi học tập</div>
+              </div>
+              <div className={styles.subjectProgressTrack}>
+                <div className={styles.subjectProgressFill} style={{ width: '15%', background: '#ffa500' }} />
+              </div>
+              <div className={styles.subjectBtn} style={{ background: '#ffa500' }}>Tiếp tục</div>
+            </Link>
+          </div>
+        </section>
 
         <div className={styles.missionPanel}>
           <div className={styles.panelHeader}>

@@ -362,32 +362,32 @@ export default function ParentDashboardPage() {
                   <p>Hôm nay bé đạt <em>{summary.progressPct}%</em> mục tiêu học tập</p>
                 </section>
                 <section className={styles.gamifiedMetricGrid}>
-                  <div className={styles.gamifiedMetricCard}>
+                  <div className={styles.gamifiedMetricCard} style={{ borderBottomColor: '#1cb0f6' }}>
                     <div className={styles.metricIcon} style={{ background: 'rgba(28,176,246,0.1)', color: '#1cb0f6' }}>
                       <MaterialIcon filled>bolt</MaterialIcon>
                     </div>
-                    <strong>{activityStats.totalXp || 0}</strong>
+                    <strong style={{ color: '#1cb0f6' }}>{activityStats.totalXp || 0}</strong>
                     <span>XP tích lũy</span>
                   </div>
-                  <div className={styles.gamifiedMetricCard}>
+                  <div className={styles.gamifiedMetricCard} style={{ borderBottomColor: '#ffc800' }}>
                     <div className={styles.metricIcon} style={{ background: 'rgba(255,200,0,0.15)', color: '#ffc800' }}>
                       <MaterialIcon filled>local_fire_department</MaterialIcon>
                     </div>
-                    <strong>{summary.streak} ngày</strong>
+                    <strong style={{ color: '#ffc800' }}>{summary.streak} ngày</strong>
                     <span>Streak hiện tại</span>
                   </div>
-                  <div className={styles.gamifiedMetricCard}>
+                  <div className={styles.gamifiedMetricCard} style={{ borderBottomColor: '#58cc02' }}>
                     <div className={styles.metricIcon} style={{ background: 'rgba(88,204,2,0.1)', color: '#58cc02' }}>
-                      <MaterialIcon filled>workspace_premium</MaterialIcon>
+                      <MaterialIcon filled>military_tech</MaterialIcon>
                     </div>
-                    <strong>Cấp {activityStats.level?.level || 1}</strong>
+                    <strong style={{ color: '#58cc02' }}>Cấp {activityStats.level?.level || 1}</strong>
                     <span>Level hiện tại</span>
                   </div>
-                  <div className={styles.gamifiedMetricCard}>
-                    <div className={styles.metricIcon} style={{ background: 'rgba(28,176,246,0.1)', color: '#1cb0f6' }}>
+                  <div className={styles.gamifiedMetricCard} style={{ borderBottomColor: '#ff4b4b' }}>
+                    <div className={styles.metricIcon} style={{ background: 'rgba(255,75,75,0.1)', color: '#ff4b4b' }}>
                       <MaterialIcon filled>analytics</MaterialIcon>
                     </div>
-                    <strong>{activityStats.averageScore || 0}%</strong>
+                    <strong style={{ color: '#ff4b4b' }}>{activityStats.averageScore || 0}%</strong>
                     <span>Điểm trung bình</span>
                   </div>
                 </section>
@@ -584,24 +584,137 @@ export default function ParentDashboardPage() {
                   </div>
                 </div>
 
-                <div className={styles.badgeSection}>
-                  <h2 className={styles.sectionTitle}>
-                    <MaterialIcon style={{ marginRight: '8px', verticalAlign: 'middle' }}>military_tech</MaterialIcon>
-                    Huy hiệu học tập
-                  </h2>
-                  {badges.length === 0 ? (
-                    <div className={styles.emptyActivity}>Bé sẽ mở huy hiệu sau khi hoàn thành thêm bài học, game hoặc bài kiểm tra.</div>
-                  ) : (
-                    <div className={styles.badgeGrid}>
-                      {badges.map(badge => (
-                        <div key={badge.id} className={styles.badgeCard}>
-                          <MaterialIcon filled>workspace_premium</MaterialIcon>
-                          <strong>{badge.name}</strong>
-                        </div>
-                      ))}
+                {/* Stitch Achievement Banner */}
+                {badges.length > 0 && (
+                  <section style={{
+                    background: '#1cb0f6',
+                    borderRadius: '24px',
+                    border: 'none',
+                    borderBottom: '8px solid #1899d6',
+                    padding: '32px 40px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '32px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}>
+                    <div style={{ flex: 1, position: 'relative', zIndex: 1 }}>
+                      <h2 style={{ fontSize: '28px', fontWeight: 900, color: '#fff', marginBottom: '8px', fontStyle: 'italic' }}>
+                        Thành tích mới của {selected.name}! 🏆
+                      </h2>
+                      <p style={{ fontSize: '16px', fontWeight: 700, color: 'rgba(255,255,255,0.9)', marginBottom: '20px' }}>
+                        {selected.name} vừa đạt huy hiệu “{badges[badges.length - 1]?.name}” sau khi hoàn thành {summary.normalLevelsCompleted} bài học.
+                      </p>
+                      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                        <button style={{
+                          padding: '12px 28px',
+                          background: '#ffc800',
+                          color: '#4b4b4b',
+                          borderRadius: '16px',
+                          fontWeight: 900,
+                          fontSize: '14px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          border: 'none',
+                          boxShadow: '0 4px 0 0 #cc9a00',
+                          cursor: 'pointer',
+                        }}>Khen ngợi ngay</button>
+                        <button style={{
+                          padding: '12px 28px',
+                          background: 'rgba(255,255,255,0.2)',
+                          color: '#fff',
+                          borderRadius: '16px',
+                          fontWeight: 900,
+                          fontSize: '14px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          border: '2px solid rgba(255,255,255,0.3)',
+                          cursor: 'pointer',
+                        }}>Xem chi tiết</button>
+                      </div>
                     </div>
-                  )}
-                </div>
+                    <div style={{ flexShrink: 0, position: 'relative', zIndex: 1 }}>
+                      <div style={{
+                        width: '120px',
+                        height: '120px',
+                        background: 'rgba(255,255,255,0.2)',
+                        borderRadius: '9999px',
+                        border: '4px solid rgba(255,255,255,0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        <div style={{
+                          width: '80px',
+                          height: '80px',
+                          background: '#ffc800',
+                          borderRadius: '9999px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+                        }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#fff', fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                )}
+
+                {/* Stitch Bar Chart: hình thức Thời gian học tập */}
+                <section style={{
+                  background: '#fff',
+                  border: '2px solid #e5e5e5',
+                  borderBottom: '4px solid #e5e5e5',
+                  borderRadius: '20px',
+                  padding: '24px',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 900, color: '#4b4b4b' }}>Thời gian học tập</h3>
+                    <span style={{
+                      background: '#ebebeb',
+                      border: '2px solid #d0d0d0',
+                      borderRadius: '12px',
+                      padding: '4px 12px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      color: '#777',
+                    }}>7 ngày gần nhất</span>
+                  </div>
+                  <div style={{
+                    height: '200px',
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    justifyContent: 'space-between',
+                    gap: '8px',
+                    padding: '0 8px',
+                  }}>
+                    {[{ label: 'T2', h: 40 }, { label: 'T3', h: 65 }, { label: 'T4', h: 50 }, { label: 'T5', h: 85 }, { label: 'T6', h: 30 }, { label: 'T7', h: 95 }, { label: 'CN', h: 45 }].map((day, i) => (
+                      <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                        <div style={{
+                          width: '100%',
+                          height: `${day.h * 1.8}px`,
+                          background: i === 6 ? '#58cc02' : '#ebebeb',
+                          borderRadius: '6px 6px 0 0',
+                          position: 'relative',
+                          overflow: 'hidden',
+                        }}>
+                          {i !== 6 && (
+                            <div style={{
+                              position: 'absolute',
+                              bottom: 0,
+                              width: '100%',
+                              height: '75%',
+                              background: '#58cc02',
+                              borderRadius: '4px 4px 0 0',
+                            }} />
+                          )}
+                        </div>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: i === 6 ? '#58cc02' : '#777' }}>{day.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
 
                 {/* Dynamic Recommendations */}
                 <div className={styles.recsSection}>

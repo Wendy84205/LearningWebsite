@@ -630,3 +630,176 @@
     transition: none;
   }
 }
+
+/* =============================================
+   Stat Chips (Topbar — Stitch style)
+   ============================================= */
+.statChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  background: var(--surface-container);
+  border: 2px solid var(--outline-variant);
+  border-bottom: 4px solid var(--outline-variant);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+/* =============================================
+   Subject Tiles (Stitch Branded Style)
+   ============================================= */
+.subjectSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.subjectHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.subjectTitle {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--on-surface);
+}
+
+.subjectViewAll {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.subjectViewAll:hover {
+  text-decoration: underline;
+}
+
+.subjectGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .subjectGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .subjectGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+}
+
+.subjectCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 16px;
+  background: #fff;
+  border: 2px solid var(--outline-variant);
+  border-bottom: 5px solid var(--outline-variant);
+  border-radius: 24px;
+  text-decoration: none;
+  color: var(--on-surface);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.subjectCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--subject-color, var(--primary));
+  border-radius: 2px 2px 0 0;
+}
+
+.subjectCard:hover {
+  transform: translateY(-4px);
+  border-color: var(--subject-color, var(--primary));
+}
+
+.subjectCard:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.subjectCardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.subjectCardTopLeft {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subjectPct {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.subjectName {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--on-surface);
+  line-height: 1.2;
+}
+
+.subjectSub {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--on-surface-variant);
+  margin-top: 2px;
+}
+
+.subjectProgressTrack {
+  width: 100%;
+  height: 10px;
+  border-radius: 9999px;
+  background: var(--surface-container);
+  overflow: hidden;
+}
+
+.subjectProgressFill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.6s ease;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.subjectBtn {
+  padding: 10px;
+  border-radius: 9999px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.02em;
+  transition: filter 0.15s;
+}
+
+.subjectCard:hover .subjectBtn {
+  filter: brightness(1.08);
+}
+

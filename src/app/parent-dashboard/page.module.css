@@ -134,16 +134,20 @@
 .gamifiedMetricCard {
   background: #fff;
   border: 2px solid #e5e5e5;
-  border-bottom-width: 4px;
-  border-radius: 16px;
+  border-bottom-width: 6px;
+  border-radius: 20px;
   padding: 20px;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.gamifiedMetricCard:hover {
+  transform: translateY(-4px);
 }
 
 .gamifiedMetricCard strong {
   display: block;
   font-size: 28px;
   font-weight: 900;
-  color: #4b4b4b;
   margin: 8px 0 4px;
 }
 
