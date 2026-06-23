@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { getGradeData } from '@/lib/data'
@@ -62,6 +62,9 @@ export default function GradeLandingPage() {
   const [worlds, setWorlds] = useState(STATIC_WORLDS)
   const [studentDashboard, setStudentDashboard] = useState(null)
   const [time, setTime] = useState(new Date())
+  const [loading, setLoading] = useState(true)
+  const [lastRefresh, setLastRefresh] = useState(null)
+  const refreshTimerRef = useRef(null)
 
   const greeting = useMemo(() => {
     const hour = time.getHours()
@@ -78,8 +81,9 @@ export default function GradeLandingPage() {
     router.push('/')
   }, [router])
 
-  const loadLandingData = useCallback(async () => {
+  const loadLandingData = useCallback(async (isBackground = false) => {
     try {
+      if (!isBackground) setLoading(true)
       const [dashboardRes, cmsRes] = await Promise.all([
         fetch('/api/dashboard', { cache: 'no-store' }),
         fetch(`/api/cms?module=learning-map&grade=${gradeSlug}`, { cache: 'no-store' })
@@ -89,9 +93,7 @@ export default function GradeLandingPage() {
         router.push('/parent-login')
         return
       }
-      if (!res.ok) {
-        throw new Error('Không thể tải dữ liệu trang chủ.')
-      }
+      if (!res.ok) throw new Error('Không thể tải dữ liệu.')
 
       const data = await res.json()
       if (cmsRes.ok) {
@@ -125,43 +127,56 @@ export default function GradeLandingPage() {
       localStorage.setItem('mascotEmoji', activeProfile.mascotImage || DEFAULT_MASCOT.image)
       localStorage.setItem('gradeSlug', gradeSlug)
 
-      const studentRes = await fetch(`/api/student/dashboard?profileId=${activeProfile.id}&grade=${gradeSlug}`, { cache: 'no-store' })
+      const studentRes = await fetch(
+        `/api/student/dashboard?profileId=${activeProfile.id}&grade=${gradeSlug}`,
+        { cache: 'no-store' }
+      )
       if (studentRes.ok) {
         const studentData = await studentRes.json()
         setStudentDashboard(studentData)
       }
+      setLastRefresh(new Date())
     } catch (err) {
       console.error('Error fetching landing data:', err)
+    } finally {
+      setLoading(false)
     }
   }, [router, gradeSlug])
 
   useEffect(() => {
-    const loadTimerId = setTimeout(() => {
-      loadLandingData()
-    }, 0)
-
-    const intervalId = setInterval(() => setTime(new Date()), 60000)
-    return () => {
-      clearTimeout(loadTimerId)
-      clearInterval(intervalId)
-    }
+    loadLandingData()
+    const clockId = setInterval(() => setTime(new Date()), 60000)
+    return () => clearInterval(clockId)
   }, [loadLandingData])
 
+  // Auto-refresh 30 giây khi tab active
   useEffect(() => {
-    const refreshWhenVisible = () => {
+    const startAutoRefresh = () => {
+      if (refreshTimerRef.current) clearInterval(refreshTimerRef.current)
+      refreshTimerRef.current = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          loadLandingData(true) // background refresh (no loading spinner)
+        }
+      }, 30000)
+    }
+
+    const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        loadLandingData()
+        loadLandingData(true)
+        startAutoRefresh()
+      } else {
+        clearInterval(refreshTimerRef.current)
       }
     }
 
-    window.addEventListener('focus', loadLandingData)
-    window.addEventListener('pageshow', loadLandingData)
-    document.addEventListener('visibilitychange', refreshWhenVisible)
+    window.addEventListener('focus', () => loadLandingData(true))
+    document.addEventListener('visibilitychange', handleVisibility)
+    startAutoRefresh()
 
     return () => {
-      window.removeEventListener('focus', loadLandingData)
-      window.removeEventListener('pageshow', loadLandingData)
-      document.removeEventListener('visibilitychange', refreshWhenVisible)
+      clearInterval(refreshTimerRef.current)
+      window.removeEventListener('focus', () => loadLandingData(true))
+      document.removeEventListener('visibilitychange', handleVisibility)
     }
   }, [loadLandingData])
 
@@ -199,7 +214,32 @@ export default function GradeLandingPage() {
 
   const isMascotEmoji = mascot.image && !mascot.image.startsWith('http') && !mascot.image.startsWith('/')
 
-  return (
+  // Daily tasks dựa trên missions thật từ API
+  const dailyMissionCount = missions?.daily?.count || 0
+  const reviewMissionCount = missions?.review?.count || 0
+  const latestBadge = activityStats?.badges?.[0] || null
+  const latestActivity = recentActivities[0] || null
+
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <header className={styles.topBar}>
+          <div className={styles.greeting}>
+            <span className={styles.greetingText}>
+              <span className={styles.skeletonText} style={{ width: 200, height: 20, display: 'inline-block', borderRadius: 8, background: '#e4e2e1', animation: 'shimmer 1.5s infinite' }} />
+            </span>
+          </div>
+        </header>
+        <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 400 }}>
+          <div style={{ textAlign: 'center' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 56, color: '#1cb0f6', animation: 'spin 1s linear infinite' }}>refresh</span>
+            <p style={{ marginTop: 16, color: '#6e7881', fontWeight: 700 }}>Đang tải dữ liệu...</p>
+          </div>
+        </div>
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      </div>
+    )
+  }
     <div className={styles.page}>
       {/* Top bar */}
       <header className={styles.topBar}>
@@ -323,23 +363,42 @@ export default function GradeLandingPage() {
                 <span className={styles.tasksBadge}>HÀNG NGÀY</span>
               </div>
               <div className={styles.tasksList}>
-                {[
-                  { label: 'Hoàn thành 1 Level Toán', xp: '+50 XP', done: true },
-                  { label: 'Đọc 1 bài Tiếng Việt', xp: '+30 XP', done: true },
-                  { label: 'Luyện tập Tiếng Anh', xp: '+40 XP', done: false },
-                ].map((t, i) => (
-                  <div key={i} className={`${styles.taskItem} ${t.done ? styles.taskDone : styles.taskPending}`}>
-                    <div className={styles.taskCheck} style={{ background: t.done ? '#58cc02' : '#e5e5e5' }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: 16, fontVariationSettings: "'FILL' 1", color: t.done ? '#fff' : '#aaa' }}>
-                        {t.done ? 'check' : 'schedule'}
-                      </span>
-                    </div>
-                    <div className={styles.taskInfo}>
-                      <p style={{ opacity: t.done ? 1 : 0.6 }}>{t.label}</p>
-                      <span style={{ color: t.done ? '#58cc02' : '#aaa', fontWeight: 700, fontSize: 12 }}>{t.xp}</span>
-                    </div>
+                {/* Task 1: Daily mission */}
+                <div className={`${styles.taskItem} ${dailyMissionCount > 0 ? styles.taskPending : styles.taskDone}`}>
+                  <div className={styles.taskCheck} style={{ background: dailyMissionCount > 0 ? '#e5e5e5' : '#58cc02' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 16, fontVariationSettings: "'FILL' 1", color: dailyMissionCount > 0 ? '#aaa' : '#fff' }}>
+                      {dailyMissionCount > 0 ? 'schedule' : 'check'}
+                    </span>
                   </div>
-                ))}
+                  <div className={styles.taskInfo}>
+                    <p>{dailyMissionCount > 0 ? `Hoàn thành ${dailyMissionCount} câu ngày hôm nay` : 'Nhiệm vụ hôm nay hoàn thành!'}</p>
+                    <span style={{ color: dailyMissionCount > 0 ? '#aaa' : '#58cc02', fontWeight: 700, fontSize: 12 }}>+50 XP</span>
+                  </div>
+                </div>
+                {/* Task 2: Streak */}
+                <div className={`${styles.taskItem} ${progress.streak > 0 ? styles.taskDone : styles.taskPending}`}>
+                  <div className={styles.taskCheck} style={{ background: progress.streak > 0 ? '#58cc02' : '#e5e5e5' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 16, fontVariationSettings: "'FILL' 1", color: progress.streak > 0 ? '#fff' : '#aaa' }}>
+                      {progress.streak > 0 ? 'check' : 'schedule'}
+                    </span>
+                  </div>
+                  <div className={styles.taskInfo}>
+                    <p>Duy trì streak {progress.streak} ngày</p>
+                    <span style={{ color: progress.streak > 0 ? '#58cc02' : '#aaa', fontWeight: 700, fontSize: 12 }}>+30 XP</span>
+                  </div>
+                </div>
+                {/* Task 3: Review */}
+                <div className={`${styles.taskItem} ${reviewMissionCount === 0 ? styles.taskDone : styles.taskPending}`}>
+                  <div className={styles.taskCheck} style={{ background: reviewMissionCount === 0 ? '#58cc02' : '#e5e5e5' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 16, fontVariationSettings: "'FILL' 1", color: reviewMissionCount === 0 ? '#fff' : '#aaa' }}>
+                      {reviewMissionCount === 0 ? 'check' : 'schedule'}
+                    </span>
+                  </div>
+                  <div className={styles.taskInfo}>
+                    <p>{reviewMissionCount > 0 ? `Ôn tập ${reviewMissionCount} kỹ năng yếu` : 'Đã ôn tập hôm nay!'}</p>
+                    <span style={{ color: reviewMissionCount === 0 ? '#58cc02' : '#aaa', fontWeight: 700, fontSize: 12 }}>+40 XP</span>
+                  </div>
+                </div>
               </div>
               <div className={styles.tasksFooter}>
                 <div className={styles.tasksFooterIcons}>
@@ -350,7 +409,7 @@ export default function GradeLandingPage() {
                     <span className="material-symbols-outlined" style={{ fontSize: 14, color: '#1cb0f6', fontVariationSettings: "'FILL' 1" }}>star</span>
                   </div>
                 </div>
-                <Link href={`/learning/${gradeSlug}/test?mode=daily`} className={styles.rewardBtn}>
+                <Link href={missions?.daily?.href || `/learning/${gradeSlug}/test?mode=daily`} className={styles.rewardBtn}>
                   <span>Nhận thưởng</span>
                   <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#ffa500', fontVariationSettings: "'FILL' 1" }}>redeem</span>
                 </Link>
@@ -394,24 +453,34 @@ export default function GradeLandingPage() {
             </div>
           </section>
 
-          {/* HIGHLIGHTS */}
+          {/* HIGHLIGHTS - Dữ liệu thật từ DB */}
           <section className={styles.highlightRow}>
             <div className={styles.highlightCard}>
               <div className={styles.highlightIconWrap}>
                 <span className="material-symbols-outlined" style={{ fontSize: 40, color: '#ffa500', fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
               </div>
               <div>
-                <h4 className={styles.highlightTitle}>Huy hiệu mới nhất</h4>
-                <p className={styles.highlightSub}>{recentActivities.length > 0 ? `+${recentActivities[0]?.xp || 0} XP từ bài gần nhất` : 'Hoàn thành bài học để nhận huy hiệu!'}</p>
+                <h4 className={styles.highlightTitle}>{latestBadge ? latestBadge.name : 'Huy hiệu mới nhất'}</h4>
+                <p className={styles.highlightSub}>
+                  {latestBadge
+                    ? `Mở khóa lúc ${new Date(latestBadge.unlockedAt).toLocaleDateString('vi-VN')}`
+                    : latestActivity
+                      ? `+${latestActivity.xp || 0} XP từ bài gần nhất`
+                      : 'Hoàn thành bài học để nhận huy hiệu!'}
+                </p>
               </div>
             </div>
             <div className={styles.highlightCard}>
               <div className={styles.highlightIconWrap}>
-                <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--primary)', fontVariationSettings: "'FILL' 1" }}>groups</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--primary)', fontVariationSettings: "'FILL' 1" }}>monitoring</span>
               </div>
               <div>
-                <h4 className={styles.highlightTitle}>Thứ hạng tuần này</h4>
-                <p className={styles.highlightSub}>{activityStats?.averageScore ? `Điểm TB: ${activityStats.averageScore}%` : 'Chơi game để lên bảng xếp hạng!'}</p>
+                <h4 className={styles.highlightTitle}>Tiến bộ tuần này</h4>
+                <p className={styles.highlightSub}>
+                  {activityStats?.totalAttempts > 0
+                    ? `${activityStats.totalAttempts} bài • Điểm TB: ${activityStats.averageScore}% • ${activityStats.totalXp} XP`
+                    : 'Chưa có dữ liệu. Hãy chơi game đầu tiên!'}
+                </p>
               </div>
             </div>
           </section>

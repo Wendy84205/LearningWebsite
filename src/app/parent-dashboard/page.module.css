@@ -519,3 +519,113 @@
   .achieveBadgeWrap { margin: 0 auto; }
   .header { flex-direction: column; }
 }
+
+/* ═══════════════════════════════════════════
+   BAR CHART VALUE LABEL
+═══════════════════════════════════════════ */
+.barVal {
+  font-size: 10px;
+  font-weight: 800;
+  text-align: center;
+  min-height: 16px;
+  margin-bottom: 4px;
+}
+
+/* ═══════════════════════════════════════════
+   REFRESH INFO
+═══════════════════════════════════════════ */
+.refreshInfo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #aaa;
+  border-top: 1px solid #e5e5e5;
+  margin-top: auto;
+}
+
+/* ═══════════════════════════════════════════
+   NOTIFICATION BADGE
+═══════════════════════════════════════════ */
+.notifBadge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 18px;
+  height: 18px;
+  background: #ff4b4b;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  padding: 0 3px;
+}
+
+/* ═══════════════════════════════════════════
+   RECENT ACTIVITY SECTION
+═══════════════════════════════════════════ */
+.activitySection {
+  background: #fff;
+  border: 2px solid #e5e5e5;
+  border-bottom: 4px solid #e5e5e5;
+  border-radius: 24px;
+  padding: 24px;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.activityItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: #f9f9f9;
+  border-radius: 16px;
+  border: 1px solid #efefef;
+  transition: transform 0.15s;
+}
+.activityItem:hover { transform: translateX(4px); }
+
+.activityIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.activityInfo { flex: 1; min-width: 0; }
+.activityTitle {
+  font-size: 14px;
+  font-weight: 800;
+  color: #4b4b4b;
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.activitySub {
+  font-size: 12px;
+  font-weight: 600;
+  color: #777;
+  margin: 0;
+}
+
+.activityScore {
+  font-size: 20px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
