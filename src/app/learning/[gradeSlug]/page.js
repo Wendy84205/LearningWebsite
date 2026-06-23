@@ -210,17 +210,14 @@ export default function GradeLandingPage() {
           </span>
         </div>
         <div className={styles.statsRow}>
-          {/* XP */}
           <div className={styles.statChip}>
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", color: 'var(--primary)', fontSize: '18px' }}>star</span>
             <span style={{ fontWeight: 700, fontSize: 13 }}>{levelInfo.xp} XP</span>
           </div>
-          {/* Coins */}
           <div className={styles.statChip}>
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", color: '#ffc800', fontSize: '18px' }}>monetization_on</span>
             <span style={{ fontWeight: 700, fontSize: 13 }}>{progress.stars}</span>
           </div>
-          {/* Streak */}
           <div className={styles.statChip}>
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", color: '#ff4b4b', fontSize: '18px' }}>local_fire_department</span>
             <span style={{ fontWeight: 700, fontSize: 13 }}>{progress.streak} ngày</span>
@@ -234,242 +231,193 @@ export default function GradeLandingPage() {
         </div>
       </header>
 
-      <div className={styles.content}>
-        {/* Mascot Greeting Speech */}
-        <div className={styles.mascotArea} onClick={handleMascotSpeech} style={{ cursor: 'pointer' }}>
-          <div className={styles.mascotBubble}>
-            <span className={styles.speechText}>
-              Chào {profile.name}! Hôm nay mình cùng học thật nhiều bài hay nhé!
-              <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', marginLeft: '6px', color: '#ffb953' }}>star</span>
-            </span>
-          </div>
-          <div className={styles.mascotFigure}>
-            <div className={styles.mascotImgContainer}>
+      <div className={styles.layout}>
+        {/* SIDEBAR */}
+        <aside className={styles.sidebar}>
+          <nav className={styles.sideNav}>
+            <Link href={`/learning/${gradeSlug}`} className={`${styles.navItem} ${styles.navItemActive}`}>
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
+              <span>Tổng quan</span>
+            </Link>
+            <Link href={`/learning/${gradeSlug}/map`} className={styles.navItem}>
+              <span className="material-symbols-outlined">map</span>
+              <span>Lộ trình học</span>
+            </Link>
+            <Link href={`/learning/${gradeSlug}/games`} className={styles.navItem}>
+              <span className="material-symbols-outlined">sports_esports</span>
+              <span>Trò chơi</span>
+            </Link>
+            <Link href={`/learning/${gradeSlug}/test?mode=test`} className={styles.navItem}>
+              <span className="material-symbols-outlined">assignment</span>
+              <span>Kiểm tra</span>
+            </Link>
+            <Link href={`/learning/${gradeSlug}/achievements`} className={styles.navItem}>
+              <span className="material-symbols-outlined">emoji_events</span>
+              <span>Thành tích</span>
+            </Link>
+            <Link href={`/learning/${gradeSlug}/report`} className={styles.navItem}>
+              <span className="material-symbols-outlined">assessment</span>
+              <span>Báo cáo</span>
+            </Link>
+            <Link href="/kids-closet" className={styles.navItem}>
+              <span className="material-symbols-outlined">styler</span>
+              <span>Tủ đồ của bé</span>
+            </Link>
+          </nav>
+          <div className={styles.sideProfile}>
+            <div className={styles.sideAvatar}>
               {isMascotEmoji ? (
-                <span className={styles.mascotEmoji}>{mascot.image}</span>
+                <span style={{ fontSize: 22 }}>{mascot.image}</span>
               ) : (
-                <img
-                  src={mascot.image}
-                  className={styles.mascotImg}
-                  alt="Robot Mascot"
-                />
+                <img src={mascot.image} alt={mascot.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
               )}
             </div>
-            <span className={styles.mascotLabel}>{mascot.name}</span>
-          </div>
-        </div>
-
-        {/* Main Learning and Closet Actions */}
-        <div className={styles.mainActions}>
-          <Link href={`/learning/${gradeSlug}/map`} id="btn-learning-map" className={styles.actionCard}>
-            <span className={`material-symbols-outlined ${styles.actionIcon}`} style={{ color: 'var(--primary)' }}>map</span>
-            <div className={styles.actionInfo}>
-              <div className={styles.actionTitle}>Bản đồ học tập</div>
-              <div className={styles.actionSub}>Cấp {progress.currentLevel} đang đợi bạn!</div>
-            </div>
-            <span className={`material-symbols-outlined ${styles.actionArrow}`}>arrow_forward</span>
-          </Link>
-
-          <Link href="/kids-closet" id="btn-closet" className={styles.actionCard}>
-            <span className={`material-symbols-outlined ${styles.actionIcon}`} style={{ color: 'var(--secondary)' }}>styler</span>
-            <div className={styles.actionInfo}>
-              <div className={styles.actionTitle}>Tủ đồ của bé</div>
-              <div className={styles.actionSub}>Đổi phụ kiện đẹp cho {mascot.name}</div>
-            </div>
-            <span className={`material-symbols-outlined ${styles.actionArrow}`}>arrow_forward</span>
-          </Link>
-        </div>
-
-        {/* Mini Stats Card Grid */}
-        <div className={styles.miniStats}>
-          <div className={styles.miniStat}>
-            <span className={`material-symbols-outlined ${styles.miniStatIcon}`} style={{ color: 'var(--primary)' }}>menu_book</span>
-            <div className={styles.miniStatVal}>{levelInfo.level}</div>
-            <div className={styles.miniStatLabel}>Level XP</div>
-          </div>
-          <div className={styles.miniStat}>
-            <span className={`material-symbols-outlined ${styles.miniStatIcon}`} style={{ color: '#10b981' }}>check_circle</span>
-            <div className={styles.miniStatVal}>{completedCount}</div>
-            <div className={styles.miniStatLabel}>Đã xong</div>
-          </div>
-          <div className={styles.miniStat}>
-            <span className={`material-symbols-outlined ${styles.miniStatIcon}`} style={{ color: '#ffb953' }}>star</span>
-            <div className={styles.miniStatVal}>{levelInfo.xp}</div>
-            <div className={styles.miniStatLabel}>XP đã nhận</div>
-          </div>
-          <div className={styles.miniStat}>
-            <span className={`material-symbols-outlined ${styles.miniStatIcon}`} style={{ color: '#ff6f00' }}>local_fire_department</span>
-            <div className={styles.miniStatVal}>{progress.streak}</div>
-            <div className={styles.miniStatLabel}>Chuỗi ngày</div>
-          </div>
-        </div>
-
-        {/* Stitch Subject Tiles */}
-        <section className={styles.subjectSection}>
-          <div className={styles.subjectHeader}>
-            <h2 className={styles.subjectTitle}>Học kỳ này</h2>
-            <Link href={`/learning/${gradeSlug}/map`} className={styles.subjectViewAll}>
-              Xem tất cả <span className="material-symbols-outlined" style={{ fontSize: 18, verticalAlign: 'middle' }}>arrow_forward</span>
-            </Link>
-          </div>
-          <div className={styles.subjectGrid}>
-            {/* Toán */}
-            <Link href={quickPractices.math.href} id="btn-game-1" className={styles.subjectCard} style={{ '--subject-color': '#1cb0f6', '--subject-bg': 'rgba(28,176,246,0.08)' }}>
-              <div className={styles.subjectCardTop}>
-                <div className={styles.subjectCardTopLeft} style={{ background: 'rgba(28,176,246,0.1)' }}>
-                  <span className="material-symbols-outlined" style={{ color: '#1cb0f6', fontSize: 28 }}>calculate</span>
-                </div>
-                <span className={styles.subjectPct} style={{ color: '#1cb0f6' }}>{completedCount > 0 ? Math.min(Math.round((completedCount / 20) * 100), 100) : 0}%</span>
-              </div>
-              <div>
-                <div className={styles.subjectName}>Toán học</div>
-                <div className={styles.subjectSub}>{quickPractices.math.worldName}</div>
-              </div>
-              <div className={styles.subjectProgressTrack}>
-                <div className={styles.subjectProgressFill} style={{ width: `${completedCount > 0 ? Math.min(Math.round((completedCount / 20) * 100), 100) : 0}%`, background: '#1cb0f6' }} />
-              </div>
-              <div className={styles.subjectBtn} style={{ background: '#1cb0f6' }}>Tiếp tục</div>
-            </Link>
-
-            {/* Tiếng Việt */}
-            <Link href={quickPractices.vietnamese.href} id="btn-game-2" className={styles.subjectCard} style={{ '--subject-color': '#ff4b4b', '--subject-bg': 'rgba(255,75,75,0.08)' }}>
-              <div className={styles.subjectCardTop}>
-                <div className={styles.subjectCardTopLeft} style={{ background: 'rgba(255,75,75,0.1)' }}>
-                  <span className="material-symbols-outlined" style={{ color: '#ff4b4b', fontSize: 28 }}>history_edu</span>
-                </div>
-                <span className={styles.subjectPct} style={{ color: '#ff4b4b' }}>{completedCount > 0 ? Math.min(Math.round((completedCount / 30) * 100), 100) : 0}%</span>
-              </div>
-              <div>
-                <div className={styles.subjectName}>Tiếng Việt</div>
-                <div className={styles.subjectSub}>{quickPractices.vietnamese.worldName}</div>
-              </div>
-              <div className={styles.subjectProgressTrack}>
-                <div className={styles.subjectProgressFill} style={{ width: `${completedCount > 0 ? Math.min(Math.round((completedCount / 30) * 100), 100) : 0}%`, background: '#ff4b4b' }} />
-              </div>
-              <div className={styles.subjectBtn} style={{ background: '#ff4b4b' }}>Tiếp tục</div>
-            </Link>
-
-            {/* Tiếng Anh */}
-            <Link href={quickPractices.matching.href} id="btn-game-3" className={styles.subjectCard} style={{ '--subject-color': '#58cc02', '--subject-bg': 'rgba(88,204,2,0.08)' }}>
-              <div className={styles.subjectCardTop}>
-                <div className={styles.subjectCardTopLeft} style={{ background: 'rgba(88,204,2,0.1)' }}>
-                  <span className="material-symbols-outlined" style={{ color: '#58cc02', fontSize: 28 }}>translate</span>
-                </div>
-                <span className={styles.subjectPct} style={{ color: '#58cc02' }}>{completedCount > 0 ? Math.min(Math.round((completedCount / 40) * 100), 100) : 0}%</span>
-              </div>
-              <div>
-                <div className={styles.subjectName}>Tiếng Anh</div>
-                <div className={styles.subjectSub}>{quickPractices.matching.worldName}</div>
-              </div>
-              <div className={styles.subjectProgressTrack}>
-                <div className={styles.subjectProgressFill} style={{ width: `${completedCount > 0 ? Math.min(Math.round((completedCount / 40) * 100), 100) : 0}%`, background: '#58cc02' }} />
-              </div>
-              <div className={styles.subjectBtn} style={{ background: '#58cc02' }}>Tiếp tục</div>
-            </Link>
-
-            {/* Khoa học */}
-            <Link href={`/learning/${gradeSlug}/games`} id="btn-game-4" className={styles.subjectCard} style={{ '--subject-color': '#ffa500', '--subject-bg': 'rgba(255,165,0,0.08)' }}>
-              <div className={styles.subjectCardTop}>
-                <div className={styles.subjectCardTopLeft} style={{ background: 'rgba(255,165,0,0.1)' }}>
-                  <span className="material-symbols-outlined" style={{ color: '#ffa500', fontSize: 28 }}>biotech</span>
-                </div>
-                <span className={styles.subjectPct} style={{ color: '#ffa500' }}>Mới</span>
-              </div>
-              <div>
-                <div className={styles.subjectName}>Khoa học</div>
-                <div className={styles.subjectSub}>Trò chơi học tập</div>
-              </div>
-              <div className={styles.subjectProgressTrack}>
-                <div className={styles.subjectProgressFill} style={{ width: '15%', background: '#ffa500' }} />
-              </div>
-              <div className={styles.subjectBtn} style={{ background: '#ffa500' }}>Tiếp tục</div>
-            </Link>
-          </div>
-        </section>
-
-        <div className={styles.missionPanel}>
-          <div className={styles.panelHeader}>
             <div>
-              <span className={styles.panelEyebrow}>Học thật từ Question Bank</span>
-              <h2 className={styles.quickStartTitle}>Nhiệm vụ & kiểm tra</h2>
-            </div>
-            <div className={styles.xpProgress}>
-              <span>Level {levelInfo.level}</span>
-              <div className={styles.xpTrack}>
-                <div className={styles.xpFill} style={{ width: `${levelInfo.progressPct}%` }} />
-              </div>
+              <p className={styles.sideProfileName}>{profile.name}</p>
+              <p className={styles.sideProfileSub}>Cùng {mascot.name}</p>
             </div>
           </div>
-          <div className={styles.missionGrid}>
-            <Link href={missions?.daily?.href || `/learning/${gradeSlug}/test?mode=daily`} className={styles.missionCard}>
-              <span className="material-symbols-outlined">emoji_events</span>
-              <strong>Nhiệm vụ hôm nay</strong>
-              <small>{missions?.daily?.count || 0} câu gợi ý</small>
-            </Link>
-            <Link href={`/learning/${gradeSlug}/games`} className={styles.missionCard}>
-              <span className="material-symbols-outlined">sports_esports</span>
-              <strong>Trò chơi học tập</strong>
-              <small>7 game từ Question Bank</small>
-            </Link>
-            <Link href={`/learning/${gradeSlug}/test?mode=test`} className={styles.missionCard}>
-              <span className="material-symbols-outlined">assignment</span>
-              <strong>Bài kiểm tra</strong>
-              <small>Lấy câu hỏi published</small>
-            </Link>
-            <Link href={`/learning/${gradeSlug}/practice`} className={styles.missionCard}>
-              <span className="material-symbols-outlined">fitness_center</span>
-              <strong>Luyện tập</strong>
-              <small>Feedback tức thì</small>
-            </Link>
-            <Link href={`/learning/${gradeSlug}/achievements`} className={styles.missionCard}>
-              <span className="material-symbols-outlined">emoji_events</span>
-              <strong>Thành tích</strong>
-              <small>XP, level, badge</small>
-            </Link>
-            <Link href={`/learning/${gradeSlug}/report`} className={styles.missionCard}>
-              <span className="material-symbols-outlined">monitoring</span>
-              <strong>Báo cáo</strong>
-              <small>Lịch sử & kỹ năng yếu</small>
-            </Link>
-            <Link href={missions?.review?.href || `/learning/${gradeSlug}/test?mode=review`} className={styles.missionCard}>
-              <span className="material-symbols-outlined">psychology</span>
-              <strong>Ôn tập thông minh</strong>
-              <small>{weakSkills[0]?.skill ? `Cần luyện: ${weakSkills[0].skill}` : 'Dựa trên lỗi sai'}</small>
-            </Link>
-          </div>
-        </div>
+        </aside>
 
-        <div className={styles.historyPanel}>
-          <div className={styles.panelHeader}>
-            <div>
-              <span className={styles.panelEyebrow}>Theo dõi tiến bộ</span>
-              <h2 className={styles.quickStartTitle}>Lịch sử học gần đây</h2>
-            </div>
-            <span className={styles.averageBadge}>{activityStats?.averageScore || 0}% trung bình</span>
-          </div>
-          {recentActivities.length === 0 ? (
-            <div className={styles.emptyHistory}>
-              <span className="material-symbols-outlined">history_edu</span>
-              <p>Chưa có lượt học nào. Hãy chơi game hoặc làm bài kiểm tra đầu tiên nhé!</p>
-            </div>
-          ) : (
-            <div className={styles.historyList}>
-              {recentActivities.slice(0, 4).map(item => (
-                <div key={item.id} className={styles.historyItem}>
-                  <span className="material-symbols-outlined">
-                    {item.activityType === 'test' ? 'assignment' : item.activityType === 'review' ? 'psychology' : 'sports_esports'}
-                  </span>
-                  <div>
-                    <strong>{item.title}</strong>
-                    <small>{item.correct}/{item.total} đúng · {item.scorePct}% · +{item.xp} XP</small>
+        {/* MAIN */}
+        <main className={styles.content}>
+          {/* HERO BENTO */}
+          <section className={styles.heroGrid}>
+            <div className={styles.heroCard}>
+              <div className={styles.heroDecoBg} />
+              <div className={styles.heroBadge}>Tiếp tục hành trình</div>
+              <div className={styles.heroInner}>
+                <div className={styles.heroMascot} onClick={handleMascotSpeech} style={{ cursor: 'pointer' }}>
+                  <div className={styles.mascotGlow} />
+                  {isMascotEmoji ? (
+                    <span style={{ fontSize: 80 }}>{mascot.image}</span>
+                  ) : (
+                    <img src={mascot.image} className={styles.mascotImg} alt={mascot.name} />
+                  )}
+                </div>
+                <div className={styles.heroText}>
+                  <div className={styles.speechBubble}>
+                    <p>&quot;Chào {profile.name}! Hôm nay chúng ta còn nhiều nhiệm vụ để mở khóa vùng mới!&quot;</p>
                   </div>
-                  <b>{item.stars}★</b>
+                  <div className={styles.heroMeta}>
+                    <div className={styles.heroMetaItem}>
+                      <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: 18 }}>public</span>
+                      <span>Bản đồ học tập</span>
+                    </div>
+                    <div className={styles.heroDot} />
+                    <div className={styles.heroMetaItem}>
+                      <span className="material-symbols-outlined" style={{ color: '#58cc02', fontSize: 18 }}>trending_up</span>
+                      <span>Level {levelInfo.level}</span>
+                    </div>
+                  </div>
+                  <Link href={`/learning/${gradeSlug}/map`} id="btn-continue" className={styles.heroBtn}>
+                    Tiếp tục học
+                  </Link>
                 </div>
+              </div>
+            </div>
+
+            <div className={styles.tasksCard}>
+              <div className={styles.tasksHeader}>
+                <h3 className={styles.tasksTitle}>Nhiệm vụ</h3>
+                <span className={styles.tasksBadge}>HÀNG NGÀY</span>
+              </div>
+              <div className={styles.tasksList}>
+                {[
+                  { label: 'Hoàn thành 1 Level Toán', xp: '+50 XP', done: true },
+                  { label: 'Đọc 1 bài Tiếng Việt', xp: '+30 XP', done: true },
+                  { label: 'Luyện tập Tiếng Anh', xp: '+40 XP', done: false },
+                ].map((t, i) => (
+                  <div key={i} className={`${styles.taskItem} ${t.done ? styles.taskDone : styles.taskPending}`}>
+                    <div className={styles.taskCheck} style={{ background: t.done ? '#58cc02' : '#e5e5e5' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 16, fontVariationSettings: "'FILL' 1", color: t.done ? '#fff' : '#aaa' }}>
+                        {t.done ? 'check' : 'schedule'}
+                      </span>
+                    </div>
+                    <div className={styles.taskInfo}>
+                      <p style={{ opacity: t.done ? 1 : 0.6 }}>{t.label}</p>
+                      <span style={{ color: t.done ? '#58cc02' : '#aaa', fontWeight: 700, fontSize: 12 }}>{t.xp}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className={styles.tasksFooter}>
+                <div className={styles.tasksFooterIcons}>
+                  <div className={styles.tasksFooterIcon} style={{ background: '#fff9e6' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 14, color: '#ffc800', fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
+                  </div>
+                  <div className={styles.tasksFooterIcon} style={{ background: '#e8f4ff' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 14, color: '#1cb0f6', fontVariationSettings: "'FILL' 1" }}>star</span>
+                  </div>
+                </div>
+                <Link href={`/learning/${gradeSlug}/test?mode=daily`} className={styles.rewardBtn}>
+                  <span>Nhận thưởng</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#ffa500', fontVariationSettings: "'FILL' 1" }}>redeem</span>
+                </Link>
+              </div>
+            </div>
+          </section>
+
+          {/* SUBJECT TILES */}
+          <section className={styles.subjectSection}>
+            <div className={styles.subjectHeader}>
+              <h2 className={styles.subjectTitle}>Học kỳ này</h2>
+              <Link href={`/learning/${gradeSlug}/map`} className={styles.subjectViewAll}>
+                Xem tất cả <span className="material-symbols-outlined" style={{ fontSize: 18, verticalAlign: 'middle' }}>arrow_forward</span>
+              </Link>
+            </div>
+            <div className={styles.subjectGrid}>
+              {[
+                { href: quickPractices.math.href, id: 'btn-game-1', color: '#1cb0f6', shadow: '#0090d4', icon: 'calculate', name: 'Toán học', sub: quickPractices.math.worldName, pct: completedCount > 0 ? Math.min(Math.round((completedCount / 20) * 100), 100) : 0 },
+                { href: quickPractices.vietnamese.href, id: 'btn-game-2', color: '#ff4b4b', shadow: '#cc2222', icon: 'history_edu', name: 'Tiếng Việt', sub: quickPractices.vietnamese.worldName, pct: completedCount > 0 ? Math.min(Math.round((completedCount / 30) * 100), 100) : 0 },
+                { href: quickPractices.matching.href, id: 'btn-game-3', color: '#58cc02', shadow: '#46a302', icon: 'translate', name: 'Tiếng Anh', sub: quickPractices.matching.worldName, pct: completedCount > 0 ? Math.min(Math.round((completedCount / 40) * 100), 100) : 0 },
+                { href: `/learning/${gradeSlug}/games`, id: 'btn-game-4', color: '#fea250', shadow: '#cc7a00', icon: 'biotech', name: 'Khoa học', sub: 'Trò chơi học tập', pct: 15, label: 'Mới' },
+              ].map(s => (
+                <Link key={s.id} href={s.href} id={s.id} className={styles.subjectCard}>
+                  <div className={styles.subjectColorBar} style={{ background: s.color }} />
+                  <div className={styles.subjectCardTop}>
+                    <div className={styles.subjectIconWrap} style={{ background: `${s.color}20` }}>
+                      <span className="material-symbols-outlined" style={{ color: s.color, fontSize: 28 }}>{s.icon}</span>
+                    </div>
+                    <span className={styles.subjectPct} style={{ color: s.color }}>{s.label || `${s.pct}%`}</span>
+                  </div>
+                  <div className={styles.subjectNames}>
+                    <div className={styles.subjectName}>{s.name}</div>
+                    <div className={styles.subjectSub}>{s.sub}</div>
+                  </div>
+                  <div className={styles.subjectProgressTrack}>
+                    <div className={styles.subjectProgressFill} style={{ width: `${s.pct}%`, background: s.color }} />
+                  </div>
+                  <div className={styles.subjectBtn} style={{ background: s.color, boxShadow: `0 4px 0 ${s.shadow}` }}>Tiếp tục</div>
+                </Link>
               ))}
             </div>
-          )}
-        </div>
+          </section>
+
+          {/* HIGHLIGHTS */}
+          <section className={styles.highlightRow}>
+            <div className={styles.highlightCard}>
+              <div className={styles.highlightIconWrap}>
+                <span className="material-symbols-outlined" style={{ fontSize: 40, color: '#ffa500', fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
+              </div>
+              <div>
+                <h4 className={styles.highlightTitle}>Huy hiệu mới nhất</h4>
+                <p className={styles.highlightSub}>{recentActivities.length > 0 ? `+${recentActivities[0]?.xp || 0} XP từ bài gần nhất` : 'Hoàn thành bài học để nhận huy hiệu!'}</p>
+              </div>
+            </div>
+            <div className={styles.highlightCard}>
+              <div className={styles.highlightIconWrap}>
+                <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--primary)', fontVariationSettings: "'FILL' 1" }}>groups</span>
+              </div>
+              <div>
+                <h4 className={styles.highlightTitle}>Thứ hạng tuần này</h4>
+                <p className={styles.highlightSub}>{activityStats?.averageScore ? `Điểm TB: ${activityStats.averageScore}%` : 'Chơi game để lên bảng xếp hạng!'}</p>
+              </div>
+            </div>
+          </section>
+        </main>
       </div>
     </div>
   )
 }
+
