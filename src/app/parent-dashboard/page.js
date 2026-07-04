@@ -30,7 +30,10 @@ export default function ParentDashboard() {
   }, [router])
 
   useEffect(() => {
-    fetchDashboard()
+    const initialLoadId = window.setTimeout(() => {
+      fetchDashboard()
+    }, 0)
+    return () => window.clearTimeout(initialLoadId)
   }, [fetchDashboard])
 
   // Auto-refresh mỗi 60 giây khi tab active

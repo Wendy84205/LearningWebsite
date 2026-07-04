@@ -144,9 +144,14 @@ export default function GradeLandingPage() {
   }, [router, gradeSlug])
 
   useEffect(() => {
-    loadLandingData()
+    const initialLoadId = window.setTimeout(() => {
+      loadLandingData()
+    }, 0)
     const clockId = setInterval(() => setTime(new Date()), 60000)
-    return () => clearInterval(clockId)
+    return () => {
+      window.clearTimeout(initialLoadId)
+      clearInterval(clockId)
+    }
   }, [loadLandingData])
 
   // Auto-refresh 30 giây khi tab active
@@ -169,13 +174,15 @@ export default function GradeLandingPage() {
       }
     }
 
-    window.addEventListener('focus', () => loadLandingData(true))
+    const handleFocus = () => loadLandingData(true)
+
+    window.addEventListener('focus', handleFocus)
     document.addEventListener('visibilitychange', handleVisibility)
     startAutoRefresh()
 
     return () => {
       clearInterval(refreshTimerRef.current)
-      window.removeEventListener('focus', () => loadLandingData(true))
+      window.removeEventListener('focus', handleFocus)
       document.removeEventListener('visibilitychange', handleVisibility)
     }
   }, [loadLandingData])
@@ -240,6 +247,8 @@ export default function GradeLandingPage() {
       </div>
     )
   }
+
+  return (
     <div className={styles.page}>
       {/* Top bar */}
       <header className={styles.topBar}>
@@ -489,4 +498,3 @@ export default function GradeLandingPage() {
     </div>
   )
 }
-
