@@ -18,7 +18,11 @@ export function isDatabaseConnectionError(err) {
 }
 
 export function databaseUnavailableResponse(err) {
-  console.error('[database-unavailable]', err)
+  console.error('[database-unavailable]', {
+    message: err?.message,
+    code: err?.code,
+    database: getSafeDatabaseDiagnostics(),
+  })
   return Response.json(
     {
       error: 'Không thể kết nối cơ sở dữ liệu. Vui lòng kiểm tra DATABASE_URL/Supabase rồi thử lại.',
@@ -27,3 +31,4 @@ export function databaseUnavailableResponse(err) {
     { status: 503 }
   )
 }
+import { getSafeDatabaseDiagnostics } from '@/lib/database-url'

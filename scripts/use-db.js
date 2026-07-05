@@ -3,7 +3,7 @@ const path = require('path');
 
 const schemaPath = path.join(__dirname, '..', 'prisma', 'schema.prisma');
 const providerArg = process.argv[2];
-const databaseUrl = process.env.DATABASE_URL || '';
+const databaseUrl = String(process.env.DATABASE_URL || '').trim().replace(/^['"]|['"]$/g, '').trim();
 const provider = providerArg === 'auto'
   ? databaseUrl.startsWith('file:') || !databaseUrl
     ? 'sqlite'
