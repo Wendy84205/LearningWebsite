@@ -1,5 +1,5 @@
 import prisma from '@/lib/db'
-import { signJWT } from '@/lib/auth'
+import { hashPassword, signJWT } from '@/lib/auth'
 import { databaseUnavailableResponse, isDatabaseConnectionError } from '@/lib/db-errors'
 import { cookies } from 'next/headers'
 
@@ -45,7 +45,7 @@ export async function POST(request) {
       parent = await prisma.parent.create({
         data: {
           email,
-          password: randomPassword // We can hash it but since it's random and they use Google, they won't use it directly
+          password: hashPassword(randomPassword)
         },
         include: { profiles: true }
       })
