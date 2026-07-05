@@ -14,6 +14,26 @@ const GAME_TO_FLAG = {
   drag_drop: 'drag_drop',
 }
 
+const DIFFICULTY_ALIASES = {
+  easy: ['easy', '1'],
+  '1': ['1', 'easy'],
+  medium: ['medium', '2'],
+  '2': ['2', 'medium'],
+  hard: ['hard', '3'],
+  '3': ['3', 'hard'],
+}
+
+const STATIC_BANK_BY_GAME = {
+  quiz: ['CHOOSE_QUESTIONS'],
+  choose: ['CHOOSE_QUESTIONS'],
+  'choose-1-of-2': ['CHOOSE_QUESTIONS'],
+  choose_1_of_2: ['CHOOSE_QUESTIONS'],
+  'listen-and-select': ['LISTEN_QUESTIONS'],
+  listen_select: ['LISTEN_QUESTIONS'],
+  matching: ['MATCHING_PAIRS_ALL'],
+  'simple-matching': ['MATCHING_PAIRS_ALL'],
+}
+
 function shuffle(array) {
   const arr = [...array]
   for (let i = arr.length - 1; i > 0; i--) {
@@ -43,6 +63,27 @@ function normalizeGrade(grade) {
   return value
 }
 
+function normalizeText(value) {
+  return String(value || '').trim()
+}
+
+function getDifficultyAliases(value) {
+  const key = normalizeText(value).toLowerCase()
+  return DIFFICULTY_ALIASES[key] || (key ? [key] : [])
+}
+
+function matchesDifficulty(questionDifficulty, requestedDifficulty) {
+  const aliases = getDifficultyAliases(requestedDifficulty)
+  if (!aliases.length) return true
+  return aliases.includes(normalizeText(questionDifficulty).toLowerCase())
+}
+
+function matchesTextFilter(value, filter) {
+  const normalizedFilter = normalizeText(filter).toLowerCase()
+  if (!normalizedFilter) return true
+  return normalizeText(value).toLowerCase() === normalizedFilter
+}
+
 function storageTypeForGame(game) {
   return getGameQuestionType(game) || ''
 }
@@ -56,6 +97,34 @@ function matchesGameShape(question, questionType) {
   if (questionType === 'matching') return Boolean(question.left && question.right)
   if (questionType === 'listen') return Boolean(question.word && Array.isArray(question.options))
   return Boolean(question.q && Array.isArray(question.options))
+}
+
+function matchesQuestionFilters(question, filters = {}) {
+  return matchesTextFilter(question.subject, filters.subject)
+    && matchesTextFilter(question.topic, filters.topic)
+    && matchesTextFilter(question.skill, filters.skill)
+    && matchesDifficulty(question.difficulty, filters.difficulty)
+}
+
+function dedupeQuestions(questions) {
+  const seen = new Set()
+  return questions.filter(question => {
+    const key = [
+      question.id,
+      question.q,
+      question.word,
+      question.left,
+      question.right,
+      question.subject,
+      question.topic,
+      question.skill
+    ].filter(Boolean).join('|')
+
+    if (!key) return true
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 }
 
 function mapDbQuestion(question) {
@@ -117,6 +186,7 @@ function questionBankWhere(filters = {}) {
   const grade = normalizeGrade(filters.grade)
   const questionType = filters.type || storageTypeForGame(filters.game)
   const gameUsage = usageFlagForGame(filters.game)
+  const difficultyValues = getDifficultyAliases(filters.difficulty)
 
   return {
     grade,
@@ -126,27 +196,148 @@ function questionBankWhere(filters = {}) {
     ...(filters.subject ? { subject: filters.subject } : {}),
     ...(filters.topic ? { topic: filters.topic } : {}),
     ...(filters.skill ? { skill: filters.skill } : {}),
-    ...(filters.difficulty ? { difficulty: String(filters.difficulty) } : {}),
+    ...(difficultyValues.length ? { OR: difficultyValues.map(difficulty => ({ difficulty })) } : {}),
     ...(questionType ? { type: questionType } : {}),
     ...(gameUsage ? { gameTypes: { contains: gameUsage } } : {}),
   }
 }
 
 async function getQuestionBankQuestions(filters = {}) {
-  const records = await prisma.customQuestion.findMany({
-    where: questionBankWhere(filters),
-    orderBy: { createdAt: 'desc' },
-    take: filters.take || 50,
-  })
+  try {
+    const records = await prisma.customQuestion.findMany({
+      where: questionBankWhere(filters),
+      orderBy: { createdAt: 'desc' },
+      take: filters.take || 50,
+    })
 
-  return records.map(mapDbQuestion)
+    return records.map(mapDbQuestion)
+  } catch (err) {
+    console.warn('[question-distribution] question bank unavailable, using fallback:', err.message)
+    return []
+  }
 }
 
 function getStaticGameQuestions({ grade, world, level, isBoss }) {
   const gradeData = getGradeData(normalizeGrade(grade))
   if (!gradeData || typeof gradeData.getQuestionsForGame !== 'function') return []
   return gradeData.getQuestionsForGame(Number(world || 1), Number(level || 1), Boolean(isBoss))
-    .map(question => ({ ...question, source: 'static_fallback' }))
+    .map(question => ({ ...question, difficulty: question.difficulty || '1', source: 'static_fallback' }))
+}
+
+async function getCmsQuestionsForGameSafe(filters) {
+  try {
+    return await getCmsQuestionsForGame(filters)
+  } catch (err) {
+    console.warn('[question-distribution] CMS questions unavailable, using fallback:', err.message)
+    return []
+  }
+}
+
+function mapStaticQuestion(question, sourceKey, index) {
+  if (sourceKey === 'LISTEN_QUESTIONS') {
+    return {
+      id: question.id || `static-listen-${index}`,
+      word: question.word || question.q || '',
+      options: toArray(question.options),
+      correct: question.correct ?? 0,
+      explanation: question.explanation || '',
+      difficulty: question.difficulty || '1',
+      skill: question.skill || '',
+      subject: question.subject || '',
+      topic: question.topic || '',
+      world: question.world,
+      level: question.level,
+      audioUrl: question.audioUrl || '',
+      source: 'static_fallback',
+    }
+  }
+
+  if (sourceKey === 'MATCHING_PAIRS_ALL') {
+    return {
+      id: question.id || `static-matching-${index}`,
+      left: question.left || question.q || '',
+      right: question.right || toArray(question.options)[0] || '',
+      explanation: question.explanation || '',
+      difficulty: question.difficulty || '1',
+      skill: question.skill || '',
+      subject: question.subject || '',
+      topic: question.topic || '',
+      world: question.world,
+      level: question.level,
+      source: 'static_fallback',
+    }
+  }
+
+  return {
+    id: question.id || `static-choose-${index}`,
+    q: question.q || question.question || '',
+    options: toArray(question.options),
+    correct: question.correct ?? 0,
+    emoji: question.emoji || '❓',
+    explanation: question.explanation || '',
+    difficulty: question.difficulty || '1',
+    skill: question.skill || '',
+    subject: question.subject || '',
+    topic: question.topic || '',
+    world: question.world,
+    level: question.level,
+    imageUrl: question.imageUrl || '',
+    source: 'static_fallback',
+  }
+}
+
+function getStaticQuestionPool({
+  grade,
+  game = 'quiz',
+  subject = '',
+  topic = '',
+  skill = '',
+  difficulty = '',
+  questionType = '',
+} = {}) {
+  const gradeData = getGradeData(normalizeGrade(grade))
+  const sourceKeys = STATIC_BANK_BY_GAME[game] || STATIC_BANK_BY_GAME[questionType] || STATIC_BANK_BY_GAME.quiz
+
+  return sourceKeys
+    .flatMap(sourceKey => (gradeData[sourceKey] || []).map((question, index) => mapStaticQuestion(question, sourceKey, index)))
+    .filter(question => matchesGameShape(question, questionType || storageTypeForGame(game)))
+    .filter(question => matchesQuestionFilters(question, { subject, topic, skill, difficulty }))
+}
+
+function fillFromStatic({ current, limit, staticPool }) {
+  if (current.length >= limit) return current.slice(0, limit)
+  return dedupeQuestions([...current, ...shuffle(staticPool)]).slice(0, limit)
+}
+
+async function getWeakSkillsForStudent(studentId, limit = 3) {
+  if (!studentId) return []
+
+  let answers = []
+  try {
+    answers = await prisma.studentAnswer.findMany({
+      where: {
+        skill: { not: '' },
+        isCorrect: false,
+        attempt: { profileId: studentId },
+      },
+      select: { skill: true },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    })
+  } catch (err) {
+    console.warn('[question-distribution] student answer history unavailable:', err.message)
+    return []
+  }
+
+  const counts = new Map()
+  answers.forEach(answer => {
+    counts.set(answer.skill, (counts.get(answer.skill) || 0) + 1)
+  })
+
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([skill]) => skill)
 }
 
 export async function getQuestionsForGame({
@@ -171,12 +362,14 @@ export async function getQuestionsForGame({
     type: questionType,
   })
 
-  const cmsQuestions = await getCmsQuestionsForGame({ grade: normalizeGrade(grade), world: Number(world), level: Number(level), isBoss, game })
+  const cmsQuestions = await getCmsQuestionsForGameSafe({ grade: normalizeGrade(grade), world: Number(world), level: Number(level), isBoss, game })
   const staticQuestions = getStaticGameQuestions({ grade, world, level, isBoss })
   const max = limit || (isBoss ? 8 : 5)
+  const questionPool = dedupeQuestions([...bankQuestions, ...cmsQuestions, ...staticQuestions])
 
-  return shuffle([...bankQuestions, ...cmsQuestions, ...staticQuestions])
+  return shuffle(questionPool)
     .filter(question => matchesGameShape(question, questionType))
+    .filter(question => matchesQuestionFilters(question, { subject, difficulty }))
     .slice(0, max)
 }
 
@@ -196,7 +389,11 @@ export async function getQuestionsForLesson({
     take: limit * 2,
   })
 
-  return shuffle(questions).slice(0, limit)
+  return fillFromStatic({
+    current: shuffle(questions),
+    limit,
+    staticPool: getStaticQuestionPool({ grade, subject, topic: lessonId, difficulty, game: 'quiz' })
+  })
 }
 
 export async function getQuestionsForTest({
@@ -216,10 +413,14 @@ export async function getQuestionsForTest({
       game: 'quiz',
       take: count * 2,
     })
-    return shuffle(questions).slice(0, count)
+    return fillFromStatic({
+      current: shuffle(questions),
+      limit: count,
+      staticPool: getStaticQuestionPool({ grade, subject, topic: chapter, difficulty, game: 'quiz' })
+    })
   }))
 
-  return shuffle(buckets.flat()).slice(0, limit)
+  return dedupeQuestions(shuffle(buckets.flat())).slice(0, limit)
 }
 
 export async function getQuestionsForDailyMission({
@@ -228,6 +429,32 @@ export async function getQuestionsForDailyMission({
   subject = '',
   limit = 5,
 } = {}) {
+  const weakSkills = await getWeakSkillsForStudent(studentId, 2)
+  const skillPools = weakSkills.length
+    ? await Promise.all(weakSkills.map(skill => getQuestionBankQuestions({
+      grade,
+      subject,
+      skill,
+      game: 'quiz',
+      take: limit,
+    })))
+    : []
+
+  const weakSkillFallback = weakSkills.flatMap(skill => getStaticQuestionPool({
+    grade,
+    subject,
+    skill,
+    game: 'quiz',
+  }))
+
+  if (skillPools.length || weakSkillFallback.length) {
+    return fillFromStatic({
+      current: shuffle(skillPools.flat()),
+      limit,
+      staticPool: weakSkillFallback,
+    })
+  }
+
   return getQuestionsForTest({
     grade,
     subject,
@@ -243,7 +470,12 @@ export async function getReviewQuestions({
   weakSkills = [],
   limit = 5,
 } = {}) {
-  const skills = Array.isArray(weakSkills) ? weakSkills.filter(Boolean) : []
+  const detectedSkills = await getWeakSkillsForStudent(studentId, limit)
+  const skills = Array.from(new Set([
+    ...(Array.isArray(weakSkills) ? weakSkills.filter(Boolean) : []),
+    ...detectedSkills
+  ]))
+
   const pools = await Promise.all((skills.length ? skills : ['']).map(skill => getQuestionBankQuestions({
     grade,
     skill,
@@ -252,5 +484,15 @@ export async function getReviewQuestions({
     studentId,
   })))
 
-  return shuffle(pools.flat()).slice(0, limit)
+  const staticPool = (skills.length ? skills : ['']).flatMap(skill => getStaticQuestionPool({
+    grade,
+    skill,
+    game: 'quiz',
+  }))
+
+  return fillFromStatic({
+    current: shuffle(pools.flat()),
+    limit,
+    staticPool,
+  })
 }
