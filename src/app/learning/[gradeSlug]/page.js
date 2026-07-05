@@ -187,7 +187,27 @@ export default function GradeLandingPage() {
     }
   }, [loadLandingData])
 
+  const playBubbleSound = () => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext
+      if (!AudioContext) return
+      const ctx = new AudioContext()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(350, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(850, ctx.currentTime + 0.12)
+      gain.gain.setValueAtTime(0.12, ctx.currentTime)
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.12)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.12)
+    } catch (_) {}
+  }
+
   const handleMascotSpeech = () => {
+    playBubbleSound()
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel()
       const text = `Xin chào ${profile.name}! Mình là ${mascot.name}. Hôm nay chúng ta cùng nhau khám phá thêm nhiều điều thú vị và tích lũy thật nhiều sao nhé!`
@@ -250,6 +270,16 @@ export default function GradeLandingPage() {
 
   return (
     <div className={styles.page}>
+      {/* Floating Game Bubbles Background */}
+      <div className={styles.bubbleContainer}>
+        <div className={styles.bubble} />
+        <div className={styles.bubble} />
+        <div className={styles.bubble} />
+        <div className={styles.bubble} />
+        <div className={styles.bubble} />
+        <div className={styles.bubble} />
+      </div>
+
       {/* Top bar */}
       <header className={styles.topBar}>
         <div className={styles.greeting}>
@@ -359,7 +389,7 @@ export default function GradeLandingPage() {
                       <span>Level {levelInfo.level}</span>
                     </div>
                   </div>
-                  <Link href={`/learning/${gradeSlug}/map`} id="btn-continue" className={styles.heroBtn}>
+                  <Link href={`/learning/${gradeSlug}/map`} id="btn-continue" className={styles.heroBtn} onClick={playBubbleSound}>
                     Tiếp tục học
                   </Link>
                 </div>
@@ -418,7 +448,7 @@ export default function GradeLandingPage() {
                     <span className="material-symbols-outlined" style={{ fontSize: 14, color: '#1cb0f6', fontVariationSettings: "'FILL' 1" }}>star</span>
                   </div>
                 </div>
-                <Link href={missions?.daily?.href || `/learning/${gradeSlug}/test?mode=daily`} className={styles.rewardBtn}>
+                <Link href={missions?.daily?.href || `/learning/${gradeSlug}/test?mode=daily`} className={styles.rewardBtn} onClick={playBubbleSound}>
                   <span>Nhận thưởng</span>
                   <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#ffa500', fontVariationSettings: "'FILL' 1" }}>redeem</span>
                 </Link>
@@ -441,7 +471,7 @@ export default function GradeLandingPage() {
                 { href: quickPractices.matching.href, id: 'btn-game-3', color: '#58cc02', shadow: '#46a302', icon: 'translate', name: 'Tiếng Anh', sub: quickPractices.matching.worldName, pct: completedCount > 0 ? Math.min(Math.round((completedCount / 40) * 100), 100) : 0 },
                 { href: `/learning/${gradeSlug}/games`, id: 'btn-game-4', color: '#fea250', shadow: '#cc7a00', icon: 'biotech', name: 'Khoa học', sub: 'Trò chơi học tập', pct: 15, label: 'Mới' },
               ].map(s => (
-                <Link key={s.id} href={s.href} id={s.id} className={styles.subjectCard}>
+                <Link key={s.id} href={s.href} id={s.id} className={styles.subjectCard} onClick={playBubbleSound}>
                   <div className={styles.subjectColorBar} style={{ background: s.color }} />
                   <div className={styles.subjectCardTop}>
                     <div className={styles.subjectIconWrap} style={{ background: `${s.color}20` }}>
