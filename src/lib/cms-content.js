@@ -30,6 +30,7 @@ const GRADE_LABELS = {
 const GAME_TYPE_MAP = {
   choose: 'choose',
   'choose-1-of-2': 'choose',
+  'quiz-runner-3d': 'choose',
   choice: 'choose',
   listen: 'listen',
   'listen-and-select': 'listen',

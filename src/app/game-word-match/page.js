@@ -13,6 +13,10 @@ function WordMatchInner() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const gradeSlug = searchParams.get('grade') || 'lop-1'
+  const hasMapContext = searchParams.has('world') || searchParams.has('level') || searchParams.has('boss')
+  const worldId = parseInt(searchParams.get('world') || '1', 10)
+  const levelId = parseInt(searchParams.get('level') || '1', 10)
+  const isBoss = searchParams.get('boss') === 'true'
   const theme = getGameTheme('word-match')
   const [pairs, setPairs] = useState([])
   const [selected, setSelected] = useState(null)
@@ -23,7 +27,16 @@ function WordMatchInner() {
   const [combo, setCombo] = useState(0)
 
   useEffect(() => {
-    fetch(`/api/questions?grade=${gradeSlug}&game=matching&limit=6`)
+    const params = new URLSearchParams({
+      grade: gradeSlug,
+      game: 'matching',
+      limit: '6',
+      world: String(worldId),
+      level: String(levelId),
+      boss: String(isBoss),
+    })
+
+    fetch(`/api/questions?${params}`)
       .then(res => res.json())
       .then(data => {
         const adapted = adaptQuestionsForGame(Array.isArray(data) ? data : [])
@@ -35,28 +48,49 @@ function WordMatchInner() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [gradeSlug])
+  }, [gradeSlug, worldId, levelId, isBoss])
 
   const totalPairs = pairs.length / 2
 
-  const finishGame = async (finalScore) => {
+  const finishGame = async (finalScore, finalMatched = matched) => {
     const profileId = localStorage.getItem('profileId')
     const stars = finalScore === totalPairs ? 3 : finalScore >= Math.ceil(totalPairs / 2) ? 2 : 1
     localStorage.setItem('lastStars', String(stars))
     localStorage.setItem('lastXp', String(finalScore * 15 + 20))
     localStorage.setItem('lastScorePct', String(Math.round((finalScore / totalPairs) * 100)))
     localStorage.setItem('lastGame', theme.label)
+    localStorage.setItem('lastLevelNumber', '1')
     if (profileId) {
-      await saveGameResult({
-        profileId,
-        activityType: 'game',
-        title: theme.label,
-        grade: gradeSlug,
-        gameType: 'word-match',
-        correct: finalScore,
-        total: totalPairs,
-        starsEarned: stars,
-      })
+      try {
+        const response = await saveGameResult({
+          profileId,
+          activityType: 'game',
+          title: theme.label,
+          grade: gradeSlug,
+          gameType: 'word-match',
+          completedLevel: hasMapContext ? (isBoss ? `w${worldId}-boss` : `w${worldId}-l${levelId}`) : '',
+          worldId,
+          levelId,
+          isBoss,
+          correct: finalScore,
+          total: totalPairs,
+          starsEarned: stars,
+          answers: Array.from(finalMatched).map(pairId => ({
+            questionId: pairId,
+            selected: 'matched',
+            correctAnswer: 'matched',
+            isCorrect: true,
+            difficulty: 'easy',
+            topic: 'Ghép từ',
+            skill: 'word_matching',
+          })),
+        })
+        localStorage.setItem('lastXp', String(response?.result?.xp ?? response?.result?.xpEarned ?? finalScore * 15 + 20))
+        localStorage.setItem('lastScorePct', String(response?.result?.scorePct || Math.round((finalScore / totalPairs) * 100)))
+        localStorage.setItem('lastLevelNumber', String(response?.result?.level?.level || 1))
+      } catch (err) {
+        console.error(err)
+      }
     }
     router.push(`/game-results?grade=${gradeSlug}&game=word-match`)
   }
@@ -84,7 +118,7 @@ function WordMatchInner() {
       setSelected(null)
 
       if (nextMatched.size === totalPairs) {
-        await finishGame(nextScore)
+        await finishGame(nextScore, nextMatched)
       }
     } else {
       setCombo(0)

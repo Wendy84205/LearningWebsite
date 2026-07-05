@@ -165,9 +165,14 @@ function GameContent() {
           }
         }
         localStorage.setItem('lastStars', starsEarned)
+        localStorage.setItem('lastCorrect', String(pairs.length))
+        localStorage.setItem('lastTotal', String(pairs.length))
+        localStorage.setItem('lastScore', '100')
+        localStorage.setItem('lastScorePct', '100')
         localStorage.setItem('lastGame', isBoss ? `Trận đấu Trùm: Siêu trí nhớ 30 Thẻ` : `Ghép đôi: Luyện trí nhớ`)
         localStorage.setItem('lastLevel', isBoss ? `${currentWorld.name} (Boss)` : `${currentWorld.name} - Ải ${levelId}`)
-        router.push('/game-results')
+        localStorage.setItem('gradeSlug', gradeSlug)
+        router.push(`/game-results?grade=${gradeSlug}&game=simple-matching`)
       }
       setTimeout(finish, 800)
     }

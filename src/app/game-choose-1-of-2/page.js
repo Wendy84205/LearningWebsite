@@ -103,6 +103,7 @@ function GameContent() {
       if (isLast) {
         const finalCorrect = correct + (isRight ? 1 : 0)
         const starsEarned = finalCorrect === questions.length ? 3 : finalCorrect >= Math.ceil(questions.length / 2) ? 2 : 1
+        const scorePct = Math.round((finalCorrect / questions.length) * 100)
         const completedLevelStr = isBoss ? `w${worldId}-boss` : `w${worldId}-l${levelId}`
 
         const profileId = localStorage.getItem('profileId')
@@ -140,9 +141,14 @@ function GameContent() {
           }
         }
         localStorage.setItem('lastStars', starsEarned)
+        localStorage.setItem('lastCorrect', String(finalCorrect))
+        localStorage.setItem('lastTotal', String(questions.length))
+        localStorage.setItem('lastScore', String(scorePct))
+        localStorage.setItem('lastScorePct', String(scorePct))
         localStorage.setItem('lastGame', isBoss ? `Trận đấu Trùm: ${currentWorld.bossName}` : `Bài học: ${q.topic}`)
         localStorage.setItem('lastLevel', isBoss ? `${currentWorld.name} (Boss)` : `${currentWorld.name} - Ải ${levelId}`)
-        router.push('/game-results')
+        localStorage.setItem('gradeSlug', gradeSlug)
+        router.push(`/game-results?grade=${gradeSlug}&game=choose-1-of-2`)
       } else {
         setQIndex(i => i + 1)
         setChosen(null)

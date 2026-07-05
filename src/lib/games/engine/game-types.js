@@ -1,4 +1,4 @@
-/** @typedef {'quiz-adventure' | 'math-battle' | 'word-match' | 'memory-card' | 'daily-mission' | 'choose-1-of-2' | 'listen-and-select' | 'simple-matching'} GameType */
+/** @typedef {'quiz-adventure' | 'math-battle' | 'word-match' | 'memory-card' | 'daily-mission' | 'quiz-runner-3d' | 'choose-1-of-2' | 'listen-and-select' | 'simple-matching'} GameType */
 
 /** @typedef {'easy' | 'medium' | 'hard'} Difficulty */
 
@@ -31,10 +31,11 @@
 
 export const GAME_CONFIG = {
   'quiz-adventure': { hearts: 3, timer: null, xpBase: 12, apiGame: 'quiz' },
-  'math-battle': { hearts: 5, timer: 60, xpBase: 15, apiGame: 'choose-1-of-2', subject: 'math' },
+  'math-battle': { hearts: 5, timer: 60, xpBase: 15, apiGame: 'choose-1-of-2', subject: 'Toán' },
   'word-match': { hearts: 3, timer: 90, xpBase: 10, apiGame: 'matching' },
   'memory-card': { hearts: null, timer: null, xpBase: 8, apiGame: 'matching' },
   'daily-mission': { hearts: null, timer: null, xpBase: 20, apiGame: 'quiz' },
+  'quiz-runner-3d': { hearts: 3, timer: null, xpBase: 18, apiGame: 'quiz' },
 }
 
 export const GAME_LABELS = {
@@ -43,4 +44,5 @@ export const GAME_LABELS = {
   'word-match': 'Ghép Từ',
   'memory-card': 'Thẻ Nhớ',
   'daily-mission': 'Nhiệm vụ ngày',
+  'quiz-runner-3d': 'Quiz Runner 3D',
 }

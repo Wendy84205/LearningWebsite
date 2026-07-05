@@ -13,6 +13,10 @@ function MemoryCardInner() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const gradeSlug = searchParams.get('grade') || 'lop-1'
+  const hasMapContext = searchParams.has('world') || searchParams.has('level') || searchParams.has('boss')
+  const worldId = parseInt(searchParams.get('world') || '1', 10)
+  const levelId = parseInt(searchParams.get('level') || '1', 10)
+  const isBoss = searchParams.get('boss') === 'true'
   const theme = getGameTheme('memory-card')
   const [cards, setCards] = useState([])
   const [flipped, setFlipped] = useState([])
@@ -21,7 +25,16 @@ function MemoryCardInner() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/questions?grade=${gradeSlug}&game=matching&limit=6`)
+    const params = new URLSearchParams({
+      grade: gradeSlug,
+      game: 'matching',
+      limit: '6',
+      world: String(worldId),
+      level: String(levelId),
+      boss: String(isBoss),
+    })
+
+    fetch(`/api/questions?${params}`)
       .then(res => res.json())
       .then(data => {
         const pairs = buildMemoryPairs(Array.isArray(data) ? data : [], 4)
@@ -29,7 +42,7 @@ function MemoryCardInner() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [gradeSlug])
+  }, [gradeSlug, worldId, levelId, isBoss])
 
   const totalPairs = cards.length / 2
 
@@ -40,17 +53,38 @@ function MemoryCardInner() {
     localStorage.setItem('lastXp', String(30 + stars * 10))
     localStorage.setItem('lastScorePct', '100')
     localStorage.setItem('lastGame', theme.label)
+    localStorage.setItem('lastLevelNumber', '1')
     if (profileId) {
-      await saveGameResult({
-        profileId,
-        activityType: 'game',
-        title: theme.label,
-        grade: gradeSlug,
-        gameType: 'memory-card',
-        correct: nextMatched.size,
-        total: totalPairs,
-        starsEarned: stars,
-      })
+      try {
+        const response = await saveGameResult({
+          profileId,
+          activityType: 'game',
+          title: theme.label,
+          grade: gradeSlug,
+          gameType: 'memory-card',
+          completedLevel: hasMapContext ? (isBoss ? `w${worldId}-boss` : `w${worldId}-l${levelId}`) : '',
+          worldId,
+          levelId,
+          isBoss,
+          correct: nextMatched.size,
+          total: totalPairs,
+          starsEarned: stars,
+          answers: Array.from(nextMatched).map(pairId => ({
+            questionId: pairId,
+            selected: 'matched',
+            correctAnswer: 'matched',
+            isCorrect: true,
+            difficulty: 'easy',
+            topic: 'Trí nhớ',
+            skill: 'memory_matching',
+          })),
+        })
+        localStorage.setItem('lastXp', String(response?.result?.xp ?? response?.result?.xpEarned ?? 30 + stars * 10))
+        localStorage.setItem('lastScorePct', String(response?.result?.scorePct || 100))
+        localStorage.setItem('lastLevelNumber', String(response?.result?.level?.level || 1))
+      } catch (err) {
+        console.error(err)
+      }
     }
     router.push(`/game-results?grade=${gradeSlug}&game=memory-card`)
   }

@@ -2,23 +2,15 @@
 
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { GAME_THEMES } from '@/lib/games/game-themes'
+import { buildGameHref, getGradeGameCatalog } from '@/lib/games/grade-game-catalog'
 import '@/lib/games/game-ui.css'
 import styles from './page.module.css'
-
-const HUB_ITEMS = [
-  { theme: GAME_THEMES['quiz-adventure'], href: '/game-quiz-adventure', badge: 'Mới' },
-  { theme: GAME_THEMES['math-battle'], href: '/game-math-battle', badge: 'Hot' },
-  { theme: GAME_THEMES['word-match'], href: '/game-word-match', badge: 'Ghép' },
-  { theme: GAME_THEMES['memory-card'], href: '/game-memory-card', badge: 'Nhớ' },
-  { theme: GAME_THEMES['choose-1-of-2'], href: '/game-choose-1-of-2', badge: 'Classic' },
-  { theme: GAME_THEMES['listen-and-select'], href: '/game-listen-and-select', badge: 'Nghe' },
-  { theme: GAME_THEMES['simple-matching'], href: '/game-simple-matching', badge: 'Match' },
-]
 
 export default function GamesHubPage() {
   const params = useParams()
   const gradeSlug = params.gradeSlug || 'lop-1'
+  const catalog = getGradeGameCatalog(gradeSlug)
+  const featured = catalog.categories[0]?.items[0]
 
   return (
     <div className={styles.page}>
@@ -41,41 +33,84 @@ export default function GamesHubPage() {
       <main className={styles.main}>
         <section className={styles.hero}>
           <div className={styles.heroIcon}>🎮</div>
-          <h1>Trung tâm trò chơi</h1>
-          <p>Chọn game yêu thích — câu hỏi lấy tự động từ ngân hàng câu hỏi đã publish</p>
+          <span className={styles.gradePill}>{catalog.label}</span>
+          <h1>{catalog.headline}</h1>
+          <p>{catalog.summary}</p>
+          {featured && (
+            <Link href={buildGameHref(featured, gradeSlug)} className={styles.featuredCta}>
+              <span className="material-symbols-outlined">{featured.theme.icon}</span>
+              Chơi đề xuất hôm nay
+            </Link>
+          )}
         </section>
 
-        <div className={styles.grid}>
-          {HUB_ITEMS.map(({ theme, href, badge }) => (
-            <Link
-              key={theme.id}
-              href={`${href}?grade=${gradeSlug}`}
-              className={styles.card}
-              style={{
-                '--card-accent': theme.accent,
-                '--card-accent-dark': theme.accentDark,
-              }}
-            >
-              <span className={styles.cardBadge}>{badge}</span>
-              <div className={styles.cardIconWrap}>
-                <span className="material-symbols-outlined">{theme.icon}</span>
-              </div>
-              <strong>{theme.label}</strong>
-              <small>{theme.tagline}</small>
-              <span className={styles.cardCta}>
-                Chơi ngay
-                <span className="material-symbols-outlined">arrow_forward</span>
-              </span>
-            </Link>
+        <div className={styles.rotation}>
+          {catalog.rotation.map(step => (
+            <div key={step.label} className={styles.rotationStep}>
+              <span className="material-symbols-outlined">{step.icon}</span>
+              <strong>{step.label}</strong>
+              <small>{step.text}</small>
+            </div>
           ))}
         </div>
 
-        <Link href={`/learning/${gradeSlug}/test?mode=daily`} className={styles.dailyCard}>
+        {catalog.categories.map(category => (
+          <section key={category.id} className={styles.category}>
+            <div className={styles.categoryHeader}>
+              <div>
+                <h2>{category.title}</h2>
+                <p>{category.subtitle}</p>
+              </div>
+              <span>{category.items.length} game</span>
+            </div>
+
+            <div className={styles.grid}>
+              {category.items.map(item => {
+                const theme = item.theme
+                return (
+                  <Link
+                    key={`${category.id}-${item.id}-${item.world || 'any'}-${item.level || 'any'}`}
+                    href={buildGameHref(item, gradeSlug)}
+                    className={styles.card}
+                    style={{
+                      '--card-accent': theme.accent,
+                      '--card-accent-dark': theme.accentDark,
+                    }}
+                  >
+                    <span className={styles.cardBadge}>{item.badge}</span>
+                    <div className={styles.cardIconWrap}>
+                      <span className="material-symbols-outlined">{theme.icon}</span>
+                    </div>
+                    <strong>{theme.label}</strong>
+                    <small>{item.focus || theme.tagline}</small>
+                    <p>{item.reason}</p>
+                    <div className={styles.cardMeta}>
+                      <span>
+                        <span className="material-symbols-outlined">timer</span>
+                        {item.duration}
+                      </span>
+                      <span>
+                        <span className="material-symbols-outlined">local_fire_department</span>
+                        {item.intensity}
+                      </span>
+                    </div>
+                    <span className={styles.cardCta}>
+                      Chơi ngay
+                      <span className="material-symbols-outlined">arrow_forward</span>
+                    </span>
+                  </Link>
+                )
+              })}
+            </div>
+          </section>
+        ))}
+
+        <Link href={`/game-daily-mission?grade=${gradeSlug}`} className={styles.dailyCard}>
           <div className={styles.dailyGlow} aria-hidden="true" />
           <span className="material-symbols-outlined">emoji_events</span>
           <div>
-            <strong>Nhiệm vụ hôm nay</strong>
-            <small>3–5 câu ngắn · XP bonus · streak</small>
+            <strong>Nhiệm vụ hôm nay cho {catalog.label}</strong>
+            <small>3-5 câu ngắn · XP bonus · streak</small>
           </div>
           <span className="material-symbols-outlined">bolt</span>
         </Link>

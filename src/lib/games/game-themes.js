@@ -85,6 +85,30 @@ export const GAME_THEMES = {
     gradient: 'linear-gradient(165deg, #ccfbf1 0%, #f0fdfa 45%, #fbf9f8 100%)',
     pattern: 'match',
   },
+  'daily-mission': {
+    id: 'daily-mission',
+    label: 'Nhiệm vụ ngày',
+    emoji: '🏅',
+    icon: 'emoji_events',
+    tagline: 'Hoàn thành thử thách ngắn để giữ streak!',
+    accent: '#58cc02',
+    accentDark: '#46a302',
+    secondary: '#ffc800',
+    gradient: 'linear-gradient(165deg, #dcfce7 0%, #f7fee7 45%, #fbf9f8 100%)',
+    pattern: 'daily',
+  },
+  'quiz-runner-3d': {
+    id: 'quiz-runner-3d',
+    label: 'Quiz Runner 3D',
+    emoji: '🚀',
+    icon: 'view_in_ar',
+    tagline: 'Chạy qua cổng đáp án đúng trong không gian 3D!',
+    accent: '#1cb0f6',
+    accentDark: '#0074b8',
+    secondary: '#58cc02',
+    gradient: 'linear-gradient(165deg, #bae6fd 0%, #f0f9ff 42%, #ecfccb 100%)',
+    pattern: 'runner',
+  },
 }
 
 export function getGameTheme(gameType) {

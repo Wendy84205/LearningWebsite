@@ -5,6 +5,7 @@ import { getCmsQuestionsForGame, getGameQuestionType } from '@/lib/cms-content'
 const GAME_TO_FLAG = {
   'choose-1-of-2': 'choose_1_of_2',
   'choose_1_of_2': 'choose_1_of_2',
+  'quiz-runner-3d': 'quiz',
   quiz: 'quiz',
   'listen-and-select': 'listen_select',
   listen_select: 'listen_select',
@@ -27,11 +28,23 @@ const STATIC_BANK_BY_GAME = {
   quiz: ['CHOOSE_QUESTIONS'],
   choose: ['CHOOSE_QUESTIONS'],
   'choose-1-of-2': ['CHOOSE_QUESTIONS'],
+  'quiz-runner-3d': ['CHOOSE_QUESTIONS'],
   choose_1_of_2: ['CHOOSE_QUESTIONS'],
   'listen-and-select': ['LISTEN_QUESTIONS'],
   listen_select: ['LISTEN_QUESTIONS'],
   matching: ['MATCHING_PAIRS_ALL'],
   'simple-matching': ['MATCHING_PAIRS_ALL'],
+}
+
+const SUBJECT_ALIASES = {
+  math: ['math', 'toan', 'toán', 'Toán'],
+  toan: ['math', 'toan', 'toán', 'Toán'],
+  'toán': ['math', 'toan', 'toán', 'Toán'],
+  vietnamese: ['vietnamese', 'tieng viet', 'tiếng việt', 'Tiếng Việt'],
+  'tieng viet': ['vietnamese', 'tieng viet', 'tiếng việt', 'Tiếng Việt'],
+  'tiếng việt': ['vietnamese', 'tieng viet', 'tiếng việt', 'Tiếng Việt'],
+  science: ['science', 'khoa học', 'Khoa học', 'tu nhien', 'tự nhiên', 'Tự nhiên', 'tự nhiên & xã hội', 'Tự nhiên & Xã hội'],
+  'khoa học': ['science', 'khoa học', 'Khoa học', 'tu nhien', 'tự nhiên', 'Tự nhiên', 'tự nhiên & xã hội', 'Tự nhiên & Xã hội'],
 }
 
 function shuffle(array) {
@@ -67,6 +80,16 @@ function normalizeText(value) {
   return String(value || '').trim()
 }
 
+function normalizeComparableText(value) {
+  return normalizeText(value).toLowerCase()
+}
+
+function getSubjectAliases(subject) {
+  const normalized = normalizeComparableText(subject)
+  const aliases = SUBJECT_ALIASES[normalized] || (normalized ? [subject] : [])
+  return Array.from(new Set(aliases))
+}
+
 function getDifficultyAliases(value) {
   const key = normalizeText(value).toLowerCase()
   return DIFFICULTY_ALIASES[key] || (key ? [key] : [])
@@ -79,9 +102,15 @@ function matchesDifficulty(questionDifficulty, requestedDifficulty) {
 }
 
 function matchesTextFilter(value, filter) {
-  const normalizedFilter = normalizeText(filter).toLowerCase()
+  const normalizedFilter = normalizeComparableText(filter)
   if (!normalizedFilter) return true
-  return normalizeText(value).toLowerCase() === normalizedFilter
+  return normalizeComparableText(value) === normalizedFilter
+}
+
+function matchesSubjectFilter(value, filter) {
+  const aliases = getSubjectAliases(filter)
+  if (!aliases.length) return true
+  return aliases.includes(normalizeComparableText(value))
 }
 
 function storageTypeForGame(game) {
@@ -100,7 +129,7 @@ function matchesGameShape(question, questionType) {
 }
 
 function matchesQuestionFilters(question, filters = {}) {
-  return matchesTextFilter(question.subject, filters.subject)
+  return matchesSubjectFilter(question.subject, filters.subject)
     && matchesTextFilter(question.topic, filters.topic)
     && matchesTextFilter(question.skill, filters.skill)
     && matchesDifficulty(question.difficulty, filters.difficulty)
@@ -187,16 +216,17 @@ function questionBankWhere(filters = {}) {
   const questionType = filters.type || storageTypeForGame(filters.game)
   const gameUsage = usageFlagForGame(filters.game)
   const difficultyValues = getDifficultyAliases(filters.difficulty)
+  const subjectValues = getSubjectAliases(filters.subject)
 
   return {
     grade,
     status: 'published',
     ...(filters.world ? { worldId: Number(filters.world) } : {}),
     ...(filters.level && !filters.isBoss ? { levelId: Number(filters.level) } : {}),
-    ...(filters.subject ? { subject: filters.subject } : {}),
+    ...(subjectValues.length ? { OR: subjectValues.map(subject => ({ subject })) } : {}),
     ...(filters.topic ? { topic: filters.topic } : {}),
     ...(filters.skill ? { skill: filters.skill } : {}),
-    ...(difficultyValues.length ? { OR: difficultyValues.map(difficulty => ({ difficulty })) } : {}),
+    ...(difficultyValues.length ? { difficulty: { in: difficultyValues } } : {}),
     ...(questionType ? { type: questionType } : {}),
     ...(gameUsage ? { gameTypes: { contains: gameUsage } } : {}),
   }
@@ -221,7 +251,12 @@ function getStaticGameQuestions({ grade, world, level, isBoss }) {
   const gradeData = getGradeData(normalizeGrade(grade))
   if (!gradeData || typeof gradeData.getQuestionsForGame !== 'function') return []
   return gradeData.getQuestionsForGame(Number(world || 1), Number(level || 1), Boolean(isBoss))
-    .map(question => ({ ...question, difficulty: question.difficulty || '1', source: 'static_fallback' }))
+    .map((question, index) => ({
+      id: question.id || `static-${normalizeGrade(grade)}-w${Number(world || 1)}-${isBoss ? 'boss' : `l${Number(level || 1)}`}-${index}`,
+      ...question,
+      difficulty: question.difficulty || '1',
+      source: 'static_fallback'
+    }))
 }
 
 async function getCmsQuestionsForGameSafe(filters) {
@@ -366,11 +401,15 @@ export async function getQuestionsForGame({
   const staticQuestions = getStaticGameQuestions({ grade, world, level, isBoss })
   const max = limit || (isBoss ? 8 : 5)
   const questionPool = dedupeQuestions([...bankQuestions, ...cmsQuestions, ...staticQuestions])
-
-  return shuffle(questionPool)
+  const filteredPool = shuffle(questionPool)
     .filter(question => matchesGameShape(question, questionType))
     .filter(question => matchesQuestionFilters(question, { subject, difficulty }))
-    .slice(0, max)
+
+  return fillFromStatic({
+    current: filteredPool,
+    limit: max,
+    staticPool: getStaticQuestionPool({ grade, game, subject, difficulty, questionType })
+  })
 }
 
 export async function getQuestionsForLesson({

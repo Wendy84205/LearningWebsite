@@ -30,27 +30,46 @@ export function useGamePage({
   const [loading, setLoading] = useState(true)
   const [feedback, setFeedback] = useState(null)
   const [timer, setTimer] = useState(config?.timer || null)
+  const extraParamsKey = JSON.stringify(extraParams)
+  const apiGame = config?.apiGame || 'quiz'
+  const gameTimer = config?.timer || null
 
   useEffect(() => {
-    const apiGame = config?.apiGame || 'quiz'
-    const params = new URLSearchParams({
-      grade: gradeSlug,
-      world: String(worldId),
-      level: String(levelId),
-      boss: String(isBoss),
-      game: apiGame,
-      ...extraParams,
-    })
+    let cancelled = false
 
-    fetch(`/api/questions?${params}`)
-      .then(res => res.json())
-      .then(data => {
+    const loadQuestions = async () => {
+      const normalizedExtraParams = JSON.parse(extraParamsKey || '{}')
+      const params = new URLSearchParams({
+        grade: gradeSlug,
+        world: String(worldId),
+        level: String(levelId),
+        boss: String(isBoss),
+        game: apiGame,
+        ...normalizedExtraParams,
+      })
+
+      await Promise.resolve()
+      if (cancelled) return
+
+      setLoading(true)
+      setTimer(gameTimer)
+      try {
+        const res = await fetch(`/api/questions?${params}`)
+        const data = await res.json()
+        if (cancelled) return
         const questions = Array.isArray(data) ? data : []
         setSession(createGameSession(gameType, questions))
         setLoading(false)
-      })
-      .catch(() => setLoading(false))
-  }, [gameType, gradeSlug, worldId, levelId, isBoss, config?.apiGame, extraParams])
+      } catch {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    loadQuestions()
+    return () => {
+      cancelled = true
+    }
+  }, [gameType, gradeSlug, worldId, levelId, isBoss, apiGame, gameTimer, extraParamsKey])
 
   useEffect(() => {
     if (!config?.timer || session?.status !== 'playing') return undefined
@@ -81,12 +100,13 @@ export function useGamePage({
     localStorage.setItem('lastTotal', String(result.total))
     localStorage.setItem('lastGame', activityTitle || GAME_LABELS[gameType])
     localStorage.setItem('lastCombo', String(finalSession.maxCombo || 0))
+    localStorage.setItem('lastLevelNumber', String(result.level?.level || 1))
 
     if (profileId) {
       try {
-        await saveGameResult({
+        const saved = await saveGameResult({
           profileId,
-          activityType: gameType === 'daily-mission' ? 'daily' : 'game',
+          activityType: gameType === 'daily-mission' ? 'daily_mission' : 'game',
           title: activityTitle || GAME_LABELS[gameType],
           grade: gradeSlug,
           gameType,
@@ -99,6 +119,11 @@ export function useGamePage({
           total: result.total,
           starsEarned: result.stars,
         })
+        if (saved?.result) {
+          localStorage.setItem('lastXp', String(saved.result.xp ?? saved.result.xpEarned ?? result.xp))
+          localStorage.setItem('lastScorePct', String(saved.result.scorePct ?? result.scorePct))
+          localStorage.setItem('lastLevelNumber', String(saved.result.level?.level || 1))
+        }
       } catch (err) {
         console.error(err)
       }

@@ -2,221 +2,181 @@
 import Link from 'next/link'
 import styles from './page.module.css'
 
+const NAV_ITEMS = [
+  { href: '#features', label: 'Tính năng' },
+  { href: '#curriculum', label: 'Chương trình' },
+  { href: '#parents', label: 'Phụ huynh' },
+]
+
 const FEATURES = [
-  { icon: 'sports_esports', color: 'primary', title: 'Game hóa học tập', desc: 'Biến bài tập Toán, Tiếng Việt, Khoa học thành những cuộc phiêu lưu vui nhộn với huy chương và phần thưởng hấp dẫn.' },
-  { icon: 'layers', color: 'secondary', title: 'Chuẩn chương trình Bộ GD&ĐT', desc: 'Toàn bộ nội dung lớp 1–5 bám sát SGK hiện hành: Toán, Tiếng Việt, Khoa học, Tiếng Anh và Kỹ năng sống.' },
-  { icon: 'monitoring', color: 'tertiary', title: 'Báo cáo tiến độ thực tế', desc: 'Phụ huynh xem chi tiết từng môn, từng lớp: sao tích lũy, chuỗi ngày học, huy chương thế giới đã chinh phục.' },
-  { icon: 'family_restroom', color: 'primary', title: 'Dành cho cả gia đình', desc: 'Một tài khoản phụ huynh quản lý nhiều bé, theo dõi tiến độ từng con riêng biệt theo lớp và môn học.' },
+  { icon: 'sports_esports', title: 'Học bằng game', desc: 'Câu hỏi lớp 1-5 được biến thành nhiệm vụ ngắn, có XP, sao, streak và phản hồi ngay sau mỗi lượt chơi.' },
+  { icon: 'route', title: 'Lộ trình theo lớp', desc: 'Mỗi bé học theo lớp, thế giới, màn chơi và kỹ năng trọng tâm thay vì danh sách bài tập rời rạc.' },
+  { icon: 'monitoring', title: 'Tiến độ thật', desc: 'Phụ huynh xem số câu đúng, sao, cấp độ, môn mạnh/yếu và lịch sử luyện tập từ dữ liệu lưu trong hệ thống.' },
+  { icon: 'admin_panel_settings', title: 'Nội dung quản trị', desc: 'Question Bank và CMS giúp mở rộng câu hỏi, game, bài kiểm tra và báo cáo mà không phải sửa giao diện học sinh.' },
 ]
 
 const GRADES = [
-  {
-    grade: 'Lớp 1',
-    icon: '🏡',
-    color: '#d0e4ff',
-    border: '#005da7',
-    text: '#005da7',
-    subjects: ['Toán: Số 0–10, cộng trừ', 'Tiếng Việt: Chữ cái & vần', 'Tự nhiên & Xã hội'],
-  },
-  {
-    grade: 'Lớp 2',
-    icon: '📖',
-    color: '#fef9c3',
-    border: '#686000',
-    text: '#5c4a00',
-    subjects: ['Toán: Phép tính đến 100', 'Tiếng Việt: Đọc hiểu câu', 'Đạo đức & Kỹ năng sống'],
-  },
-  {
-    grade: 'Lớp 3',
-    icon: '🧪',
-    color: '#dcfce7',
-    border: '#16a34a',
-    text: '#166534',
-    subjects: ['Toán: Nhân chia cơ bản', 'Tiếng Việt: Tập làm văn', 'Khoa học Tự nhiên'],
-  },
-  {
-    grade: 'Lớp 4',
-    icon: '🌍',
-    color: '#fce7f3',
-    border: '#be185d',
-    text: '#9d174d',
-    subjects: ['Toán: Phân số & đo lường', 'Tiếng Việt: Đọc diễn cảm', 'Lịch sử & Địa lý'],
-  },
-  {
-    grade: 'Lớp 5',
-    icon: '🚀',
-    color: '#ede9fe',
-    border: '#7c3aed',
-    text: '#5b21b6',
-    subjects: ['Toán: Hình học & số thập phân', 'Tiếng Việt: Luận điểm & bố cục', 'Khoa học & Kỹ thuật'],
-  },
+  { grade: 'Lớp 1', icon: 'looks_one', theme: 'green', focus: 'Đếm, chữ cái, âm vần', subjects: ['Toán 0-10', 'Tiếng Việt nhập môn', 'Ghép hình, nghe chọn'] },
+  { grade: 'Lớp 2', icon: 'looks_two', theme: 'blue', focus: 'Tính nhẩm, đọc hiểu câu', subjects: ['Cộng trừ đến 100', 'Từ và câu', 'Nhiệm vụ ngày'] },
+  { grade: 'Lớp 3', icon: 'looks_3', theme: 'pink', focus: 'Nhân chia, đoạn văn, logic', subjects: ['Bảng nhân chia', 'Tập làm văn', 'Quiz phiêu lưu'] },
+  { grade: 'Lớp 4', icon: 'looks_4', theme: 'violet', focus: 'Phân số, khoa học, địa lí', subjects: ['Phân số', 'Từ loại', 'Ghép khái niệm'] },
+  { grade: 'Lớp 5', icon: 'looks_5', theme: 'amber', focus: 'Tổng ôn và phản xạ', subjects: ['Số thập phân', 'Đọc hiểu dài', 'Runner 3D'] },
 ]
 
-const TESTIMONIALS = [
-  { initial: 'H', name: 'Chị Hương', role: 'Mẹ bé Ben (Lớp 2)', text: '"Từ khi dùng Học Vui, con trai mình không còn sợ học Toán nữa. Bé cứ đòi làm nhiệm vụ để tích điểm đổi quà suốt!"', bg: 'primary' },
-  { initial: 'T', name: 'Anh Tuấn', role: 'Bố bé Na (Lớp 4)', text: '"App rất dễ sử dụng, giao diện tươi sáng và mình có thể xem con yếu phần nào để kèm cặp thêm. Bé Na học lớp 4 mà vẫn mê chơi!"', bg: 'tertiary' },
-  { initial: 'M', name: 'Chị Mai', role: 'Mẹ bé Khôi (Lớp 5)', text: '"Con thi chuyển cấp đạt điểm 9 Toán. Mình nghĩ một phần nhờ Học Vui giúp con ôn bài mỗi ngày mà không chán."', bg: 'secondary' },
+const STATS = [
+  { value: '5', label: 'khối lớp' },
+  { value: '9', label: 'kiểu game' },
+  { value: '100%', label: 'tiến độ thật' },
 ]
 
 export default function HomePage() {
   return (
     <div className={styles.page}>
-      {/* Navbar */}
-      <header className="nav-bar">
-        <div className="nav-logo">
-          <div className="nav-logo-icon">
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>auto_stories</span>
-          </div>
-          <span className="nav-logo-text">Học Vui</span>
-        </div>
-        <nav className={styles.navLinks}>
-          <a href="#features" className={styles.navLink}>Tính năng</a>
-          <a href="#pricing" className={styles.navLink}>Bảng giá</a>
-          <Link href="/parent-login" className="btn btn-primary btn-sm">Bắt đầu miễn phí</Link>
+      <header className={styles.navBar}>
+        <Link href="/" className={styles.brand} aria-label="Học Vui trang chủ">
+          <span className={styles.brandMark} aria-hidden="true">
+            <span className="material-symbols-outlined">auto_stories</span>
+          </span>
+          <span>Học Vui</span>
+        </Link>
+
+        <nav className={styles.navLinks} aria-label="Điều hướng trang chủ">
+          {NAV_ITEMS.map(item => (
+            <a key={item.href} href={item.href} className={styles.navLink}>{item.label}</a>
+          ))}
         </nav>
+
+        <Link href="/parent-login" className={styles.navCta}>Bắt đầu</Link>
       </header>
 
       <main>
-        <section className={styles.hero}>
-          <div className={styles.heroBackdrop} aria-hidden="true" />
+        <section className={styles.hero} aria-labelledby="home-title">
           <div className={styles.heroContent}>
-            <span className={`badge badge-amber ${styles.heroBadge}`}>Dành cho học sinh Tiểu học Lớp 1-5</span>
-            <h1 className={styles.heroTitle}>Học Vui</h1>
+            <span className={styles.kicker}>Dành cho học sinh tiểu học lớp 1-5</span>
+            <h1 id="home-title" className={styles.heroTitle}>Học Vui</h1>
             <p className={styles.heroSub}>
-              Nền tảng luyện tập Toán, Tiếng Việt, Khoa học và Kỹ năng sống cho học sinh <strong>lớp 1 đến lớp 5</strong> thông qua hệ thống trò chơi hấp dẫn, giúp trẻ tự giác và yêu thích học tập mỗi ngày.
+              Luyện Toán, Tiếng Việt, Khoa học và kỹ năng nền tảng bằng game ngắn, lộ trình rõ và báo cáo tiến độ thật cho phụ huynh.
             </p>
-            <div className={styles.heroActions}>
-              <Link href="/parent-login" id="cta-start" className="btn btn-primary btn-lg">Đăng ký ngay</Link>
-              <Link href="/parent-login?tab=login" className="btn btn-ghost btn-lg">
-                <span className="material-symbols-outlined">play_circle</span>
-                Xem demo
+
+            <div className={styles.heroActions} aria-label="Hành động chính">
+              <Link href="/parent-login" id="cta-start" className={styles.primaryButton}>Đăng ký miễn phí</Link>
+              <Link href="/parent-login?tab=login" className={styles.secondaryButton}>
+                <span className="material-symbols-outlined" aria-hidden="true">login</span>
+                Đăng nhập
               </Link>
+              <a href="#curriculum" className={styles.ghostButton}>Xem chương trình</a>
             </div>
-            <div className={styles.heroStats} aria-label="Tổng quan chương trình">
-              <div className={styles.heroStat}>
-                <strong>5</strong>
-                <span>khối lớp</span>
+
+            <form className={styles.emailForm} action="/parent-login" aria-label="Nhận tư vấn tài khoản phụ huynh">
+              <label htmlFor="parent-email" className={styles.emailLabel}>Email phụ huynh</label>
+              <div className={styles.emailControl}>
+                <span className="material-symbols-outlined" aria-hidden="true">mail</span>
+                <input id="parent-email" name="email" type="email" inputMode="email" placeholder="phuhuynh@example.com" />
+                <button type="submit">Tư vấn</button>
               </div>
-              <div className={styles.heroStat}>
-                <strong>4+</strong>
-                <span>môn học</span>
-              </div>
-              <div className={styles.heroStat}>
-                <strong>100%</strong>
-                <span>dữ liệu tiến độ thật</span>
-              </div>
+            </form>
+
+            <div className={styles.heroStats} aria-label="Tổng quan sản phẩm">
+              {STATS.map(stat => (
+                <div key={stat.label} className={styles.heroStat}>
+                  <strong>{stat.value}</strong>
+                  <span>{stat.label}</span>
+                </div>
+              ))}
             </div>
-            <div className={styles.heroSubjects} aria-label="Môn học nổi bật">
-              <span className={styles.heroSubject}>Toán</span>
-              <span className={styles.heroSubject}>Tiếng Việt</span>
-              <span className={styles.heroSubject}>Khoa học</span>
-              <span className={styles.heroSubject}>Kỹ năng sống</span>
+          </div>
+
+          <div className={styles.heroVisual} aria-label="Minh họa bản đồ học tập Học Vui">
+            <div className={styles.phoneFrame}>
+              <div className={styles.phoneTop}>
+                <span>Hôm nay</span>
+                <strong>84%</strong>
+              </div>
+              <div className={styles.lessonPath}>
+                {['Toán', 'TV', '3D', 'Boss'].map((item, index) => (
+                  <div key={item} className={styles.lessonNode} data-active={index < 3}>
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+              <div className={styles.quizPreview}>
+                <span className="material-symbols-outlined" aria-hidden="true">bolt</span>
+                <div>
+                  <strong>3 + 2 = ?</strong>
+                  <p>Chọn cổng đúng để nhận XP</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Features */}
-        <section id="features" className={styles.featuresSection}>
+        <section id="features" className={styles.section}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Tính năng nổi bật</h2>
-            <p className={styles.sectionSub}>Môi trường học tập an toàn, đầy cảm hứng cho học sinh tiểu học lớp 1–5</p>
+            <span className={styles.sectionEyebrow}>Learning system</span>
+            <h2>Học nhanh, chơi gọn, phụ huynh nắm được kết quả</h2>
+            <p>Giao diện ưu tiên hành động rõ ràng, tương phản cao, chữ dễ đọc và không dùng ngoại lệ màu/spacing rời rạc.</p>
           </div>
           <div className={styles.featureGrid}>
-            {FEATURES.map((f, i) => (
-              <div key={i} className={`card-surface tactile-hover ${styles.featureCard}`}>
-                <div className={styles.featureIconWrap} data-color={f.color}>
-                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '2rem' }}>{f.icon}</span>
-                </div>
-                <h3 className={styles.featureTitle} data-color={f.color}>{f.title}</h3>
-                <p className={styles.featureDesc}>{f.desc}</p>
-              </div>
+            {FEATURES.map(feature => (
+              <article key={feature.title} className={styles.featureCard}>
+                <span className={styles.featureIcon} aria-hidden="true">
+                  <span className="material-symbols-outlined">{feature.icon}</span>
+                </span>
+                <h3>{feature.title}</h3>
+                <p>{feature.desc}</p>
+              </article>
             ))}
           </div>
         </section>
 
-        {/* Curriculum Showcase – Grades 1-5 */}
-        <section id="curriculum" className={styles.featuresSection} style={{ background: 'var(--surface-container-low)' }}>
+        <section id="curriculum" className={`${styles.section} ${styles.curriculumSection}`}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>
-              Nội dung học Tiểu học Lớp 1–5
-              <span className="material-symbols-outlined" style={{ marginLeft: '8px', verticalAlign: 'middle' }}>menu_book</span>
-            </h2>
-            <p className={styles.sectionSub}>Toàn bộ nội dung bám sát chương trình sách giáo khoa Bộ GD&ĐT hiện hành cho tất cả 5 khối lớp tiểu học</p>
+            <span className={styles.sectionEyebrow}>Grade 1-5</span>
+            <h2>Phân bổ game theo từng lớp để bé không bị chán</h2>
+            <p>Mỗi khối có nhịp học riêng: lớp nhỏ thao tác đơn giản, lớp lớn tăng chiến thuật, đọc hiểu và phản xạ.</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', maxWidth: '1100px', margin: '0 auto', padding: '0 16px' }}>
-            {GRADES.map((g, i) => (
-              <div key={i} className={`card-surface tactile-hover ${styles.featureCard}`} style={{
-                borderTop: `4px solid ${g.border}`,
-                background: `linear-gradient(160deg, ${g.color}66, white)`,
-              }}>
-                <div style={{ fontSize: '36px', marginBottom: '6px' }}>{g.icon}</div>
-                <h3 className={styles.featureTitle} style={{ color: g.text, fontSize: '18px' }}>{g.grade}</h3>
-                <ul style={{ listStyle: 'none', padding: 0, margin: '10px 0 0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {g.subjects.map((s, j) => (
-                    <li key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '13px', color: 'var(--on-surface-variant)', lineHeight: 1.4 }}>
-                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: g.border, flexShrink: 0, marginTop: '5px' }} />
-                      {s}
+          <div className={styles.gradeGrid}>
+            {GRADES.map(grade => (
+              <article key={grade.grade} className={styles.gradeCard} data-theme={grade.theme}>
+                <div className={styles.gradeHead}>
+                  <span className="material-symbols-outlined" aria-hidden="true">{grade.icon}</span>
+                  <h3>{grade.grade}</h3>
+                </div>
+                <p>{grade.focus}</p>
+                <ul>
+                  {grade.subjects.map(subject => (
+                    <li key={subject}>
+                      <span className="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                      {subject}
                     </li>
                   ))}
                 </ul>
-              </div>
+              </article>
             ))}
           </div>
         </section>
 
-        {/* Testimonials */}
-        <section className={styles.testimonialsSection}>
-          <h2 className={styles.sectionTitle}>Phụ huynh nói gì</h2>
-          <div className={styles.testimonialGrid}>
-            {TESTIMONIALS.map((t, i) => (
-              <div key={i} className={styles.testimonialCard}>
-                <span className="material-symbols-outlined" style={{ fontSize: '4rem', opacity: 0.15, color: 'var(--primary)', position: 'absolute', top: 16, right: 16 }}>format_quote</span>
-                <p className={styles.testimonialText}>{t.text}</p>
-                <div className={styles.testimonialAuthor}>
-                  <div className={styles.testimonialAvatar} style={{ background: `var(--${t.bg})` }}>{t.initial}</div>
-                  <div>
-                    <div className={styles.testimonialName}>{t.name}</div>
-                    <div className={styles.testimonialRole}>{t.role}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
+        <section id="parents" className={styles.parentBand}>
+          <div>
+            <span className={styles.sectionEyebrow}>For parents</span>
+            <h2>Biết con đang mạnh gì, yếu gì, cần ôn gì tiếp theo</h2>
+            <p>Bảng phụ huynh lấy dữ liệu thật từ hồ sơ bé, tiến độ màn chơi và kết quả luyện tập để gợi ý trọng tâm học tiếp.</p>
           </div>
+          <Link href="/parent-login" className={styles.primaryButton}>Vào dashboard phụ huynh</Link>
         </section>
-
       </main>
 
-      {/* Footer */}
       <footer className={styles.footer}>
-        <div className={styles.footerTop}>
-          <div className={styles.footerBrand}>
-            <div className="nav-logo">
-              <div className="nav-logo-icon">
-                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>auto_stories</span>
-              </div>
-              <span className="nav-logo-text">Học Vui</span>
-            </div>
-            <p className={styles.footerDesc}>Chúng tôi cam kết mang lại môi trường học tập an toàn nhất cho trẻ em. Dữ liệu của con bạn luôn được bảo vệ nghiêm ngặt.</p>
-          </div>
-          <div className={styles.footerLinks}>
-            <h4>Thông tin</h4>
-            <a href="#">Điều khoản dịch vụ</a>
-            <a href="#">Chính sách bảo mật</a>
-            <a href="#">Cam kết an toàn</a>
-          </div>
-          <div className={styles.footerLinks}>
-            <h4>Liên hệ</h4>
-            <p><span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--primary)' }}>call</span> 1900 1234</p>
-            <p><span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--primary)' }}>location_on</span> Hà Nội, Việt Nam</p>
-          </div>
-        </div>
-        <div className={styles.footerBottom}>
-          <p>© 2026 Học Vui – Học tập là niềm vui</p>
-          <span>
-            Made with
-            <span className="material-symbols-outlined" style={{ color: 'red', fontSize: '16px', verticalAlign: 'middle', margin: '0 4px', fontVariationSettings: "'FILL' 1" }}>favorite</span>
-            for children
+        <Link href="/" className={styles.brand} aria-label="Học Vui trang chủ">
+          <span className={styles.brandMark} aria-hidden="true">
+            <span className="material-symbols-outlined">auto_stories</span>
           </span>
+          <span>Học Vui</span>
+        </Link>
+        <div className={styles.footerLinks}>
+          <a href="#features">Tính năng</a>
+          <a href="#curriculum">Chương trình</a>
+          <Link href="/parent-login">Đăng nhập</Link>
         </div>
       </footer>
     </div>

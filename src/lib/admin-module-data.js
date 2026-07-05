@@ -681,6 +681,7 @@ function buildStaticCurriculumItems(gradeSlug, status) {
 
   const games = [
     ['choose-1-of-2', 'Choose 1 of 2', '/game-choose-1-of-2', 'choose'],
+    ['quiz-runner-3d', 'Quiz Runner 3D', '/game-quiz-runner-3d', 'choose'],
     ['listen-and-select', 'Listen & Select', '/game-listen-and-select', 'listen'],
     ['simple-matching', 'Simple Matching', '/game-simple-matching', 'matching']
   ]

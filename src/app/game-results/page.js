@@ -11,6 +11,7 @@ const STAR_MSGS = ['Cố gắng hơn nhé!', 'Tốt lắm!', 'Rất giỏi!', 'X
 function ResultsContent() {
   const searchParams = useSearchParams()
   const gameKey = searchParams.get('game') || ''
+  const gradeFromQuery = searchParams.get('grade') || ''
   const theme = getGameTheme(gameKey)
   const [stars, setStars] = useState(0)
   const [gameName, setGameName] = useState('')
@@ -30,7 +31,7 @@ function ResultsContent() {
     const g = localStorage.getItem('lastGame') || theme.label || 'Trò chơi'
     const mn = localStorage.getItem('mascotName') || 'Tin Tin'
     const me = localStorage.getItem('mascotEmoji') || '🤖'
-    const gs = localStorage.getItem('gradeSlug') || 'lop-1'
+    const gs = gradeFromQuery || localStorage.getItem('gradeSlug') || 'lop-1'
     const lastXp = parseInt(localStorage.getItem('lastXp') || '0', 10)
     const lastScorePct = parseInt(localStorage.getItem('lastScorePct') || '0', 10)
     const lastLevelNumber = parseInt(localStorage.getItem('lastLevelNumber') || '1', 10)
@@ -72,7 +73,7 @@ function ResultsContent() {
       if (count >= s) clearInterval(id)
     }, 400)
     return () => clearInterval(id)
-  }, [])
+  }, [gradeFromQuery, theme.label])
 
   const msg = STAR_MSGS[stars] || STAR_MSGS[0]
   const isMascotEmoji = mascot.image && !mascot.image.startsWith('http') && !mascot.image.startsWith('/')

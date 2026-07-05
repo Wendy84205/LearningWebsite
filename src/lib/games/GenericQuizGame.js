@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useGamePage } from '@/lib/games/use-game-page'
 import { getGameTheme } from '@/lib/games/game-themes'
+import { GAME_CONFIG } from '@/lib/games/engine/game-types'
 import { GameLoading, GameHud, AdventurePath, FeedbackToast } from '@/lib/games/GameUi'
 import '@/lib/games/game-ui.css'
 
@@ -13,10 +14,17 @@ const CHOICE_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F']
 function GameInner({ gameType }) {
   const searchParams = useSearchParams()
   const gradeSlug = searchParams.get('grade') || 'lop-1'
+  const hasMapContext = searchParams.has('world') || searchParams.has('level') || searchParams.has('boss')
   const worldId = parseInt(searchParams.get('world') || '1', 10)
   const levelId = parseInt(searchParams.get('level') || '1', 10)
   const isBoss = searchParams.get('boss') === 'true'
   const theme = getGameTheme(gameType)
+  const gameConfig = GAME_CONFIG[gameType]
+  const gameSubject = gameConfig?.subject || ''
+  const extraParams = useMemo(() => {
+    if (gameSubject) return { subject: gameSubject }
+    return {}
+  }, [gameSubject])
 
   const { session, question, loading, feedback, timer, config, handleAnswer, label } = useGamePage({
     gameType,
@@ -25,8 +33,8 @@ function GameInner({ gameType }) {
     levelId,
     isBoss,
     activityTitle: theme.label,
-    completedLevel: isBoss ? `w${worldId}-boss` : `w${worldId}-l${levelId}`,
-    extraParams: config?.subject ? { subject: config.subject } : {},
+    completedLevel: hasMapContext ? (isBoss ? `w${worldId}-boss` : `w${worldId}-l${levelId}`) : '',
+    extraParams,
   })
 
   const cardClass = useMemo(() => {
