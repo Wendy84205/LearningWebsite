@@ -2,11 +2,18 @@ const fs = require('fs');
 const path = require('path');
 
 const schemaPath = path.join(__dirname, '..', 'prisma', 'schema.prisma');
-const provider = process.argv[2];
+const providerArg = process.argv[2];
+const databaseUrl = process.env.DATABASE_URL || '';
+const provider = providerArg === 'auto'
+  ? databaseUrl.startsWith('file:') || !databaseUrl
+    ? 'sqlite'
+    : 'postgresql'
+  : providerArg;
 
 if (!provider || (provider !== 'sqlite' && provider !== 'postgresql')) {
-  console.error('Vui lòng chỉ định database provider: "sqlite" hoặc "postgresql"');
+  console.error('Vui lòng chỉ định database provider: "sqlite", "postgresql" hoặc "auto"');
   console.log('Ví dụ: node scripts/use-db.js postgresql');
+  console.log('Ví dụ: node scripts/use-db.js auto');
   process.exit(1);
 }
 
