@@ -1,15 +1,29 @@
 import prisma from '@/lib/db'
+import { getAdminSession } from '@/lib/admin-auth'
+import { getSessionUser } from '@/lib/auth'
 
 // POST /api/profile/promote - Promote a child to the next grade
 export async function POST(request) {
   try {
+    const [session, adminSession] = await Promise.all([
+      Promise.resolve(getSessionUser(request)),
+      getAdminSession(request)
+    ])
+
+    if (!session && !adminSession) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { profileId } = await request.json()
     if (!profileId) {
       return Response.json({ error: 'profileId is required' }, { status: 400 })
     }
 
-    const profile = await prisma.childProfile.findUnique({
-      where: { id: profileId },
+    const profile = await prisma.childProfile.findFirst({
+      where: {
+        id: profileId,
+        ...(adminSession ? {} : { parentId: session.parentId }),
+      },
       include: { progress: true }
     })
 

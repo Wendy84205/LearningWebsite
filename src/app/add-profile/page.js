@@ -1,10 +1,11 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { getGradeSlug, PRIMARY_GRADES } from '@/lib/grades'
 import styles from './page.module.css'
 
 const AVATARS = ['🐱', '🐶', '🐭', '🐹', '🐰', '🦊', '🐸', '🐼', '🐨', '🐯', '🦁', '🐮']
-const GRADES = ['Lớp 1', 'Lớp 2', 'Lớp 3', 'Lớp 4', 'Lớp 5']
+const GRADES = PRIMARY_GRADES.map(grade => grade.name)
 
 export default function AddProfilePage() {
   const router = useRouter()
@@ -40,19 +41,9 @@ export default function AddProfilePage() {
       setLoading(false)
       if (!res.ok) return setError(data.error || 'Tạo hồ sơ thất bại')
       
-      const GRADE_SLUGS = {
-        'Nhà trẻ': 'nha-tre',
-        'Mầm non': 'mam-non',
-        'Lớp 1': 'lop-1',
-        'Lớp 2': 'lop-2',
-        'Lớp 3': 'lop-3',
-        'Lớp 4': 'lop-4',
-        'Lớp 5': 'lop-5',
-      }
-      
       localStorage.setItem('profileId', data.id)
       localStorage.setItem('profileName', data.name)
-      localStorage.setItem('gradeSlug', GRADE_SLUGS[data.grade] || 'lop-1')
+      localStorage.setItem('gradeSlug', getGradeSlug(data.grade))
       router.push('/choose-companion')
     } catch (err) {
       setLoading(false)

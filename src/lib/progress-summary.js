@@ -1,14 +1,7 @@
 import { getGradeData } from '@/lib/data'
+import { GRADE_SLUGS, getGradeSlug } from '@/lib/grades'
 
-export const GRADE_SLUGS = {
-  'Nhà trẻ': 'nha-tre',
-  'Mầm non': 'mam-non',
-  'Lớp 1': 'lop-1',
-  'Lớp 2': 'lop-2',
-  'Lớp 3': 'lop-3',
-  'Lớp 4': 'lop-4',
-  'Lớp 5': 'lop-5',
-}
+export { GRADE_SLUGS }
 
 export const FOCUS_RECOMMENDATIONS = {
   1: {
@@ -45,8 +38,7 @@ export const FOCUS_RECOMMENDATIONS = {
 
 // Utility to get grade slug from grade name or slug
 export function getSlug(gradeOrSlug) {
-  if (!gradeOrSlug) return 'lop-1'
-  return GRADE_SLUGS[gradeOrSlug] || String(gradeOrSlug).toLowerCase()
+  return getGradeSlug(gradeOrSlug)
 }
 
 function getWorldsForSummary(gradeOrSlug, options = {}) {

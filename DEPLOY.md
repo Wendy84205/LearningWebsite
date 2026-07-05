@@ -38,13 +38,14 @@ Vào **Vercel Dashboard → Settings → Environment Variables** và thêm:
 
 | Tên biến | Giá trị mẫu |
 |---|---|
-| `DATABASE_URL` | `file:./prod.db` (hoặc PostgreSQL URL nếu dùng Vercel Postgres) |
-| `NEXTAUTH_SECRET` | Chuỗi ngẫu nhiên 32 byte |
-| `NEXTAUTH_URL` | `https://your-app.vercel.app` |
-| `GOOGLE_CLIENT_ID` | Từ Google Cloud Console |
-| `GOOGLE_CLIENT_SECRET` | Từ Google Cloud Console |
+| `DATABASE_URL` | PostgreSQL URL production |
+| `DIRECT_URL` | PostgreSQL direct URL nếu provider yêu cầu |
+| `JWT_SECRET` | Chuỗi bí mật session phụ huynh |
+| `ADMIN_SECRET` | Chuỗi bí mật session admin |
+| `ADMIN_PASSWORD` | Mật khẩu đăng nhập CMS admin |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Client ID từ Google Cloud Console |
 
-> ⚠️ **Lưu ý:** SQLite không hoạt động tốt trên Vercel (serverless). Hãy dùng **Vercel Postgres** hoặc **PlanetScale** và cập nhật `DATABASE_URL` + provider trong `prisma/schema.prisma`.
+> ⚠️ **Lưu ý:** SQLite chỉ phù hợp chạy local/demo. Production trên Vercel nên dùng PostgreSQL.
 
 ### 1.3. Chạy migration sau deploy
 
@@ -85,13 +86,12 @@ pm2 startup
 1. Truy cập [Google Cloud Console](https://console.cloud.google.com/).
 2. Chọn dự án → **API & Services → Credentials → Create Credentials → OAuth 2.0 Client ID**.
 3. Application type: **Web application**.
-4. Thêm **Authorized redirect URIs**:
-   - Môi trường dev: `http://localhost:3000/api/auth/callback/google`
-   - Môi trường prod: `https://your-domain.com/api/auth/callback/google`
-5. Sao chép **Client ID** và **Client Secret** vào file `.env`:
+4. Thêm domain ứng dụng vào **Authorized JavaScript origins**:
+   - Môi trường dev: `http://localhost:3000`
+   - Môi trường prod: `https://your-domain.com`
+5. Sao chép **Client ID** vào file `.env`:
    ```env
-   GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
-   GOOGLE_CLIENT_SECRET=GOCSPX-xxx
+   NEXT_PUBLIC_GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
    ```
 
 > ✅ **Quan trọng:** Email tài khoản Google Console phải khớp với email GitHub để Vercel auto-deploy hoạt động.
@@ -104,18 +104,19 @@ Tạo file `.env` ở thư mục gốc dự án:
 
 ```env
 # Database
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://user:pass@host:5432/hocvui"
+DIRECT_URL="postgresql://user:pass@host:5432/hocvui"
 
-# NextAuth
-NEXTAUTH_SECRET="thay-bang-chuoi-32-byte-ngau-nhien"
-NEXTAUTH_URL="http://localhost:3000"
+# Auth
+JWT_SECRET="thay-bang-chuoi-32-byte-ngau-nhien"
+ADMIN_SECRET="thay-bang-chuoi-32-byte-ngau-nhien"
+ADMIN_PASSWORD="doi-mat-khau-admin"
 
 # Google OAuth (tùy chọn nhưng khuyến nghị)
-GOOGLE_CLIENT_ID="xxx.apps.googleusercontent.com"
-GOOGLE_CLIENT_SECRET="GOCSPX-xxx"
+NEXT_PUBLIC_GOOGLE_CLIENT_ID="xxx.apps.googleusercontent.com"
 ```
 
-Tạo `NEXTAUTH_SECRET` mạnh:
+Tạo secret mạnh:
 ```bash
 openssl rand -hex 32
 ```
@@ -124,22 +125,15 @@ openssl rand -hex 32
 
 ## 5. Database trong môi trường sản xuất
 
-Dự án hiện dùng **SQLite** (file `dev.db`) – phù hợp phát triển và demo.
+Dự án có thể chạy local với SQLite demo, nhưng schema production hiện hướng tới **PostgreSQL** qua Prisma.
 
 ### Nâng cấp lên PostgreSQL (khuyến nghị cho production)
 
-1. Sửa `prisma/schema.prisma`:
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
-   ```
-2. Cập nhật `DATABASE_URL` trong `.env`:
+1. Cập nhật `DATABASE_URL` trong `.env`:
    ```env
    DATABASE_URL="postgresql://user:pass@host:5432/hocvui"
    ```
-3. Chạy migration:
+2. Chạy migration:
    ```bash
    npx prisma migrate deploy
    ```
@@ -150,14 +144,14 @@ Dự án hiện dùng **SQLite** (file `dev.db`) – phù hợp phát triển v�
 
 ### ❌ Lỗi `invalid_client` khi đăng nhập Google
 
-- Kiểm tra `GOOGLE_CLIENT_ID` và `GOOGLE_CLIENT_SECRET` trong `.env`.
-- Đảm bảo URI redirect đã được thêm vào Google Cloud Console.
+- Kiểm tra `NEXT_PUBLIC_GOOGLE_CLIENT_ID` trong `.env`.
+- Đảm bảo JavaScript origin đã được thêm vào Google Cloud Console.
 - Xác nhận ứng dụng OAuth đã được **publish** (không còn ở trạng thái Testing nếu dùng email ngoài whitelist).
 
-### ❌ Lỗi `NEXTAUTH_URL` không khớp
+### ❌ Lỗi session không giữ đăng nhập
 
-- `NEXTAUTH_URL` phải là URL chính xác của ứng dụng (không có dấu `/` ở cuối).
-- Trên Vercel: đặt `NEXTAUTH_URL` = `https://ten-app.vercel.app`.
+- Kiểm tra `JWT_SECRET` không bị thay đổi giữa các lần deploy.
+- Kiểm tra cookie không bị trình duyệt chặn ở domain production.
 
 ### ❌ Database lỗi sau deploy
 

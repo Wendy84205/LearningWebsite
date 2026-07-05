@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { getGradeSlug } from '@/lib/grades'
 import styles from './page.module.css'
 
 export default function ProfileSelectPage() {
@@ -34,16 +35,7 @@ export default function ProfileSelectPage() {
   }, [router])
 
   const handleSelect = (profile) => {
-    const GRADE_SLUGS = {
-      'Nhà trẻ': 'nha-tre',
-      'Mầm non': 'mam-non',
-      'Lớp 1': 'lop-1',
-      'Lớp 2': 'lop-2',
-      'Lớp 3': 'lop-3',
-      'Lớp 4': 'lop-4',
-      'Lớp 5': 'lop-5',
-    }
-    const slug = GRADE_SLUGS[profile.grade] || 'lop-1'
+    const slug = getGradeSlug(profile.grade)
 
     localStorage.setItem('profileId', profile.id)
     localStorage.setItem('profileName', profile.name)

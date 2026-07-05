@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { getGradeData } from '@/lib/data'
+import { getGradeName } from '@/lib/grades'
 import styles from './page.module.css'
 
 const EMOJI_TO_MATERIAL_ICON = {
@@ -51,17 +52,7 @@ export default function GradeMapPage() {
   const [confettiPieces, setConfettiPieces] = useState([])
   const [promoting, setPromoting] = useState(false)
 
-  // Lấy tên tiếng Việt của lớp học để đọc âm thanh
-  const getGradeNameVi = (slug) => {
-    if (slug === 'nha-tre') return 'Nhà trẻ'
-    if (slug === 'mam-non') return 'Mầm non'
-    if (slug === 'lop-1') return 'Lớp 1'
-    if (slug === 'lop-2') return 'Lớp 2'
-    if (slug === 'lop-3') return 'Lớp 3'
-    if (slug === 'lop-4') return 'Lớp 4'
-    if (slug === 'lop-5') return 'Lớp 5'
-    return 'Lớp học'
-  }
+  const gradeName = getGradeName(gradeSlug)
 
   useEffect(() => {
     const profileId = localStorage.getItem('profileId')
@@ -143,7 +134,7 @@ export default function GradeMapPage() {
   const handleSpeakerClick = () => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel()
-      const text = `Chào ${profileName}! Đây là lộ trình học tập khối ${getGradeNameVi(gradeSlug)} thế giới kỳ diệu. Hãy cùng vượt qua các thế giới và giành Huy chương Vàng nhé!`
+      const text = `Chào ${profileName}! Đây là lộ trình học tập khối ${gradeName} thế giới kỳ diệu. Hãy cùng vượt qua các thế giới và giành Huy chương Vàng nhé!`
       const utterance = new SpeechSynthesisUtterance(text)
       utterance.lang = 'vi-VN'
       utterance.onstart = () => setSpeechSpeaking(true)
@@ -203,7 +194,7 @@ export default function GradeMapPage() {
 
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel()
-      const text = `Chúc mừng bé ${profileName}! Con đã hoàn thành xuất sắc toàn bộ hành trình học tập ${getGradeNameVi(gradeSlug)}. Con là một Nhà Thám Hiểm Tri Thức tuyệt vời và đã giành được Huy Chương Vàng. Hãy tiếp tục khám phá những điều mới mỗi ngày nhé!`
+      const text = `Chúc mừng bé ${profileName}! Con đã hoàn thành xuất sắc toàn bộ hành trình học tập ${gradeName}. Con là một Nhà Thám Hiểm Tri Thức tuyệt vời và đã giành được Huy Chương Vàng. Hãy tiếp tục khám phá những điều mới mỗi ngày nhé!`
       const utterance = new SpeechSynthesisUtterance(text)
       utterance.lang = 'vi-VN'
       utterance.rate = 0.85
@@ -276,7 +267,7 @@ export default function GradeMapPage() {
           <Link href={`/learning/${gradeSlug}`} className={styles.backBtn}>
             <span className="material-symbols-outlined">arrow_back</span>
           </Link>
-          <h1 className={styles.title}>Bản đồ {getGradeNameVi(gradeSlug)}</h1>
+          <h1 className={styles.title}>Bản đồ {gradeName}</h1>
         </div>
         <div className={styles.headerRight}>
           <div className={styles.starBadge}>
@@ -635,7 +626,7 @@ export default function GradeMapPage() {
               </div>
               <h2 className={styles.goldMedalTitle}>CHIẾN THẮNG HUY CHƯƠNG VÀNG!</h2>
               <p className={styles.goldMedalText}>
-                Chúc mừng bé <strong>{profileName}</strong> đã xuất sắc hoàn thành toàn bộ hành trình học tập {getGradeNameVi(gradeSlug)}!<br /><br />
+                Chúc mừng bé <strong>{profileName}</strong> đã xuất sắc hoàn thành toàn bộ hành trình học tập {gradeName}!<br /><br />
                 Con là một <strong>Nhà Thám Hiểm Tri Thức</strong> tuyệt vời. Hãy tiếp tục khám phá những điều mới mẻ mỗi ngày nhé!
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>

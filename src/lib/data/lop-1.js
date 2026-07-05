@@ -1,5 +1,5 @@
 /**
- * grade1-data.js
+ * lop-1.js
  * Ngân hàng câu hỏi chuẩn chương trình Lớp 1 Việt Nam theo từng Thế giới (Worlds)
  * Môn: Toán | Tiếng Việt | Tự nhiên & Xã hội
  */

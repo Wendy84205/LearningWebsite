@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server'
 
-export function middleware(request) {
+export function proxy(request) {
   const token = request.cookies.get('hocvui_token')?.value
   const { pathname } = request.nextUrl
 
-  // Protect all game and classroom pages
   const isProtected = [
     '/learning',
     '/game-choose-1-of-2',
@@ -19,7 +18,7 @@ export function middleware(request) {
     '/parent-dashboard',
     '/add-profile',
     '/choose-companion'
-  ].some(path => pathname === path || pathname.startsWith(path + '/'))
+  ].some(path => pathname === path || pathname.startsWith(`${path}/`))
 
   if (isProtected && !token) {
     return NextResponse.redirect(new URL('/parent-login', request.url))

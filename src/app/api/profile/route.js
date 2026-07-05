@@ -1,34 +1,29 @@
 import prisma from '@/lib/db'
 import { getSessionUser } from '@/lib/auth'
+import { getGradeName } from '@/lib/grades'
 
-// GET /api/profile?parentId=... or ?profileId=...
+// GET /api/profile or ?profileId=...
 export async function GET(request) {
   try {
+    const session = getSessionUser(request)
+    if (!session) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { searchParams } = request.nextUrl
-    const parentId = searchParams.get('parentId')
     const profileId = searchParams.get('profileId')
 
     if (profileId) {
-      const profile = await prisma.childProfile.findUnique({
-        where: { id: profileId },
+      const profile = await prisma.childProfile.findFirst({
+        where: { id: profileId, parentId: session.parentId },
         include: { progress: true },
       })
       if (!profile) return Response.json({ error: 'Profile not found' }, { status: 404 })
       return Response.json(profile)
     }
 
-    if (!parentId) {
-      const session = getSessionUser(request)
-      if (!session) return Response.json({ error: 'parentId or authorization required' }, { status: 400 })
-      const profiles = await prisma.childProfile.findMany({
-        where: { parentId: session.parentId },
-        include: { progress: true },
-      })
-      return Response.json(profiles)
-    }
-
     const profiles = await prisma.childProfile.findMany({
-      where: { parentId },
+      where: { parentId: session.parentId },
       include: { progress: true },
     })
     return Response.json(profiles)
@@ -43,26 +38,29 @@ export async function POST(request) {
     const body = await request.json()
     const { id, name, grade, avatar, mascotId, mascotName, mascotImage } = body
     
-    // Securly get parentId from JWT
     const session = getSessionUser(request)
-    const parentId = session?.parentId || body.parentId
-
-    if (!parentId) {
+    if (!session?.parentId) {
       return Response.json({ error: 'Authentication required' }, { status: 401 })
     }
     if (!name) {
       return Response.json({ error: 'Profile name is required' }, { status: 400 })
     }
 
+    const normalizedGrade = getGradeName(grade || 'Lớp 1')
     let profile
     if (id) {
+      const current = await prisma.childProfile.findFirst({
+        where: { id, parentId: session.parentId },
+      })
+      if (!current) return Response.json({ error: 'Profile not found' }, { status: 404 })
+
       profile = await prisma.childProfile.update({
         where: { id },
-        data: { name, grade, avatar, mascotId, mascotName, mascotImage },
+        data: { name, grade: normalizedGrade, avatar, mascotId, mascotName, mascotImage },
       })
     } else {
       profile = await prisma.childProfile.create({
-        data: { name, grade: grade || 'Lớp 1', avatar: avatar || '🐱', parentId },
+        data: { name, grade: normalizedGrade, avatar: avatar || '🐱', parentId: session.parentId },
       })
       // Create initial progress record
       await prisma.progress.create({
@@ -74,4 +72,3 @@ export async function POST(request) {
     return Response.json({ error: err.message }, { status: 500 })
   }
 }
-

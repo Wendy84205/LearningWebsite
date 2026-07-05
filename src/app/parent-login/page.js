@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { getGradeSlug } from '@/lib/grades'
 import styles from './page.module.css'
 
 function ParentLoginInner() {
@@ -73,16 +74,7 @@ function ParentLoginInner() {
       if (data.profiles && data.profiles.length > 0) {
         if (data.profiles.length === 1) {
           const profile = data.profiles[0]
-          const GRADE_SLUGS = {
-            'Nhà trẻ': 'nha-tre',
-            'Mầm non': 'mam-non',
-            'Lớp 1': 'lop-1',
-            'Lớp 2': 'lop-2',
-            'Lớp 3': 'lop-3',
-            'Lớp 4': 'lop-4',
-            'Lớp 5': 'lop-5',
-          }
-          const slug = GRADE_SLUGS[profile.grade] || 'lop-1'
+          const slug = getGradeSlug(profile.grade)
           localStorage.setItem('profileId', profile.id)
           localStorage.setItem('profileName', profile.name)
           localStorage.setItem('mascotName', profile.mascotName || 'Tin Tin')
@@ -119,16 +111,7 @@ function ParentLoginInner() {
       if (data.profiles && data.profiles.length > 0) {
         if (data.profiles.length === 1) {
           const profile = data.profiles[0]
-          const GRADE_SLUGS = {
-            'Nhà trẻ': 'nha-tre',
-            'Mầm non': 'mam-non',
-            'Lớp 1': 'lop-1',
-            'Lớp 2': 'lop-2',
-            'Lớp 3': 'lop-3',
-            'Lớp 4': 'lop-4',
-            'Lớp 5': 'lop-5',
-          }
-          const slug = GRADE_SLUGS[profile.grade] || 'lop-1'
+          const slug = getGradeSlug(profile.grade)
           localStorage.setItem('profileId', profile.id)
           localStorage.setItem('profileName', profile.name)
           localStorage.setItem('mascotName', profile.mascotName || 'Tin Tin')
