@@ -9,7 +9,10 @@ if (!globalForPrisma.prisma) {
   const databaseUrl = getDatabaseUrl()
   const adapter = databaseUrl.startsWith('file:')
     ? new PrismaBetterSqlite3({ url: databaseUrl })
-    : new PrismaPg({ connectionString: databaseUrl })
+    : new PrismaPg({
+        connectionString: databaseUrl,
+        ssl: { rejectUnauthorized: false },
+      })
 
   globalForPrisma.prisma = new PrismaClient({ adapter })
 }
