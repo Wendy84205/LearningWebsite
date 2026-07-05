@@ -38,7 +38,7 @@ Vào **Vercel Dashboard → Settings → Environment Variables** và thêm:
 
 | Tên biến | Giá trị mẫu |
 |---|---|
-| `DATABASE_URL` | PostgreSQL URL production |
+| `DATABASE_URL` | Local: `file:./dev.db`; Production: PostgreSQL URL |
 | `DIRECT_URL` | PostgreSQL direct URL nếu provider yêu cầu |
 | `JWT_SECRET` | Chuỗi bí mật session phụ huynh |
 | `ADMIN_SECRET` | Chuỗi bí mật session admin |
@@ -51,6 +51,7 @@ Vào **Vercel Dashboard → Settings → Environment Variables** và thêm:
 
 ```bash
 vercel env pull .env.production.local
+npm run db:postgres
 npm run db:check
 npx prisma db push
 ```
@@ -126,18 +127,32 @@ openssl rand -hex 32
 
 ## 5. Database trong môi trường sản xuất
 
-Dự án có thể chạy local với SQLite demo, nhưng schema production hiện hướng tới **PostgreSQL** qua Prisma.
+Dự án mặc định chạy local với **SQLite** để login, hồ sơ, dashboard và game hoạt động ngay cả khi chưa có Supabase/Postgres.
 
-### Nâng cấp lên PostgreSQL (khuyến nghị cho production)
+### Chuyển sang PostgreSQL (khuyến nghị cho production)
 
-1. Cập nhật `DATABASE_URL` trong `.env`:
+1. Chuyển Prisma schema/client sang PostgreSQL:
+   ```bash
+   npm run db:postgres
+   ```
+2. Cập nhật `DATABASE_URL` trong `.env` hoặc Vercel env:
    ```env
    DATABASE_URL="postgresql://user:pass@host:5432/hocvui"
    ```
-2. Chạy migration:
+3. Kiểm tra kết nối:
    ```bash
-   npx prisma migrate deploy
+   npm run db:check
    ```
+4. Đồng bộ schema:
+   ```bash
+   npx prisma db push
+   ```
+
+Quay lại local SQLite:
+```bash
+npm run db:sqlite
+npx prisma db push
+```
 
 ---
 

@@ -11,6 +11,8 @@
     "lint": "eslint",
     "test": "node --experimental-vm-modules --test tests/*.test.js",
     "db:check": "node scripts/check-db.js",
+    "db:sqlite": "node scripts/use-db.js sqlite && prisma generate",
+    "db:postgres": "node scripts/use-db.js postgresql && prisma generate",
     "typecheck": "node -e \"console.log('JS project — typecheck skipped')\"",
     "postinstall": "prisma generate"
   },

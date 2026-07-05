@@ -101,8 +101,8 @@ Mở trình duyệt tại [http://localhost:3000](http://localhost:3000).
 
 | Biến | Bắt buộc | Mô tả |
 |---|---|---|
-| `DATABASE_URL` | ✅ | Chuỗi kết nối database cho Prisma |
-| `DIRECT_URL` | Tùy chọn | Kết nối trực tiếp khi môi trường database yêu cầu |
+| `DATABASE_URL` | ✅ | Local mặc định `file:./dev.db`; production dùng PostgreSQL URL |
+| `DIRECT_URL` | Tùy chọn | Kết nối trực tiếp khi dùng PostgreSQL provider yêu cầu |
 | `JWT_SECRET` | ✅ | Chuỗi bí mật ký session phụ huynh |
 | `ADMIN_SECRET` | ✅ | Chuỗi bí mật ký session admin |
 | `ADMIN_PASSWORD` | Tùy chọn | Mật khẩu admin CMS |
@@ -126,6 +126,9 @@ npm run dev          # Chạy server phát triển
 npm run build        # Build sản xuất
 npx prisma studio    # Giao diện quản lý DB
 npx prisma db push   # Đồng bộ schema → DB
+npm run db:check     # Kiểm tra database đang kết nối được
+npm run db:sqlite    # Chuyển schema/client sang SQLite local
+npm run db:postgres  # Chuyển schema/client sang PostgreSQL production
 ```
 
 ---

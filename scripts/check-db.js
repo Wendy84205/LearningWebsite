@@ -1,3 +1,5 @@
+const path = require('path')
+const Database = require('better-sqlite3')
 const { Client } = require('pg')
 require('dotenv').config()
 
@@ -11,6 +13,22 @@ async function check(name, connectionString) {
   if (!connectionString) {
     console.log(`${name}: missing`)
     return false
+  }
+
+  if (connectionString.startsWith('file:')) {
+    const dbPath = connectionString.replace(/^file:/, '')
+    const resolved = path.resolve(process.cwd(), dbPath)
+    try {
+      const db = new Database(resolved, { readonly: true })
+      const tables = db.prepare("select name from sqlite_master where type = 'table' order by name").all()
+      db.close()
+      console.log(`${name}: OK`, { file: resolved, tables: tables.length })
+      return true
+    } catch (err) {
+      console.error(`${name}: FAIL`, err.code || '', err.message)
+      console.error(`  ${maskConnectionString(connectionString)}`)
+      return false
+    }
   }
 
   const client = new Client({
