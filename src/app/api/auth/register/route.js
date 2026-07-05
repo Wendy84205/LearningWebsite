@@ -1,5 +1,6 @@
 import prisma from '@/lib/db'
 import { hashPassword, signJWT } from '@/lib/auth'
+import { databaseUnavailableResponse, isDatabaseConnectionError } from '@/lib/db-errors'
 import { cookies } from 'next/headers'
 
 // POST /api/auth/register
@@ -32,7 +33,9 @@ export async function POST(request) {
 
     return Response.json({ id: parent.id, email: parent.email }, { status: 201 })
   } catch (err) {
+    if (isDatabaseConnectionError(err)) {
+      return databaseUnavailableResponse(err)
+    }
     return Response.json({ error: err.message }, { status: 500 })
   }
 }
-

@@ -51,6 +51,7 @@ Vào **Vercel Dashboard → Settings → Environment Variables** và thêm:
 
 ```bash
 vercel env pull .env.production.local
+npm run db:check
 npx prisma db push
 ```
 

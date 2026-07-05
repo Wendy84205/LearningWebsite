@@ -26,6 +26,9 @@ function ParentLoginInner() {
 
   const getAuthErrorMessage = (message, fallback) => {
     const normalized = String(message || '').toLowerCase()
+    if (normalized.includes('database') || normalized.includes('cơ sở dữ liệu')) {
+      return 'Hệ thống đang chưa kết nối được cơ sở dữ liệu. Bố mẹ vui lòng thử lại sau ít phút.'
+    }
     if (normalized.includes('invalid credentials')) return 'Email hoặc mật khẩu chưa đúng.'
     if (normalized.includes('email already registered')) return 'Email này đã có tài khoản. Bố mẹ hãy chuyển sang Đăng nhập.'
     if (normalized.includes('email and password required')) return 'Vui lòng nhập đầy đủ email và mật khẩu.'

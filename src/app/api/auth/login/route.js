@@ -1,5 +1,6 @@
 import prisma from '@/lib/db'
 import { comparePassword, signJWT } from '@/lib/auth'
+import { databaseUnavailableResponse, isDatabaseConnectionError } from '@/lib/db-errors'
 import { cookies } from 'next/headers'
 
 // POST /api/auth/login
@@ -34,7 +35,9 @@ export async function POST(request) {
       profiles: parent.profiles,
     })
   } catch (err) {
+    if (isDatabaseConnectionError(err)) {
+      return databaseUnavailableResponse(err)
+    }
     return Response.json({ error: err.message }, { status: 500 })
   }
 }
-

@@ -1,7 +1,22 @@
 import prisma from '@/lib/db'
 import { signJWT } from '@/lib/auth'
+import { databaseUnavailableResponse, isDatabaseConnectionError } from '@/lib/db-errors'
 import { cookies } from 'next/headers'
-import jwt from 'jsonwebtoken'
+
+async function verifyGoogleCredential(credential) {
+  const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`, {
+    cache: 'no-store',
+  })
+
+  if (!res.ok) return null
+  const payload = await res.json()
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+
+  if (!payload.email || !payload.email_verified) return null
+  if (clientId && payload.aud !== clientId) return null
+
+  return payload
+}
 
 // POST /api/auth/google
 export async function POST(request) {
@@ -11,8 +26,7 @@ export async function POST(request) {
       return Response.json({ error: 'Google credential required' }, { status: 400 })
     }
 
-    // Decode Google ID Token (JWT)
-    const decoded = jwt.decode(credential)
+    const decoded = await verifyGoogleCredential(credential)
     if (!decoded || !decoded.email) {
       return Response.json({ error: 'Invalid Google credential token' }, { status: 400 })
     }
@@ -56,6 +70,9 @@ export async function POST(request) {
       profiles: parent.profiles
     })
   } catch (err) {
+    if (isDatabaseConnectionError(err)) {
+      return databaseUnavailableResponse(err)
+    }
     return Response.json({ error: err.message }, { status: 500 })
   }
 }
