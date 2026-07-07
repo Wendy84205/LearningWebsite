@@ -821,3 +821,35 @@
     transition: none;
   }
 }
+
+/* 2026 friendly UI refresh */
+.page {
+  background: linear-gradient(135deg, #ffffff 0%, #f5fbff 48%, #f4ffe8 100%);
+}
+
+.header,
+.mobileBottomNav {
+  background: rgba(255,255,255,0.9);
+  border-color: var(--hv-border, var(--outline-variant));
+  backdrop-filter: blur(16px);
+}
+
+.starBadge,
+.progressSummary,
+.modalContent,
+.levelRow {
+  border-color: var(--hv-border, var(--outline-variant));
+  border-bottom-color: var(--hv-border-strong, var(--outline-variant));
+  box-shadow: var(--hv-shadow-card, var(--shadow-tactile));
+}
+
+.worldCircleActive,
+.bossCircleActive,
+.playBtn {
+  box-shadow: 0 8px 0 rgba(0,0,0,0.12), 0 18px 36px rgba(28,176,246,0.22);
+}
+
+.navItemActive {
+  background: var(--hv-soft-green, var(--primary-fixed));
+  color: var(--hv-green-dark, var(--primary));
+}

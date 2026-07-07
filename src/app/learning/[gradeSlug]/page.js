@@ -217,6 +217,27 @@ export default function GradeLandingPage() {
     }
   }
 
+  const handleTiltMove = (event) => {
+    const target = event.currentTarget
+    const rect = target.getBoundingClientRect()
+    const x = event.clientX - rect.left
+    const y = event.clientY - rect.top
+    const rotateY = ((x / rect.width) - 0.5) * 9
+    const rotateX = ((0.5 - y / rect.height)) * 9
+    target.style.setProperty('--tilt-x', `${rotateX.toFixed(2)}deg`)
+    target.style.setProperty('--tilt-y', `${rotateY.toFixed(2)}deg`)
+    target.style.setProperty('--spot-x', `${Math.round((x / rect.width) * 100)}%`)
+    target.style.setProperty('--spot-y', `${Math.round((y / rect.height) * 100)}%`)
+  }
+
+  const handleTiltLeave = (event) => {
+    const target = event.currentTarget
+    target.style.setProperty('--tilt-x', '0deg')
+    target.style.setProperty('--tilt-y', '0deg')
+    target.style.setProperty('--spot-x', '50%')
+    target.style.setProperty('--spot-y', '30%')
+  }
+
   const completedCount = summary.normalLevelsCompleted ?? 0
   const activityStats = studentDashboard?.activityStats
   const levelInfo = activityStats?.level || { level: 1, xp: 0, progressPct: 0, nextLevelXp: 80 }
@@ -246,6 +267,9 @@ export default function GradeLandingPage() {
   const reviewMissionCount = missions?.review?.count || 0
   const latestBadge = activityStats?.badges?.[0] || null
   const latestActivity = recentActivities[0] || null
+  const totalWorldLevels = worlds.reduce((total, world) => total + (world.levels?.length || 0), 0)
+  const journeyPct = totalWorldLevels > 0 ? Math.min(100, Math.round((completedCount / totalWorldLevels) * 100)) : 0
+  const nextPractice = quickPractices.math?.href || `/learning/${gradeSlug}/map`
 
   if (loading) {
     return (
@@ -313,6 +337,18 @@ export default function GradeLandingPage() {
       <div className={styles.layout}>
         {/* SIDEBAR */}
         <aside className={styles.sidebar}>
+          <div className={styles.gameSidebarHeader}>
+            <Link href="/" className={styles.gameBrand}>
+              <span className={styles.gameBrandMark}>
+                <span className="material-symbols-outlined" aria-hidden="true">auto_stories</span>
+              </span>
+              <span>
+                <strong>Học Vui</strong>
+                <small>Quest Hub</small>
+              </span>
+            </Link>
+          </div>
+
           <nav className={styles.sideNav}>
             <Link href={`/learning/${gradeSlug}`} className={`${styles.navItem} ${styles.navItemActive}`}>
               <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
@@ -343,6 +379,22 @@ export default function GradeLandingPage() {
               <span>Tủ đồ của bé</span>
             </Link>
           </nav>
+
+          <div className={styles.sideQuestPanel}>
+            <span className={styles.sideQuestLabel}>Tiến độ</span>
+            <div className={styles.sideQuestLevel}>
+              <strong>Lv.{levelInfo.level}</strong>
+              <span>{levelInfo.xp} XP</span>
+            </div>
+            <div className={styles.sideQuestTrack}>
+              <div style={{ width: `${levelInfo.progressPct || 0}%` }} />
+            </div>
+            <div className={styles.sideQuestMini}>
+              <span>{progress.streak} streak</span>
+              <span>{progress.stars} sao</span>
+            </div>
+          </div>
+
           <div className={styles.sideProfile}>
             <div className={styles.sideAvatar}>
               {isMascotEmoji ? (
@@ -362,8 +414,13 @@ export default function GradeLandingPage() {
         <main className={styles.content}>
           {/* HERO BENTO */}
           <section className={styles.heroGrid}>
-            <div className={styles.heroCard}>
+            <div
+              className={`${styles.heroCard} ${styles.bitsTiltCard}`}
+              onPointerMove={handleTiltMove}
+              onPointerLeave={handleTiltLeave}
+            >
               <div className={styles.heroDecoBg} />
+              <div className={styles.bitsPixelLayer} aria-hidden="true" />
               <div className={styles.heroBadge}>Tiếp tục hành trình</div>
               <div className={styles.heroInner}>
                 <div className={styles.heroMascot} onClick={handleMascotSpeech} style={{ cursor: 'pointer' }}>
@@ -456,6 +513,131 @@ export default function GradeLandingPage() {
             </div>
           </section>
 
+          <section className={styles.progressDock} aria-label="Tiến độ học tập">
+            <div className={styles.progressDockMain}>
+              <div className={styles.progressDockIcon}>
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+              </div>
+              <div className={styles.progressDockCopy}>
+                <span>Hành trình của em</span>
+                <strong>{completedCount}/{totalWorldLevels || 0} ải đã hoàn thành</strong>
+                <div className={styles.progressDockTrack}>
+                  <div className={styles.progressDockFill} style={{ width: `${journeyPct}%` }} />
+                </div>
+              </div>
+            </div>
+            <div className={styles.progressDockStats}>
+              <div>
+                <strong>{levelInfo.level}</strong>
+                <span>Cấp</span>
+              </div>
+              <div>
+                <strong>{progress.streak}</strong>
+                <span>Streak</span>
+              </div>
+              <div>
+                <strong>{weakSkills.length}</strong>
+                <span>Cần ôn</span>
+              </div>
+            </div>
+            <Link href={nextPractice} className={styles.progressDockCta} onClick={playBubbleSound}>
+              Luyện ngay
+            </Link>
+          </section>
+
+          <section className={styles.learningSnapshot} aria-label="Tổng quan học tập hiện tại">
+            <div className={styles.snapshotMain}>
+              <span className={styles.snapshotEyebrow}>Đang học</span>
+              <h2>{quickPractices.math.title}</h2>
+              <p>{quickPractices.math.worldName} • Hoàn thành {completedCount}/{totalWorldLevels || 0} ải</p>
+              <Link href={quickPractices.math.href} className={styles.snapshotCta} onClick={playBubbleSound}>
+                Vào bài tiếp theo
+              </Link>
+            </div>
+            <div className={styles.snapshotCards}>
+              <div className={styles.snapshotCard} data-tone="blue">
+                <span className="material-symbols-outlined" aria-hidden="true">school</span>
+                <strong>{activityStats?.totalAttempts || 0}</strong>
+                <small>Bài đã làm</small>
+              </div>
+              <div className={styles.snapshotCard} data-tone="green">
+                <span className="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                <strong>{activityStats?.averageScore || 0}%</strong>
+                <small>Điểm TB</small>
+              </div>
+              <div className={styles.snapshotCard} data-tone="pink">
+                <span className="material-symbols-outlined" aria-hidden="true">psychology</span>
+                <strong>{weakSkills.length}</strong>
+                <small>Cần ôn</small>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.bitsCommandDeck} aria-label="Bảng điều khiển học tập nổi bật">
+            {[
+              { href: nextPractice, icon: 'rocket_launch', title: 'Sprint nhanh', sub: quickPractices.math.title, value: '+XP', tone: 'blue' },
+              { href: `/learning/${gradeSlug}/test?mode=review`, icon: 'radar', title: 'Radar kỹ năng', sub: weakSkills.length > 0 ? `${weakSkills.length} điểm cần ôn` : 'Đang rất ổn', value: `${weakSkills.length}`, tone: 'green' },
+              { href: `/learning/${gradeSlug}/achievements`, icon: 'workspace_premium', title: 'Rương huy hiệu', sub: latestBadge ? latestBadge.name : 'Mở khóa phần thưởng', value: '★', tone: 'gold' },
+            ].map((item, index) => (
+              <Link
+                key={item.title}
+                href={item.href}
+                className={styles.bitsCommandCard}
+                data-tone={item.tone}
+                style={{ '--stagger': `${index * 80}ms` }}
+                onPointerMove={handleTiltMove}
+                onPointerLeave={handleTiltLeave}
+                onClick={playBubbleSound}
+              >
+                <span className={styles.bitsGlassIcon} aria-hidden="true">
+                  <span className="material-symbols-outlined">{item.icon}</span>
+                </span>
+                <span className={styles.bitsCommandCopy}>
+                  <strong>{item.title}</strong>
+                  <small>{item.sub}</small>
+                </span>
+                <span className={styles.bitsCommandValue}>{item.value}</span>
+              </Link>
+            ))}
+          </section>
+
+          <section className={styles.questHub} aria-label="Cổng nhiệm vụ học tập">
+            <div className={styles.questHubHeader}>
+              <div>
+                <span>Game hub</span>
+                <h2>Chọn nhiệm vụ tiếp theo</h2>
+              </div>
+              <Link href={`/learning/${gradeSlug}/games`} className={styles.questHubLink}>
+                Tất cả chế độ
+                <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+              </Link>
+            </div>
+            <div className={styles.questHubGrid}>
+              {[
+                { href: `/learning/${gradeSlug}/map`, icon: 'map', title: 'Mở bản đồ', sub: `${journeyPct}% hành trình`, tone: 'blue' },
+                { href: `/learning/${gradeSlug}/test?mode=daily`, icon: 'bolt', title: 'Nhiệm vụ ngày', sub: dailyMissionCount > 0 ? `${dailyMissionCount} câu đang chờ` : 'Đã hoàn thành', tone: 'green' },
+                { href: `/learning/${gradeSlug}/test?mode=review`, icon: 'psychology', title: 'Ôn kỹ năng yếu', sub: reviewMissionCount > 0 ? `${reviewMissionCount} kỹ năng` : 'Không có nợ ôn', tone: 'pink' },
+                { href: `/learning/${gradeSlug}/achievements`, icon: 'emoji_events', title: 'Kho huy hiệu', sub: latestBadge ? latestBadge.name : 'Săn huy hiệu mới', tone: 'gold' },
+              ].map(item => (
+                <Link
+                  key={item.title}
+                  href={item.href}
+                  className={`${styles.questTile} ${styles.bitsTiltCard}`}
+                  data-tone={item.tone}
+                  onPointerMove={handleTiltMove}
+                  onPointerLeave={handleTiltLeave}
+                  onClick={playBubbleSound}
+                >
+                  <span className={styles.questTileIcon}>
+                    <span className="material-symbols-outlined" aria-hidden="true">{item.icon}</span>
+                  </span>
+                  <strong>{item.title}</strong>
+                  <small>{item.sub}</small>
+                </Link>
+              ))}
+            </div>
+          </section>
+
           {/* SUBJECT TILES */}
           <section className={styles.subjectSection}>
             <div className={styles.subjectHeader}>
@@ -471,7 +653,15 @@ export default function GradeLandingPage() {
                 { href: quickPractices.matching.href, id: 'btn-game-3', color: '#58cc02', shadow: '#46a302', icon: 'translate', name: 'Tiếng Anh', sub: quickPractices.matching.worldName, pct: completedCount > 0 ? Math.min(Math.round((completedCount / 40) * 100), 100) : 0 },
                 { href: `/learning/${gradeSlug}/games`, id: 'btn-game-4', color: '#fea250', shadow: '#cc7a00', icon: 'biotech', name: 'Khoa học', sub: 'Trò chơi học tập', pct: 15, label: 'Mới' },
               ].map(s => (
-                <Link key={s.id} href={s.href} id={s.id} className={styles.subjectCard} onClick={playBubbleSound}>
+                <Link
+                  key={s.id}
+                  href={s.href}
+                  id={s.id}
+                  className={`${styles.subjectCard} ${styles.bitsTiltCard}`}
+                  onPointerMove={handleTiltMove}
+                  onPointerLeave={handleTiltLeave}
+                  onClick={playBubbleSound}
+                >
                   <div className={styles.subjectColorBar} style={{ background: s.color }} />
                   <div className={styles.subjectCardTop}>
                     <div className={styles.subjectIconWrap} style={{ background: `${s.color}20` }}>

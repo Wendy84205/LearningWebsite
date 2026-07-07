@@ -174,3 +174,53 @@
   color: var(--primary);
   padding: 40px;
 }
+
+/* 2026 friendly UI refresh */
+.page {
+  background:
+    radial-gradient(circle at 12% 12%, rgba(28,176,246,0.13), transparent 28%),
+    radial-gradient(circle at 88% 18%, rgba(88,204,2,0.14), transparent 30%),
+    linear-gradient(135deg, #ffffff 0%, #f5fbff 48%, #f4ffe8 100%);
+}
+
+.blob1,
+.blob2 {
+  opacity: 0.08;
+}
+
+.header h1 {
+  color: var(--hv-ink, var(--primary));
+}
+
+.header p {
+  color: var(--hv-muted, var(--outline));
+}
+
+.profileCard {
+  border-color: var(--hv-border, var(--outline-variant));
+  border-bottom-color: var(--hv-border-strong, var(--outline-variant));
+  background: rgba(255,255,255,0.92);
+  box-shadow: var(--hv-shadow-card, var(--shadow-tactile));
+}
+
+.profileCard:hover {
+  border-color: var(--hv-green, var(--primary));
+  border-bottom-color: var(--hv-green-dark, var(--primary));
+}
+
+.avatarBox {
+  background: var(--hv-soft-blue, var(--primary-fixed));
+  border-color: var(--hv-border, var(--primary-fixed-dim));
+  border-bottom-color: var(--hv-border-strong, var(--primary-fixed-dim));
+}
+
+.profileCard:hover .avatarBox {
+  background: var(--hv-soft-green, var(--secondary-fixed));
+  border-color: rgba(88,204,2,0.38);
+  border-bottom-color: var(--hv-green, var(--secondary-fixed-dim));
+}
+
+.grade {
+  border-color: var(--hv-border, var(--outline-variant));
+  background: #f8fbfd;
+}

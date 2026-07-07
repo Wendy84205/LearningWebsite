@@ -389,3 +389,29 @@
     transition: none;
   }
 }
+
+/* 2026 friendly UI refresh */
+.page {
+  background: linear-gradient(135deg, #ffffff 0%, #f5fbff 48%, #f4ffe8 100%);
+}
+
+.header {
+  background: rgba(255,255,255,0.9);
+  border-color: var(--hv-border, #dce9f1);
+  backdrop-filter: blur(16px);
+}
+
+.stateCard,
+.heroCard,
+.questionCard,
+.submitBar,
+.optionButton {
+  border-color: var(--hv-border, #dce9f1);
+  border-bottom-color: var(--hv-border-strong, #bfd6e6);
+  box-shadow: var(--hv-shadow-card, 0 12px 28px rgba(36,49,58,0.08));
+}
+
+.submitButton {
+  background: var(--hv-green, #58cc02);
+  border-bottom-color: var(--hv-green-dark, #2b6c00);
+}

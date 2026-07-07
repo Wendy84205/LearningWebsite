@@ -81,6 +81,10 @@ export default function ParentDashboard() {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Chào buổi sáng' : hour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối'
   const completionPct = profile?.todayGoalPct ?? 0
+  const trendTone = (stats.averageScore ?? 0) >= 80 ? 'Tự tin' : (stats.averageScore ?? 0) >= 60 ? 'Cần luyện thêm' : 'Cần hỗ trợ'
+  const latestActivity = recentActivities[0] || null
+  const primarySuggestion = suggestions[0] || null
+  const todayMinutes = stats.studyMinutesToday ?? 0
 
   return (
     <div className={styles.page}>
@@ -192,6 +196,158 @@ export default function ParentDashboard() {
           </div>
         ) : (
           <div className={styles.body}>
+            <section className={styles.parentHero}>
+              <div className={styles.parentHeroText}>
+                <span className={styles.parentHeroEyebrow}>Báo cáo học tập hôm nay</span>
+                <h2>{profile.name} đang học ở nhịp độ {completionPct >= 80 ? 'rất tốt' : completionPct > 0 ? 'ổn định' : 'cần khởi động'}</h2>
+                <p>
+                  Theo dõi thời gian học, XP, streak và kỹ năng cần ôn để ba mẹ biết nên cổ vũ con ở đâu trong ngày.
+                </p>
+                <div className={styles.parentHeroActions}>
+                  <Link href={`/learning/${profile.gradeSlug}`} className={styles.primaryAction}>
+                    Mở dashboard của con
+                  </Link>
+                  <Link href={`/learning/${profile.gradeSlug}/map`} className={styles.secondaryAction}>
+                    Xem lộ trình
+                  </Link>
+                </div>
+              </div>
+              <div className={styles.parentHeroPanel}>
+                <div
+                  className={styles.parentHeroRing}
+                  style={{ '--goal-progress': `${Math.max(0, Math.min(completionPct, 100))}%` }}
+                >
+                  <span>{completionPct}%</span>
+                  <small>Mục tiêu</small>
+                </div>
+                <div className={styles.parentHeroSignals}>
+                  <div>
+                    <strong>{trendTone}</strong>
+                    <span>Tín hiệu học tập</span>
+                  </div>
+                  <div>
+                    <strong>{stats.averageScore ?? 0}%</strong>
+                    <span>Điểm trung bình</span>
+                  </div>
+                  <div>
+                    <strong>{recentActivities.length}</strong>
+                    <span>Hoạt động gần đây</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className={styles.questCommand} aria-label="Bảng nhiệm vụ phụ huynh">
+              {[
+                { icon: 'flag', label: 'Mục tiêu hôm nay', value: `${completionPct}%`, sub: completionPct >= 80 ? 'Gần hoàn tất' : 'Cần cổ vũ thêm', tone: 'green' },
+                { icon: 'local_fire_department', label: 'Chuỗi học', value: `${stats.streak ?? 0}`, sub: 'ngày liên tiếp', tone: 'orange' },
+                { icon: 'military_tech', label: 'Cấp hiện tại', value: `${stats.level ?? 1}`, sub: `${stats.xp ?? 0} XP`, tone: 'blue' },
+                { icon: 'psychology', label: 'Điểm trung bình', value: `${stats.averageScore ?? 0}%`, sub: trendTone, tone: 'pink' },
+              ].map(item => (
+                <div key={item.label} className={styles.questCommandCard} data-tone={item.tone}>
+                  <span className={styles.questCommandIcon}>
+                    <span className="material-symbols-outlined" aria-hidden="true">{item.icon}</span>
+                  </span>
+                  <div>
+                    <span>{item.label}</span>
+                    <strong>{item.value}</strong>
+                    <small>{item.sub}</small>
+                  </div>
+                </div>
+              ))}
+            </section>
+
+            <section className={styles.childNowBoard} aria-label="Con đang học gì">
+              <div className={styles.childNowHeader}>
+                <div>
+                  <span>Trạng thái hiện tại</span>
+                  <h2>{profile.name} đang làm gì?</h2>
+                </div>
+                <Link href={`/learning/${profile.gradeSlug}`} className={styles.childNowLink}>
+                  Mở màn hình học
+                  <span className="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+                </Link>
+              </div>
+
+              <div className={styles.childNowGrid}>
+                <article className={styles.childNowCard} data-tone="blue">
+                  <span className={styles.childNowIcon}>
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      {latestActivity ? 'sports_esports' : 'play_circle'}
+                    </span>
+                  </span>
+                  <div>
+                    <span className={styles.childNowLabel}>Vừa làm gần nhất</span>
+                    <strong>{latestActivity?.title || 'Chưa có hoạt động hôm nay'}</strong>
+                    <small>
+                      {latestActivity
+                        ? `${latestActivity.correct}/${latestActivity.total} đúng • ${latestActivity.scorePct}% • +${latestActivity.xp} XP`
+                        : 'Hãy cho con bắt đầu một bài luyện ngắn.'}
+                    </small>
+                  </div>
+                </article>
+
+                <article className={styles.childNowCard} data-tone="green">
+                  <span className={styles.childNowIcon}>
+                    <span className="material-symbols-outlined" aria-hidden="true">timer</span>
+                  </span>
+                  <div>
+                    <span className={styles.childNowLabel}>Thời gian hôm nay</span>
+                    <strong>{todayMinutes} phút</strong>
+                    <small>{todayMinutes >= 30 ? 'Đã đạt mục tiêu ngày.' : `Còn ${Math.max(0, 30 - todayMinutes)} phút để đạt mục tiêu.`}</small>
+                  </div>
+                </article>
+
+                <article className={styles.childNowCard} data-tone="orange">
+                  <span className={styles.childNowIcon}>
+                    <span className="material-symbols-outlined" aria-hidden="true">tips_and_updates</span>
+                  </span>
+                  <div>
+                    <span className={styles.childNowLabel}>Nên tập trung</span>
+                    <strong>{primarySuggestion?.title || 'Ôn bài tiếp theo'}</strong>
+                    <small>{primarySuggestion?.sub || 'Chưa có gợi ý yếu rõ ràng, tiếp tục duy trì nhịp học.'}</small>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section className={styles.parentActionRail} aria-label="Hành động nhanh cho phụ huynh">
+              {[
+                {
+                  href: `/learning/${profile.gradeSlug}/map`,
+                  icon: 'route',
+                  title: 'Xem bản đồ',
+                  sub: `Theo dõi chặng tiếp theo của ${profile.name}`,
+                  tone: 'blue',
+                },
+                {
+                  href: '/parent-dashboard/reports',
+                  icon: 'analytics',
+                  title: 'Báo cáo chi tiết',
+                  sub: `${recentActivities.length} hoạt động gần đây`,
+                  tone: 'green',
+                },
+                {
+                  href: `/learning/${profile.gradeSlug}/achievements`,
+                  icon: 'workspace_premium',
+                  title: 'Huy hiệu & thưởng',
+                  sub: latestBadge ? latestBadge.name : 'Chưa có huy hiệu mới',
+                  tone: 'gold',
+                },
+              ].map(item => (
+                <Link key={item.title} href={item.href} className={styles.parentActionCard} data-tone={item.tone}>
+                  <span className={styles.parentActionIcon}>
+                    <span className="material-symbols-outlined" aria-hidden="true">{item.icon}</span>
+                  </span>
+                  <span className={styles.parentActionCopy}>
+                    <strong>{item.title}</strong>
+                    <small>{item.sub}</small>
+                  </span>
+                  <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+                </Link>
+              ))}
+            </section>
+
             {/* METRIC CARDS - Dữ liệu thật */}
             <section className={styles.metricGrid}>
               {[

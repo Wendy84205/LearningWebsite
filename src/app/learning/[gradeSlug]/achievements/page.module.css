@@ -17,3 +17,17 @@
 .locked { opacity: 0.55; }
 .lockLabel { position: absolute; top: 8px; right: 8px; font-size: 11px; background: #f1f5f9; padding: 2px 8px; border-radius: 999px; }
 .loading { text-align: center; color: #64748b; }
+
+/* 2026 friendly UI refresh */
+.page { background: linear-gradient(135deg, #ffffff 0%, #f5fbff 48%, #f4ffe8 100%); }
+.header { background: rgba(255,255,255,0.9); border-bottom-color: var(--hv-border, #e2e8f0); backdrop-filter: blur(16px); }
+.levelCard {
+  background: linear-gradient(135deg, var(--hv-blue, #1cb0f6), var(--hv-green, #58cc02));
+  box-shadow: 0 8px 0 var(--hv-blue-dark, #1899d6), var(--hv-shadow-card, 0 12px 28px rgba(36,49,58,0.08));
+}
+.badgeCard {
+  border-color: var(--hv-border, #e2e8f0);
+  border-bottom: 5px solid var(--hv-border-strong, #cbd5e1);
+  box-shadow: 0 12px 28px rgba(36,49,58,0.06);
+}
+.earned { border-color: var(--hv-green, #10b981); box-shadow: 0 5px 0 rgba(88,204,2,0.35); }
