@@ -4,6 +4,7 @@ const CONNECTION_ERROR_CODES = new Set([
   'ECONNRESET',
   'ETIMEDOUT',
   'EAI_AGAIN',
+  'EMAXCONNSESSION',
   'XX000',
 ])
 
@@ -13,6 +14,8 @@ export function isDatabaseConnectionError(err) {
     || message.includes('tenant/user')
     || message.includes('database')
     || message.includes('connection')
+    || message.includes('max clients')
+    || message.includes('pool_size')
     || message.includes('getaddrinfo')
     || message.includes('prisma')
 }
