@@ -1,18 +1,24 @@
 import { signAdminToken, getAdminSession } from '@/lib/admin-auth'
+import { isSameOriginRequest } from '@/lib/auth'
 
 // POST /api/admin/auth - Admin Login
 export async function POST(request) {
   try {
+    if (!isSameOriginRequest(request)) {
+      return Response.json({ error: 'Invalid request origin' }, { status: 403 })
+    }
+
     const { email, password } = await request.json()
     const expectedEmail = process.env.ADMIN_EMAIL || 'wendy84205@gmail.com'
     const expectedPassword = process.env.ADMIN_PASSWORD || 'Wendy84205!'
 
     if (email === expectedEmail && password === expectedPassword) {
       const token = await signAdminToken()
+      const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: {
-          'Set-Cookie': `hocvui_admin_token=${token}; Path=/; HttpOnly; Max-Age=604800; SameSite=Lax`,
+          'Set-Cookie': `hocvui_admin_token=${token}; Path=/; HttpOnly; Max-Age=604800; SameSite=Lax${secure}`,
           'Content-Type': 'application/json'
         }
       })
@@ -35,10 +41,11 @@ export async function GET(request) {
 
 // DELETE /api/admin/auth - Admin Logout
 export async function DELETE() {
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
   return new Response(JSON.stringify({ success: true }), {
     status: 200,
     headers: {
-      'Set-Cookie': 'hocvui_admin_token=; Path=/; HttpOnly; Max-Age=0; SameSite=Lax',
+      'Set-Cookie': `hocvui_admin_token=; Path=/; HttpOnly; Max-Age=0; SameSite=Lax${secure}`,
       'Content-Type': 'application/json'
     }
   })

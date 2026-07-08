@@ -76,7 +76,15 @@ function applySecurityHeaders(response, request) {
 
 export function proxy(request) {
   const token = request.cookies.get('hocvui_token')?.value
+  const adminToken = request.cookies.get('hocvui_admin_token')?.value
   const { pathname } = request.nextUrl
+
+  if (isPathMatch(pathname, '/admin') && !adminToken) {
+    return applySecurityHeaders(
+      NextResponse.redirect(new URL('/parent-login?role=admin&next=/admin', request.url)),
+      request
+    )
+  }
 
   const isProtected = PROTECTED_PATHS.some(path => isPathMatch(pathname, path))
 
@@ -93,6 +101,7 @@ export function proxy(request) {
 export const config = {
   matcher: [
     '/',
+    '/admin/:path*',
     '/parent-login',
     '/learning/:path*',
     '/game-choose-1-of-2/:path*',

@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { getGradeData } from '@/lib/data/index'
 import CurriculumPage from './pages/CurriculumPage'
 import OverviewPage from './pages/OverviewPage'
@@ -870,12 +871,8 @@ function buildQuestionPayload(questionData, context = {}) {
 
 
 export default function AdminPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const router = useRouter()
   const [authenticated, setAuthenticated] = useState(false)
-  const [authChecking, setAuthChecking] = useState(true)
-  const [loginError, setLoginError] = useState('')
-  const [passwordVisible, setPasswordVisible] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
   const [globalSearch, setGlobalSearch] = useState('')
   const [loading, setLoading] = useState(false)
@@ -953,36 +950,20 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetch('/api/admin/auth')
-      .then(res => { if (res.ok) setAuthenticated(true) })
-      .catch(() => {})
-      .finally(() => setAuthChecking(false))
-  }, [])
-
-  const handleLogin = async (e) => {
-    e.preventDefault()
-    setLoginError('')
-    setLoading(true)
-    try {
-      const res = await fetch('/api/admin/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password })
+      .then(res => {
+        if (res.ok) {
+          setAuthenticated(true)
+          return
+        }
+        router.replace('/parent-login?role=admin&next=/admin')
       })
-      const data = await res.json()
-      if (res.ok) {
-        setAuthenticated(true)
-        setPassword('')
-      }
-      else { setLoginError(data.error || 'Tài khoản hoặc mật khẩu không đúng') }
-    } catch { setLoginError('Lỗi kết nối máy chủ') }
-    finally { setLoading(false) }
-  }
+      .catch(() => router.replace('/parent-login?role=admin&next=/admin'))
+  }, [router])
 
   const handleLogout = async () => {
     await fetch('/api/admin/auth', { method: 'DELETE' })
     setAuthenticated(false)
-    setEmail('')
-    setPassword('')
+    router.push('/parent-login?role=admin')
   }
 
   const loadStats = useCallback(async () => {
@@ -1532,117 +1513,13 @@ export default function AdminPage() {
     ? Math.round(students.reduce((sum, item) => sum + (item.progress?.streak || 0), 0) / students.length)
     : (stats.avgStreak || 0)
 
-  // ─── Login Page ───────────────────────────────────────────────────────────
   if (!authenticated) {
     return (
-      <div className={styles.loginPage}>
-        <div className={styles.loginShell}>
-          <section className={styles.loginBrandPanel}>
-            <div className={styles.loginBrandTop}>
-              <span className={styles.loginLogo}>
-                <MaterialIcon filled>school</MaterialIcon>
-              </span>
-              <div>
-                <span className={styles.loginEyebrow}>Học Vui CMS</span>
-                <h1>Admin Control Center</h1>
-              </div>
-            </div>
-            <p className={styles.loginLead}>
-              Không gian quản trị nội dung, học sinh, phụ huynh và báo cáo cho nền tảng Học Vui.
-            </p>
-            <div className={styles.loginSignalGrid}>
-              <div>
-                <MaterialIcon>dashboard_customize</MaterialIcon>
-                <strong>12+</strong>
-                <span>module CMS</span>
-              </div>
-              <div>
-                <MaterialIcon>verified_user</MaterialIcon>
-                <strong>HttpOnly</strong>
-                <span>admin session</span>
-              </div>
-              <div>
-                <MaterialIcon>database</MaterialIcon>
-                <strong>Live DB</strong>
-                <span>Prisma data</span>
-              </div>
-            </div>
-            <div className={styles.loginSecurityCard}>
-              <MaterialIcon>admin_panel_settings</MaterialIcon>
-              <div>
-                <span>Phiên quản trị</span>
-                <strong>Bảo vệ bằng token ký HMAC</strong>
-              </div>
-            </div>
-          </section>
-
-          <section className={styles.loginCard}>
-            <div className={styles.loginHeader}>
-              <span className={styles.loginFormIcon}>
-                <MaterialIcon>lock_open</MaterialIcon>
-              </span>
-              <span className={styles.loginEyebrow}>Đăng nhập quản trị</span>
-              <h2>Chào mừng trở lại</h2>
-              <p>Đăng nhập bằng tài khoản admin được cấp quyền trong cấu hình hệ thống.</p>
-            </div>
-            <form onSubmit={handleLogin} className={styles.loginForm}>
-              <div className={styles.inputGroup}>
-                <label htmlFor="admin-email">Email quản trị viên</label>
-                <div className={styles.loginInputWrap}>
-                  <MaterialIcon>alternate_email</MaterialIcon>
-                  <input
-                    id="admin-email"
-                    type="email"
-                    placeholder={DEFAULT_ADMIN_EMAIL}
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    autoComplete="username"
-                    disabled={loading || authChecking}
-                    required
-                  />
-                </div>
-              </div>
-              <div className={styles.inputGroup}>
-                <label htmlFor="admin-password">Mật khẩu</label>
-                <div className={`${styles.loginInputWrap} ${styles.passwordInputWrap}`}>
-                  <MaterialIcon>key</MaterialIcon>
-                  <input
-                    id="admin-password"
-                    type={passwordVisible ? 'text' : 'password'}
-                    placeholder="Nhập mật khẩu admin"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    autoComplete="current-password"
-                    disabled={loading || authChecking}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className={styles.passwordToggle}
-                    onClick={() => setPasswordVisible(value => !value)}
-                    aria-label={passwordVisible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                    disabled={loading || authChecking}
-                  >
-                    <MaterialIcon>{passwordVisible ? 'visibility_off' : 'visibility'}</MaterialIcon>
-                  </button>
-                </div>
-              </div>
-              <div className={styles.loginHint}>
-                <MaterialIcon>info</MaterialIcon>
-                <span>Tài khoản lấy từ <strong>ADMIN_EMAIL</strong> và <strong>ADMIN_PASSWORD</strong>.</span>
-              </div>
-              {loginError && (
-                <p className={styles.errorMsg}>
-                  <MaterialIcon>error</MaterialIcon>
-                  <span>{loginError}</span>
-                </p>
-              )}
-              <button type="submit" className={styles.loginBtn} disabled={loading || authChecking}>
-                <MaterialIcon>{authChecking || loading ? 'progress_activity' : 'login'}</MaterialIcon>
-                {authChecking ? 'Đang kiểm tra phiên...' : loading ? 'Đang xác thực...' : 'Đăng nhập Admin'}
-              </button>
-            </form>
-          </section>
+      <div className={styles.loginRedirectPage}>
+        <div className={styles.loginRedirectCard}>
+          <MaterialIcon>progress_activity</MaterialIcon>
+          <strong>Đang mở trang đăng nhập admin...</strong>
+          <span>Nếu trình duyệt không tự chuyển, hãy vào trang đăng nhập chung.</span>
         </div>
       </div>
     )

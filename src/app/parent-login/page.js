@@ -8,7 +8,9 @@ import styles from './page.module.css'
 function ParentLoginInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const nextPath = searchParams.get('next') || ''
   const [tab, setTab] = useState(searchParams.get('tab') === 'register' ? 'register' : 'login')
+  const [role, setRole] = useState(searchParams.get('role') === 'admin' ? 'admin' : 'parent')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -18,7 +20,16 @@ function ParentLoginInner() {
   const [success, setSuccess] = useState('')
 
   const switchTab = (nextTab) => {
+    if (role === 'admin' && nextTab === 'register') return
     setTab(nextTab)
+    setError('')
+    setSuccess('')
+    setConfirmPassword('')
+  }
+
+  const switchRole = (nextRole) => {
+    setRole(nextRole)
+    setTab('login')
     setError('')
     setSuccess('')
     setConfirmPassword('')
@@ -96,6 +107,29 @@ function ParentLoginInner() {
     }
   }
 
+  const handleAdminLogin = async (e) => {
+    e.preventDefault()
+    setError('')
+    setSuccess('')
+    setLoading(true)
+    try {
+      const res = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), password }),
+      })
+      const data = await res.json()
+      setLoading(false)
+      if (!res.ok) return setError(data.error || 'Tài khoản hoặc mật khẩu quản trị không chính xác.')
+      const safeNext = nextPath.startsWith('/') && !nextPath.startsWith('//') ? nextPath : '/admin'
+      setSuccess('Đăng nhập admin thành công. Đang mở CMS...')
+      setTimeout(() => router.push(safeNext), 250)
+    } catch (err) {
+      setLoading(false)
+      setError('Lỗi kết nối máy chủ. Vui lòng thử lại.')
+    }
+  }
+
   const handleGoogleCallback = useCallback(async (response) => {
     setError('')
     setLoading(true)
@@ -134,6 +168,7 @@ function ParentLoginInner() {
   }, [router])
 
   useEffect(() => {
+    if (role === 'admin') return undefined
     let initialized = false
     const initGoogleSignIn = () => {
       if (initialized) return
@@ -165,7 +200,7 @@ function ParentLoginInner() {
     initGoogleSignIn()
     const timer = setTimeout(initGoogleSignIn, 800)
     return () => { clearTimeout(timer); initialized = true }
-  }, [tab, handleGoogleCallback])
+  }, [tab, role, handleGoogleCallback])
 
   return (
     <div className={styles.page}>
@@ -193,26 +228,135 @@ function ParentLoginInner() {
 
           {/* Auth Card */}
           <div className={styles.card}>
-            {/* Tab Switcher */}
-            <div className={styles.tabs}>
+            <div className={styles.roleSwitch} aria-label="Chọn loại tài khoản">
               <button
-                id="tab-login"
-                className={`${styles.tab} ${tab === 'login' ? styles.tabActive : styles.tabInactive}`}
-                onClick={() => switchTab('login')}
+                type="button"
+                className={`${styles.roleButton} ${role === 'parent' ? styles.roleButtonActive : ''}`}
+                onClick={() => switchRole('parent')}
               >
-                Đăng nhập
+                <span className="material-symbols-outlined" aria-hidden="true">family_restroom</span>
+                Phụ huynh
               </button>
               <button
-                id="tab-register"
-                className={`${styles.tab} ${tab === 'register' ? styles.tabActive : styles.tabInactive}`}
-                onClick={() => switchTab('register')}
+                type="button"
+                className={`${styles.roleButton} ${role === 'admin' ? styles.roleButtonActive : ''}`}
+                onClick={() => switchRole('admin')}
               >
-                Đăng ký
+                <span className="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span>
+                Admin
               </button>
             </div>
 
+            {/* Tab Switcher */}
+            {role === 'parent' ? (
+              <div className={styles.tabs}>
+                <button
+                  id="tab-login"
+                  className={`${styles.tab} ${tab === 'login' ? styles.tabActive : styles.tabInactive}`}
+                  onClick={() => switchTab('login')}
+                >
+                  Đăng nhập
+                </button>
+                <button
+                  id="tab-register"
+                  className={`${styles.tab} ${tab === 'register' ? styles.tabActive : styles.tabInactive}`}
+                  onClick={() => switchTab('register')}
+                >
+                  Đăng ký
+                </button>
+              </div>
+            ) : (
+              <div className={styles.adminModeBanner}>
+                <span className="material-symbols-outlined" aria-hidden="true">shield_lock</span>
+                <div>
+                  <strong>Đăng nhập quản trị CMS</strong>
+                  <p>Dùng tài khoản trong cấu hình ADMIN_EMAIL và ADMIN_PASSWORD.</p>
+                </div>
+              </div>
+            )}
+
             {/* Forms */}
-            {tab === 'register' ? (
+            {role === 'admin' ? (
+              <form id="form-admin-login" onSubmit={handleAdminLogin} className={styles.form}>
+                <div className={styles.formIntro}>
+                  <h2 className={styles.formTitle}>Admin Dashboard CMS</h2>
+                  <p className={styles.formDesc}>Một trang đăng nhập chung cho phụ huynh và đội quản trị Học Vui.</p>
+                </div>
+
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="admin-email">Email quản trị viên</label>
+                  <div className={styles.inputWrap}>
+                    <span className={`material-symbols-outlined ${styles.inputIcon}`}>alternate_email</span>
+                    <input
+                      id="admin-email"
+                      className={styles.input}
+                      type="email"
+                      placeholder="admin@email.com"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      autoComplete="username"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="admin-password">Mật khẩu admin</label>
+                  <div className={styles.inputWrap}>
+                    <span className={`material-symbols-outlined ${styles.inputIcon}`}>key</span>
+                    <input
+                      id="admin-password"
+                      className={styles.passwordInput}
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Nhập mật khẩu admin"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      autoComplete="current-password"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className={styles.passwordToggle}
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    >
+                      <span className="material-symbols-outlined">
+                        {showPassword ? 'visibility_off' : 'visibility'}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className={styles.noticeBox}>
+                  <span className="material-symbols-outlined">verified_user</span>
+                  <span>Phiên admin được lưu bằng cookie HttpOnly riêng, tách biệt với phiên phụ huynh.</span>
+                </div>
+
+                {error && (
+                  <div className={styles.error}>
+                    <span className="material-symbols-outlined">warning</span>
+                    {error}
+                  </div>
+                )}
+                {success && (
+                  <div className={styles.successMsg}>
+                    <span className="material-symbols-outlined">check_circle</span>
+                    {success}
+                  </div>
+                )}
+
+                <button
+                  id="btn-admin-login"
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={loading}
+                  style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}
+                >
+                  {loading ? 'Đang xác thực...' : 'Đăng nhập Admin'}
+                </button>
+                <p className={styles.helperText}>Sau khi đăng nhập, hệ thống sẽ chuyển thẳng vào Admin Dashboard.</p>
+              </form>
+            ) : tab === 'register' ? (
               <form id="form-register" onSubmit={handleRegister} className={styles.form}>
                 <div className={styles.formIntro}>
                   <h2 className={styles.formTitle}>Tạo tài khoản phụ huynh</h2>
@@ -374,19 +518,34 @@ function ParentLoginInner() {
               </form>
             )}
 
-            {/* Divider */}
-            <div className={styles.divider}>
-              <div className={styles.dividerLine} />
-              <span className={styles.dividerText}>hoặc</span>
-            </div>
+            {role === 'parent' && (
+              <>
+                {/* Divider */}
+                <div className={styles.divider}>
+                  <div className={styles.dividerLine} />
+                  <span className={styles.dividerText}>hoặc</span>
+                </div>
 
-            {/* Social Login Button */}
-            <div id="google-signin-btn" style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: '8px' }} />
+                {/* Social Login Button */}
+                <div id="google-signin-btn" style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: '8px' }} />
+              </>
+            )}
 
 
             {/* Bottom Footer Info */}
             <div className={styles.footerText}>
-              {tab === 'login' ? (
+              {role === 'admin' ? (
+                <>
+                  Dùng tài khoản phụ huynh?{' '}
+                  <button
+                    className={styles.footerTextLink}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    onClick={() => switchRole('parent')}
+                  >
+                    Chuyển sang phụ huynh
+                  </button>
+                </>
+              ) : tab === 'login' ? (
                 <>
                   Chưa có tài khoản?{' '}
                   <button

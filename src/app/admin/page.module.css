@@ -57,6 +57,53 @@
   align-items: stretch;
 }
 
+.loginRedirectPage {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    linear-gradient(90deg, rgba(0, 93, 167, 0.055) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(0, 93, 167, 0.055) 1px, transparent 1px),
+    var(--surface);
+  background-size: 44px 44px;
+  color: var(--on-surface);
+  font-family: var(--font-body);
+}
+
+.loginRedirectCard {
+  width: min(100%, 420px);
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 30px;
+  text-align: center;
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--outline-variant);
+  border-bottom: 6px solid var(--outline-variant);
+  background: var(--surface-container-lowest);
+  box-shadow: var(--shadow-tactile);
+}
+
+.loginRedirectCard :global(.material-symbols-outlined) {
+  color: var(--primary);
+  font-size: 34px;
+  animation: adminLoginSpin 1s linear infinite;
+}
+
+.loginRedirectCard strong {
+  color: var(--on-surface);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.loginRedirectCard span {
+  color: var(--outline);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 700;
+}
+
 .loginBrandPanel,
 .loginCard {
   background: var(--surface-container-lowest);
