@@ -1,37 +1,28 @@
 import prisma from '@/lib/db'
-import { hashPassword, signJWT } from '@/lib/auth'
+import { getSessionCookieOptions, hashPassword, isSameOriginRequest, signJWT } from '@/lib/auth'
 import { databaseUnavailableResponse, isDatabaseConnectionError } from '@/lib/db-errors'
+import { verifyGoogleIdToken } from '@/lib/google-id-token'
 import { cookies } from 'next/headers'
-
-async function verifyGoogleCredential(credential) {
-  const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`, {
-    cache: 'no-store',
-  })
-
-  if (!res.ok) return null
-  const payload = await res.json()
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-
-  if (!payload.email || !payload.email_verified) return null
-  if (clientId && payload.aud !== clientId) return null
-
-  return payload
-}
+import { randomUUID } from 'crypto'
 
 // POST /api/auth/google
 export async function POST(request) {
   try {
+    if (!isSameOriginRequest(request)) {
+      return Response.json({ error: 'Invalid request origin' }, { status: 403 })
+    }
+
     const { credential } = await request.json()
     if (!credential) {
       return Response.json({ error: 'Google credential required' }, { status: 400 })
     }
 
-    const decoded = await verifyGoogleCredential(credential)
+    const decoded = await verifyGoogleIdToken(credential)
     if (!decoded || !decoded.email) {
       return Response.json({ error: 'Invalid Google credential token' }, { status: 400 })
     }
 
-    const email = decoded.email
+    const email = String(decoded.email).trim().toLowerCase()
 
     // Find or create Parent in database
     let parent = await prisma.parent.findUnique({
@@ -41,7 +32,7 @@ export async function POST(request) {
 
     if (!parent) {
       // Create new parent with random password since they login via Google
-      const randomPassword = Math.random().toString(36).substring(2, 15)
+      const randomPassword = randomUUID()
       parent = await prisma.parent.create({
         data: {
           email,
@@ -56,13 +47,7 @@ export async function POST(request) {
 
     // Set HTTP-only Cookie
     const cookieStore = await cookies()
-    cookieStore.set('hocvui_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7 // 1 week
-    })
+    cookieStore.set('hocvui_token', token, getSessionCookieOptions())
 
     return Response.json({
       id: parent.id,

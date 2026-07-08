@@ -61,7 +61,10 @@ function applySecurityHeaders(response, request) {
     'usb=()',
     'browsing-topics=()',
   ].join(', '))
-  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
+  response.headers.set(
+    'Cross-Origin-Opener-Policy',
+    request.nextUrl.pathname === '/parent-login' ? 'same-origin-allow-popups' : 'same-origin'
+  )
   response.headers.set('X-DNS-Prefetch-Control', 'on')
 
   if (request.nextUrl.protocol === 'https:' || process.env.VERCEL) {
