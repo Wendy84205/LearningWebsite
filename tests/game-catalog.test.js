@@ -6,6 +6,7 @@ import {
   GRADE_GAME_CATALOG,
 } from '../src/lib/games/grade-game-catalog.js'
 import { GAME_CONFIG } from '../src/lib/games/engine/game-types.js'
+import { PHASER_GAME_MODES } from '../src/lib/games/phaser-game-modes.js'
 
 const GRADES = ['lop-1', 'lop-2', 'lop-3', 'lop-4', 'lop-5']
 
@@ -61,6 +62,20 @@ describe('grade-game-catalog', () => {
       assert.ok(buildGameHref(found.item, found.gradeSlug).startsWith(`/game-${id}?`))
       assert.equal(GAME_CONFIG[id].apiGame, 'quiz')
       assert.ok(GAME_CONFIG[id].subject)
+    }
+  })
+
+  it('exposes every Phaser 2D learning mechanic in at least one grade catalog', () => {
+    const allItems = GRADES.flatMap(gradeSlug =>
+      GRADE_GAME_CATALOG[gradeSlug].categories.flatMap(category => category.items.map(item => ({ gradeSlug, item })))
+    )
+
+    for (const id of Object.keys(PHASER_GAME_MODES)) {
+      const found = allItems.find(entry => entry.item.id === id)
+      assert.ok(found, `${id} is present in grade catalog`)
+      assert.equal(found.item.engine, 'phaser')
+      assert.ok(found.item.theme?.label)
+      assert.ok(buildGameHref(found.item, found.gradeSlug).startsWith(PHASER_GAME_MODES[id].route))
     }
   })
 })

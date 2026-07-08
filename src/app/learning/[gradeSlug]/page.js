@@ -353,33 +353,56 @@ export default function GradeLandingPage() {
           </div>
 
           <nav className={styles.sideNav}>
+            <span className={styles.sideNavLabel}>Học tập</span>
             <Link href={`/learning/${gradeSlug}`} className={`${styles.navItem} ${styles.navItemActive}`}>
               <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
-              <span>Tổng quan</span>
+              <span className={styles.navItemText}>
+                <strong>Tổng quan</strong>
+                <small>Nhiệm vụ hôm nay</small>
+              </span>
             </Link>
             <Link href={`/learning/${gradeSlug}/map`} className={styles.navItem}>
               <span className="material-symbols-outlined">map</span>
-              <span>Lộ trình học</span>
+              <span className={styles.navItemText}>
+                <strong>Lộ trình học</strong>
+                <small>{journeyPct}% hành trình</small>
+              </span>
             </Link>
             <Link href={`/learning/${gradeSlug}/games`} className={styles.navItem}>
               <span className="material-symbols-outlined">sports_esports</span>
-              <span>Trò chơi</span>
+              <span className={styles.navItemText}>
+                <strong>Trò chơi</strong>
+                <small>Game theo lớp</small>
+              </span>
             </Link>
             <Link href={`/learning/${gradeSlug}/test?mode=test`} className={styles.navItem}>
               <span className="material-symbols-outlined">assignment</span>
-              <span>Kiểm tra</span>
+              <span className={styles.navItemText}>
+                <strong>Kiểm tra</strong>
+                <small>Quiz & đề luyện</small>
+              </span>
             </Link>
+            <span className={styles.sideNavLabel}>Cá nhân</span>
             <Link href={`/learning/${gradeSlug}/achievements`} className={styles.navItem}>
               <span className="material-symbols-outlined">emoji_events</span>
-              <span>Thành tích</span>
+              <span className={styles.navItemText}>
+                <strong>Thành tích</strong>
+                <small>Huy hiệu & XP</small>
+              </span>
             </Link>
             <Link href={`/learning/${gradeSlug}/report`} className={styles.navItem}>
               <span className="material-symbols-outlined">assessment</span>
-              <span>Báo cáo</span>
+              <span className={styles.navItemText}>
+                <strong>Báo cáo</strong>
+                <small>Tiến bộ của em</small>
+              </span>
             </Link>
             <Link href="/kids-closet" className={styles.navItem}>
               <span className="material-symbols-outlined">styler</span>
-              <span>Tủ đồ của bé</span>
+              <span className={styles.navItemText}>
+                <strong>Tủ đồ của bé</strong>
+                <small>Trang trí nhân vật</small>
+              </span>
             </Link>
           </nav>
 
@@ -396,6 +419,10 @@ export default function GradeLandingPage() {
               <span>{progress.streak} streak</span>
               <span>{progress.stars} sao</span>
             </div>
+            <Link href={nextPractice} className={styles.sideQuestButton} onClick={playBubbleSound}>
+              Luyện ngay
+              <span className="material-symbols-outlined" aria-hidden="true">bolt</span>
+            </Link>
           </div>
 
           <div className={styles.sideProfile}>

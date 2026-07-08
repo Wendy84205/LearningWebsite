@@ -25,6 +25,9 @@ function ResultsContent() {
   const [xp, setXp] = useState(0)
   const [scorePct, setScorePct] = useState(0)
   const [levelNumber, setLevelNumber] = useState(1)
+  const [correct, setCorrect] = useState(0)
+  const [total, setTotal] = useState(0)
+  const [combo, setCombo] = useState(0)
 
   useEffect(() => {
     const s = parseInt(localStorage.getItem('lastStars') || '0')
@@ -35,6 +38,9 @@ function ResultsContent() {
     const lastXp = parseInt(localStorage.getItem('lastXp') || '0', 10)
     const lastScorePct = parseInt(localStorage.getItem('lastScorePct') || '0', 10)
     const lastLevelNumber = parseInt(localStorage.getItem('lastLevelNumber') || '1', 10)
+    const lastCorrect = parseInt(localStorage.getItem('lastCorrect') || '0', 10)
+    const lastTotal = parseInt(localStorage.getItem('lastTotal') || '0', 10)
+    const lastCombo = parseInt(localStorage.getItem('lastCombo') || '0', 10)
     
     setTimeout(() => {
       setStars(s)
@@ -44,6 +50,9 @@ function ResultsContent() {
       setXp(Number.isFinite(lastXp) ? lastXp : 0)
       setScorePct(Number.isFinite(lastScorePct) ? lastScorePct : 0)
       setLevelNumber(Number.isFinite(lastLevelNumber) ? lastLevelNumber : 1)
+      setCorrect(Number.isFinite(lastCorrect) ? lastCorrect : 0)
+      setTotal(Number.isFinite(lastTotal) ? lastTotal : 0)
+      setCombo(Number.isFinite(lastCombo) ? lastCombo : 0)
     }, 0)
 
     // Confetti and Audio Narration
@@ -77,6 +86,7 @@ function ResultsContent() {
 
   const msg = STAR_MSGS[stars] || STAR_MSGS[0]
   const isMascotEmoji = mascot.image && !mascot.image.startsWith('http') && !mascot.image.startsWith('/')
+  const rank = scorePct >= 90 ? 'S' : scorePct >= 75 ? 'A' : scorePct >= 50 ? 'B' : 'C'
 
   return (
     <div className={styles.page} data-theme={gameKey || 'quiz-adventure'}>
@@ -99,6 +109,12 @@ function ResultsContent() {
       </div>
 
       <div className={styles.content}>
+        <div className={styles.rewardAura} aria-hidden="true" />
+        <div className={styles.rankBadge} style={{ borderColor: theme.accent }}>
+          <span>Rank</span>
+          <strong>{rank}</strong>
+        </div>
+
         <div className={styles.mascotWrap} style={{ borderColor: theme.accent }}>
           {isMascotEmoji ? (
             <span className={styles.mascotEmoji}>{mascot.image}</span>
@@ -129,6 +145,16 @@ function ResultsContent() {
 
         <p className={styles.message}>{msg}</p>
 
+        <div className={styles.masteryPanel} aria-label="Tiến độ hoàn thành">
+          <div>
+            <span>Độ chính xác</span>
+            <strong>{correct}/{total || 0}</strong>
+          </div>
+          <div className={styles.masteryTrack}>
+            <span style={{ width: `${Math.min(100, Math.max(0, scorePct))}%`, background: theme.accent }} />
+          </div>
+        </div>
+
         <div className={styles.rewardGrid}>
           <div>
             <span>XP nhận được</span>
@@ -141,6 +167,10 @@ function ResultsContent() {
           <div>
             <span>Level hiện tại</span>
             <strong>{levelNumber}</strong>
+          </div>
+          <div>
+            <span>Combo tốt nhất</span>
+            <strong>{combo}</strong>
           </div>
         </div>
 

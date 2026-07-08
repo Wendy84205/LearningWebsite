@@ -88,6 +88,24 @@ export default function ParentDashboard() {
   const ranking = profile?.ranking
   const rankingItems = ranking?.items || []
   const currentRank = ranking?.current
+  const parentNavItems = profile ? [
+    { href: '#overview', icon: 'dashboard', label: 'Tổng quan', desc: 'Nhịp học hôm nay', active: true },
+    { href: '#child-now', icon: 'visibility', label: 'Con đang học gì', desc: latestActivity?.title || 'Hoạt động mới nhất' },
+    { href: '#ranker', icon: 'leaderboard', label: 'Ranker', desc: currentRank ? `Hạng #${currentRank.rank}` : 'Xếp hạng học tập' },
+    { href: '#metrics', icon: 'monitoring', label: 'Chỉ số', desc: `${stats.averageScore ?? 0}% điểm TB` },
+    { href: '#activity', icon: 'history', label: 'Hoạt động', desc: `${recentActivities.length} lượt gần đây` },
+  ] : [
+    { href: '#overview', icon: 'dashboard', label: 'Tổng quan', desc: 'Bảng phụ huynh', active: true },
+  ]
+  const parentQuickLinks = profile ? [
+    { href: `/learning/${profile.gradeSlug}`, icon: 'school', label: 'Dashboard con' },
+    { href: `/learning/${profile.gradeSlug}/map`, icon: 'route', label: 'Lộ trình' },
+    { href: `/learning/${profile.gradeSlug}/games`, icon: 'sports_esports', label: 'Game' },
+    { href: '/add-profile', icon: 'person_add', label: 'Thêm hồ sơ' },
+  ] : [
+    { href: '/add-profile', icon: 'person_add', label: 'Thêm hồ sơ' },
+    { href: '/', icon: 'home', label: 'Trang chủ' },
+  ]
 
   return (
     <div className={styles.page}>
@@ -95,24 +113,94 @@ export default function ParentDashboard() {
       <aside className={styles.sidebar}>
         <div className={styles.sideLogoArea}>
           <Link href="/" className={styles.sideLogoLink}>
-            <span className={styles.sideLogoText}>Học Vui</span>
+            <span className={styles.sideLogoMark} aria-hidden="true">
+              <span className="material-symbols-outlined">family_restroom</span>
+            </span>
+            <span className={styles.sideLogoCopy}>
+              <span className={styles.sideLogoText}>Học Vui</span>
+              <span className={styles.sideLogoSub}>Parent Center</span>
+            </span>
           </Link>
         </div>
 
-        <nav className={styles.sideNav}>
-          <Link href="/parent-dashboard" className={`${styles.navItem} ${styles.navItemActive}`}>
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
-            <span>Tổng quan</span>
-          </Link>
-          <Link href="/parent-dashboard/reports" className={styles.navItem}>
-            <span className="material-symbols-outlined">analytics</span>
-            <span>Báo cáo</span>
-          </Link>
-          <Link href="/parent-dashboard/settings" className={styles.navItem}>
-            <span className="material-symbols-outlined">settings</span>
-            <span>Cài đặt</span>
-          </Link>
+        {profile && (
+          <div className={styles.sideChildCard}>
+            <div className={styles.sideChildTop}>
+              <div className={styles.sideChildAvatar}>
+                {profile.avatar && (profile.avatar.startsWith('http') || profile.avatar.startsWith('/')) ? (
+                  <img src={profile.avatar} alt={profile.name} />
+                ) : (
+                  <span>{profile.avatar || '👦'}</span>
+                )}
+              </div>
+              <div className={styles.sideChildInfo}>
+                <span>Đang theo dõi</span>
+                <strong>{profile.name}</strong>
+                <small>{profile.grade || profile.gradeLabel || 'Học sinh'}</small>
+              </div>
+            </div>
+            <div className={styles.sideChildProgress}>
+              <div>
+                <strong>{completionPct}%</strong>
+                <span>Mục tiêu</span>
+              </div>
+              <div>
+                <strong>{stats.streak ?? 0}</strong>
+                <span>Streak</span>
+              </div>
+              <div>
+                <strong>{stats.level ?? 1}</strong>
+                <span>Cấp</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {profiles.length > 1 && (
+          <div className={styles.sideChildSwitch}>
+            <span className={styles.sideSectionLabel}>Hồ sơ học sinh</span>
+            {profiles.map((p, i) => (
+              <button
+                key={p.id}
+                type="button"
+                className={`${styles.sideChildSwitchItem} ${i === activeChild ? styles.sideChildSwitchActive : ''}`}
+                onClick={() => setActiveChild(i)}
+              >
+                <span>{p.avatar && !String(p.avatar).startsWith('http') && !String(p.avatar).startsWith('/') ? p.avatar : '👦'}</span>
+                <strong>{p.name}</strong>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <nav className={styles.sideNav} aria-label="Điều hướng phụ huynh">
+          <span className={styles.sideSectionLabel}>Bảng điều khiển</span>
+          {parentNavItems.map(item => (
+            <a
+              key={item.href}
+              href={item.href}
+              className={`${styles.navItem} ${item.active ? styles.navItemActive : ''}`}
+            >
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: item.active ? "'FILL' 1" : undefined }}>{item.icon}</span>
+              <span className={styles.navText}>
+                <strong>{item.label}</strong>
+                <small>{item.desc}</small>
+              </span>
+            </a>
+          ))}
         </nav>
+
+        <div className={styles.sideQuickActions}>
+          <span className={styles.sideSectionLabel}>Đi nhanh</span>
+          <div className={styles.sideQuickGrid}>
+            {parentQuickLinks.map(item => (
+              <Link key={item.href} href={item.href} className={styles.sideQuickLink}>
+                <span className="material-symbols-outlined" aria-hidden="true">{item.icon}</span>
+                <strong>{item.label}</strong>
+              </Link>
+            ))}
+          </div>
+        </div>
 
         {/* Last refresh */}
         {lastRefresh && (
@@ -130,6 +218,9 @@ export default function ParentDashboard() {
             <p className={styles.sideProfileName}>{parentName}</p>
             <p className={styles.sideProfileBadge}>Phụ huynh</p>
           </div>
+          <button type="button" className={styles.sideLogoutButton} onClick={handleLogout} title="Đăng xuất">
+            <span className="material-symbols-outlined" aria-hidden="true">logout</span>
+          </button>
         </div>
       </aside>
 
@@ -199,7 +290,7 @@ export default function ParentDashboard() {
           </div>
         ) : (
           <div className={styles.body}>
-            <section className={styles.parentHero}>
+            <section id="overview" className={styles.parentHero}>
               <div className={styles.parentHeroText}>
                 <span className={styles.parentHeroEyebrow}>Báo cáo học tập hôm nay</span>
                 <h2>{profile.name} đang học ở nhịp độ {completionPct >= 80 ? 'rất tốt' : completionPct > 0 ? 'ổn định' : 'cần khởi động'}</h2>
@@ -260,7 +351,7 @@ export default function ParentDashboard() {
               ))}
             </section>
 
-            <section className={styles.childNowBoard} aria-label="Con đang học gì">
+            <section id="child-now" className={styles.childNowBoard} aria-label="Con đang học gì">
               <div className={styles.childNowHeader}>
                 <div>
                   <span>Trạng thái hiện tại</span>
@@ -314,7 +405,7 @@ export default function ParentDashboard() {
               </div>
             </section>
 
-            <section className={styles.parentRanker} aria-label="Xếp hạng học tập của con">
+            <section id="ranker" className={styles.parentRanker} aria-label="Xếp hạng học tập của con">
               <div className={styles.parentRankerHeader}>
                 <div>
                   <span>Ranker học tập</span>
@@ -375,7 +466,7 @@ export default function ParentDashboard() {
             </section>
 
             {/* METRIC CARDS - Dữ liệu thật */}
-            <section className={styles.metricGrid}>
+            <section id="metrics" className={styles.metricGrid}>
               {[
                 {
                   icon: 'schedule',
@@ -489,7 +580,7 @@ export default function ParentDashboard() {
 
             {/* RECENT ACTIVITY */}
             {recentActivities.length > 0 && (
-              <section className={styles.activitySection}>
+              <section id="activity" className={styles.activitySection}>
                 <h3 className={styles.chartTitle} style={{ marginBottom: 16 }}>Hoạt động gần đây của {profile.name}</h3>
                 <div className={styles.activityList}>
                   {recentActivities.map((act, i) => {
@@ -561,14 +652,25 @@ export default function ParentDashboard() {
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
           <span>Tổng quan</span>
         </Link>
-        <Link href="/parent-dashboard/reports" className={styles.mobileNavItem}>
-          <span className="material-symbols-outlined">analytics</span>
-          <span>Báo cáo</span>
-        </Link>
-        <Link href="/parent-dashboard/settings" className={styles.mobileNavItem}>
-          <span className="material-symbols-outlined">settings</span>
-          <span>Cài đặt</span>
-        </Link>
+        <a href="#child-now" className={styles.mobileNavItem}>
+          <span className="material-symbols-outlined">visibility</span>
+          <span>Đang học</span>
+        </a>
+        <a href="#ranker" className={styles.mobileNavItem}>
+          <span className="material-symbols-outlined">leaderboard</span>
+          <span>Rank</span>
+        </a>
+        {profile ? (
+          <Link href={`/learning/${profile.gradeSlug}`} className={styles.mobileNavItem}>
+            <span className="material-symbols-outlined">school</span>
+            <span>Con</span>
+          </Link>
+        ) : (
+          <Link href="/add-profile" className={styles.mobileNavItem}>
+            <span className="material-symbols-outlined">person_add</span>
+            <span>Thêm</span>
+          </Link>
+        )}
       </nav>
     </div>
   )
