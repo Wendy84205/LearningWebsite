@@ -8,11 +8,16 @@ export async function POST(request) {
       return Response.json({ error: 'Invalid request origin' }, { status: 403 })
     }
 
-    const { email, password } = await request.json()
-    const expectedEmail = process.env.ADMIN_EMAIL || 'wendy84205@gmail.com'
-    const expectedPassword = process.env.ADMIN_PASSWORD || 'Wendy84205!'
+    const { email, username, password } = await request.json()
+    const loginName = String(username || email || '').trim().toLowerCase()
+    const expectedUsername = String(process.env.ADMIN_USERNAME || process.env.ADMIN_EMAIL || 'admin').trim().toLowerCase()
+    const expectedPassword = String(process.env.ADMIN_PASSWORD || 'admin')
+    const defaultAdminEnabled = process.env.DISABLE_DEFAULT_ADMIN_LOGIN !== 'true'
 
-    if (email === expectedEmail && password === expectedPassword) {
+    const isConfiguredAdmin = loginName === expectedUsername && password === expectedPassword
+    const isDefaultAdmin = defaultAdminEnabled && loginName === 'admin' && password === 'admin'
+
+    if (isConfiguredAdmin || isDefaultAdmin) {
       const token = await signAdminToken()
       const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
       return new Response(JSON.stringify({ success: true }), {

@@ -164,6 +164,7 @@ Tạo file `.env`:
 DATABASE_URL="file:./dev.db"
 JWT_SECRET="thay-bang-secret-manh"
 ADMIN_SECRET="thay-bang-secret-manh"
+ADMIN_USERNAME="admin"
 ADMIN_PASSWORD="doi-mat-khau-admin"
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=""
 ```
@@ -200,6 +201,7 @@ npx prisma db push   # Đồng bộ schema vào database
 | `DIRECT_URL` | Tùy môi trường | URL direct khi provider PostgreSQL cần |
 | `JWT_SECRET` | Có | Secret ký session phụ huynh |
 | `ADMIN_SECRET` | Có | Secret ký session admin |
+| `ADMIN_USERNAME` | Tùy chọn | Tên đăng nhập admin, mặc định `admin` |
 | `ADMIN_PASSWORD` | Có ở production | Mật khẩu admin, không commit vào Git |
 | `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Tùy chọn | Google OAuth Client ID phía client |
 

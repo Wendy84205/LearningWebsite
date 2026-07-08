@@ -42,6 +42,7 @@ Vào **Vercel Dashboard → Settings → Environment Variables** và thêm:
 | `DIRECT_URL` | PostgreSQL direct URL nếu provider yêu cầu |
 | `JWT_SECRET` | Chuỗi bí mật session phụ huynh |
 | `ADMIN_SECRET` | Chuỗi bí mật session admin |
+| `ADMIN_USERNAME` | Tên đăng nhập CMS admin, mặc định `admin` |
 | `ADMIN_PASSWORD` | Mật khẩu đăng nhập CMS admin |
 | `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Client ID từ Google Cloud Console |
 
@@ -112,6 +113,7 @@ DIRECT_URL="postgresql://user:pass@host:5432/hocvui"
 # Auth
 JWT_SECRET="thay-bang-chuoi-32-byte-ngau-nhien"
 ADMIN_SECRET="thay-bang-chuoi-32-byte-ngau-nhien"
+ADMIN_USERNAME="admin"
 ADMIN_PASSWORD="doi-mat-khau-admin"
 
 # Google OAuth (tùy chọn nhưng khuyến nghị)
@@ -161,7 +163,7 @@ npx prisma db push
 ### ❌ Lỗi `invalid_client` khi đăng nhập Google
 
 - Kiểm tra `NEXT_PUBLIC_GOOGLE_CLIENT_ID` trong `.env`.
-- Đảm bảo JavaScript origin đã được thêm vào Google Cloud Console.
+- Đảm bảo JavaScript origin đã được thêm vào Google Cloud Console, ví dụ `https://learning-website-virid.vercel.app`.
 - Xác nhận ứng dụng OAuth đã được **publish** (không còn ở trạng thái Testing nếu dùng email ngoài whitelist).
 
 ### ❌ Lỗi session không giữ đăng nhập

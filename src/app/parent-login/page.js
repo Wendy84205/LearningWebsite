@@ -18,6 +18,7 @@ function ParentLoginInner() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const googleAuthorizedOrigin = process.env.NEXT_PUBLIC_SITE_URL || 'https://learning-website-virid.vercel.app'
 
   const switchTab = (nextTab) => {
     if (role === 'admin' && nextTab === 'register') return
@@ -33,6 +34,7 @@ function ParentLoginInner() {
     setError('')
     setSuccess('')
     setConfirmPassword('')
+    if (nextRole === 'admin' && !email) setEmail('admin')
   }
 
   const getAuthErrorMessage = (message, fallback) => {
@@ -116,7 +118,7 @@ function ParentLoginInner() {
       const res = await fetch('/api/admin/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password }),
+        body: JSON.stringify({ username: email.trim(), password }),
       })
       const data = await res.json()
       setLoading(false)
@@ -270,7 +272,7 @@ function ParentLoginInner() {
                 <span className="material-symbols-outlined" aria-hidden="true">shield_lock</span>
                 <div>
                   <strong>Đăng nhập quản trị CMS</strong>
-                  <p>Dùng tài khoản trong cấu hình ADMIN_EMAIL và ADMIN_PASSWORD.</p>
+                  <p>Dùng tài khoản admin mặc định hoặc cấu hình ADMIN_USERNAME và ADMIN_PASSWORD.</p>
                 </div>
               </div>
             )}
@@ -284,14 +286,14 @@ function ParentLoginInner() {
                 </div>
 
                 <div className={styles.field}>
-                  <label className={styles.label} htmlFor="admin-email">Email quản trị viên</label>
+                  <label className={styles.label} htmlFor="admin-username">Tên đăng nhập admin</label>
                   <div className={styles.inputWrap}>
-                    <span className={`material-symbols-outlined ${styles.inputIcon}`}>alternate_email</span>
+                    <span className={`material-symbols-outlined ${styles.inputIcon}`}>admin_panel_settings</span>
                     <input
-                      id="admin-email"
+                      id="admin-username"
                       className={styles.input}
-                      type="email"
-                      placeholder="admin@email.com"
+                      type="text"
+                      placeholder="admin"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       autoComplete="username"
@@ -329,7 +331,7 @@ function ParentLoginInner() {
 
                 <div className={styles.noticeBox}>
                   <span className="material-symbols-outlined">verified_user</span>
-                  <span>Phiên admin được lưu bằng cookie HttpOnly riêng, tách biệt với phiên phụ huynh.</span>
+                  <span>Đăng nhập mặc định: admin / admin. Phiên admin dùng cookie HttpOnly riêng, tách biệt với phiên phụ huynh.</span>
                 </div>
 
                 {error && (
@@ -528,6 +530,9 @@ function ParentLoginInner() {
 
                 {/* Social Login Button */}
                 <div id="google-signin-btn" style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: '8px' }} />
+                <p className={styles.helperText}>
+                  Nếu Google báo origin_mismatch, thêm <strong>{googleAuthorizedOrigin}</strong> vào Authorized JavaScript origins trong Google Cloud Console.
+                </p>
               </>
             )}
 
