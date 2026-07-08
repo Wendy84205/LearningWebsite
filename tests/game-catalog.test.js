@@ -5,6 +5,7 @@ import {
   getGradeGameCatalog,
   GRADE_GAME_CATALOG,
 } from '../src/lib/games/grade-game-catalog.js'
+import { GAME_CONFIG } from '../src/lib/games/engine/game-types.js'
 
 const GRADES = ['lop-1', 'lop-2', 'lop-3', 'lop-4', 'lop-5']
 
@@ -42,6 +43,24 @@ describe('grade-game-catalog', () => {
     assert.ok(gradeOneGames.includes('simple-matching'))
     assert.ok(upperGradeGames.includes('quiz-runner-3d'))
     assert.ok(upperGradeGames.includes('math-battle'))
+    assert.ok(upperGradeGames.includes('science-lab'))
+    assert.ok(upperGradeGames.includes('history-map'))
+    assert.ok(upperGradeGames.includes('english-quest'))
     assert.notDeepEqual(new Set(gradeOneGames), new Set(upperGradeGames))
+  })
+
+  it('maps expanded subject games to playable routes and question filters', () => {
+    const allItems = GRADES.flatMap(gradeSlug =>
+      GRADE_GAME_CATALOG[gradeSlug].categories.flatMap(category => category.items.map(item => ({ gradeSlug, item })))
+    )
+    const expanded = ['math-treasure', 'spelling-sprint', 'science-lab', 'history-map', 'english-quest']
+
+    for (const id of expanded) {
+      const found = allItems.find(entry => entry.item.id === id)
+      assert.ok(found, `${id} is present in grade catalog`)
+      assert.ok(buildGameHref(found.item, found.gradeSlug).startsWith(`/game-${id}?`))
+      assert.equal(GAME_CONFIG[id].apiGame, 'quiz')
+      assert.ok(GAME_CONFIG[id].subject)
+    }
   })
 })

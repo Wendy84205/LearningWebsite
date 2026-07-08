@@ -3,6 +3,7 @@ import prisma from '@/lib/db'
 import { buildActivityStats } from '@/lib/activity-service'
 import { buildProgressSummary, getSlug } from '@/lib/progress-summary'
 import { levelFromXp } from '@/lib/scoring-service'
+import { buildStudentRanking } from '@/lib/ranking-service'
 
 // Tính số phút học trong một ngày cụ thể từ LearningAttempts
 function getDayMinutes(attempts, targetDate) {
@@ -86,7 +87,7 @@ export async function GET(request) {
       const sevenDaysAgo = new Date()
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-      const [activityStats, recentAttempts] = await Promise.all([
+      const [activityStats, recentAttempts, ranking] = await Promise.all([
         buildActivityStats(profile.id),
         prisma.learningAttempt.findMany({
           where: {
@@ -94,6 +95,12 @@ export async function GET(request) {
             createdAt: { gte: sevenDaysAgo },
           },
           orderBy: { createdAt: 'asc' },
+        }),
+        buildStudentRanking({
+          parentId: session.parentId,
+          profileId: profile.id,
+          grade: gradeSlug,
+          limit: 5,
         }),
       ])
 
@@ -149,6 +156,7 @@ export async function GET(request) {
         weakSkills: activityStats.weakSkills,
         suggestions,
         latestBadge,
+        ranking,
         recentActivities: activityStats.attempts.slice(0, 5),
         scoreTrend: activityStats.scoreTrend,
       }

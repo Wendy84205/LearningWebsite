@@ -1,4 +1,4 @@
-/** @typedef {'quiz-adventure' | 'math-battle' | 'word-match' | 'memory-card' | 'daily-mission' | 'quiz-runner-3d' | 'choose-1-of-2' | 'listen-and-select' | 'simple-matching'} GameType */
+/** @typedef {'quiz-adventure' | 'math-battle' | 'word-match' | 'memory-card' | 'daily-mission' | 'quiz-runner-3d' | 'choose-1-of-2' | 'listen-and-select' | 'simple-matching' | 'math-treasure' | 'spelling-sprint' | 'science-lab' | 'history-map' | 'english-quest'} GameType */
 
 /** @typedef {'easy' | 'medium' | 'hard'} Difficulty */
 
@@ -36,6 +36,11 @@ export const GAME_CONFIG = {
   'memory-card': { hearts: null, timer: null, xpBase: 8, apiGame: 'matching' },
   'daily-mission': { hearts: null, timer: null, xpBase: 20, apiGame: 'quiz' },
   'quiz-runner-3d': { hearts: 3, timer: null, xpBase: 18, apiGame: 'quiz' },
+  'math-treasure': { hearts: 4, timer: 90, xpBase: 16, apiGame: 'quiz', subject: 'Toán' },
+  'spelling-sprint': { hearts: 3, timer: 75, xpBase: 14, apiGame: 'quiz', subject: 'Tiếng Việt' },
+  'science-lab': { hearts: 4, timer: null, xpBase: 15, apiGame: 'quiz', subject: 'Khoa học' },
+  'history-map': { hearts: 4, timer: null, xpBase: 15, apiGame: 'quiz', subject: 'Lịch sử & Địa lí' },
+  'english-quest': { hearts: 3, timer: 80, xpBase: 14, apiGame: 'quiz', subject: 'Tiếng Anh' },
 }
 
 export const GAME_LABELS = {
@@ -45,4 +50,9 @@ export const GAME_LABELS = {
   'memory-card': 'Thẻ Nhớ',
   'daily-mission': 'Nhiệm vụ ngày',
   'quiz-runner-3d': 'Quiz Runner 3D',
+  'math-treasure': 'Kho báu Toán',
+  'spelling-sprint': 'Sprint Tiếng Việt',
+  'science-lab': 'Phòng thí nghiệm',
+  'history-map': 'Bản đồ Việt Nam',
+  'english-quest': 'English Quest',
 }

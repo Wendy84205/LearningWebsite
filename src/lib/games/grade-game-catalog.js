@@ -10,6 +10,11 @@ const GAME_ROUTES = {
   'listen-and-select': '/game-listen-and-select',
   'simple-matching': '/game-simple-matching',
   'daily-mission': '/game-daily-mission',
+  'math-treasure': '/game-math-treasure',
+  'spelling-sprint': '/game-spelling-sprint',
+  'science-lab': '/game-science-lab',
+  'history-map': '/game-history-map',
+  'english-quest': '/game-english-quest',
 }
 
 const DEFAULT_ROTATION = [
@@ -58,6 +63,7 @@ export const GRADE_GAME_CATALOG = {
         items: [
           game('simple-matching', { badge: 'Ghép', focus: 'Chữ, hình, số lượng', reason: 'Tăng nhận diện bằng thao tác kéo chọn', world: 3, level: 1 }),
           game('memory-card', { badge: 'Nhớ', focus: 'Trí nhớ hình ảnh', reason: 'Ngắn, vui, ít áp lực' }),
+          game('math-treasure', { badge: 'Kho báu', focus: 'Số và phép tính nhỏ', reason: 'Tạo cảm giác mở thưởng sau câu đúng', world: 1, level: 2 }),
           game('daily-mission', { badge: 'Ngày', focus: 'Ôn nhanh', reason: 'Giữ thói quen học đều' }),
         ],
       },
@@ -86,6 +92,7 @@ export const GRADE_GAME_CATALOG = {
         items: [
           game('listen-and-select', { badge: 'Nghe', focus: 'Từ/câu Tiếng Việt', reason: 'Rèn nghe hiểu trước khi đọc dài', world: 3, level: 1 }),
           game('word-match', { badge: 'Ghép', focus: 'Từ và nghĩa', reason: 'Đổi kiểu tư duy so với trắc nghiệm', world: 3, level: 5 }),
+          game('spelling-sprint', { badge: 'Sprint', focus: 'Chính tả và dấu câu', reason: 'Tạo thử thách ngắn cho Tiếng Việt', world: 3, level: 4 }),
           game('memory-card', { badge: 'Nhớ', focus: 'IQ, cặp logic', reason: 'Nghỉ não nhưng vẫn học' }),
         ],
       },
@@ -114,6 +121,7 @@ export const GRADE_GAME_CATALOG = {
         items: [
           game('word-match', { badge: 'TV', focus: 'Từ ngữ, đoạn văn', reason: 'Giúp nhớ khái niệm bằng ghép cặp', world: 4, level: 5 }),
           game('simple-matching', { badge: 'Logic', focus: 'Cặp kiến thức', reason: 'Hợp với IQ và phân loại', world: 6, level: 4 }),
+          game('science-lab', { badge: 'Lab', focus: 'Tự nhiên & xã hội', reason: 'Biến kiến thức môi trường/cơ thể thành khám phá', world: 5, level: 1 }),
           game('daily-mission', { badge: 'Ngày', focus: 'Ôn yếu điểm', reason: 'Ngắn và đều' }),
         ],
       },
@@ -142,6 +150,7 @@ export const GRADE_GAME_CATALOG = {
         items: [
           game('word-match', { badge: 'Ghép', focus: 'Từ loại, khái niệm', reason: 'Giảm học vẹt bằng cặp nghĩa', world: 4, level: 3 }),
           game('simple-matching', { badge: 'Sử Địa', focus: 'Danh lam, bản đồ', reason: 'Học bằng liên kết hình ảnh', world: 6, level: 3 }),
+          game('history-map', { badge: 'Map', focus: 'Địa danh Việt Nam', reason: 'Tạo tuyến khám phá cho lịch sử và địa lí', world: 6, level: 3 }),
           game('memory-card', { badge: 'Nhớ', focus: 'Ôn cặp kiến thức', reason: 'Đổi nhịp sau bài tính' }),
         ],
       },
@@ -170,6 +179,8 @@ export const GRADE_GAME_CATALOG = {
         items: [
           game('word-match', { badge: 'TV', focus: 'Từ đồng nghĩa, trái nghĩa', reason: 'Ghi nhớ bằng liên kết nghĩa', world: 4, level: 2 }),
           game('simple-matching', { badge: 'Sử Địa', focus: 'Nhân vật, địa danh', reason: 'Hợp với kiến thức nhiều dữ kiện', world: 6, level: 4 }),
+          game('english-quest', { badge: 'EN', focus: 'Từ vựng và phản xạ', reason: 'Theo định hướng tăng cường tiếng Anh giai đoạn mới', world: 4, level: 3 }),
+          game('science-lab', { badge: 'Lab', focus: 'Năng lượng, môi trường', reason: 'Hợp với câu hỏi khoa học lớp 5', world: 5, level: 3 }),
           game('daily-mission', { badge: 'Ngày', focus: 'Ôn đều', reason: 'Giữ streak trước khi lên lớp 6' }),
         ],
       },

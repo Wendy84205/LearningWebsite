@@ -3,6 +3,7 @@ import { buildActivityStats, getOwnedProfile } from '@/lib/activity-service'
 import { getCmsLearningMap } from '@/lib/cms-content'
 import { buildProgressSummary, getSlug } from '@/lib/progress-summary'
 import { getQuestionsForDailyMission, getReviewQuestions } from '@/lib/question-distribution'
+import { buildStudentRanking } from '@/lib/ranking-service'
 
 export async function GET(request) {
   try {
@@ -27,9 +28,15 @@ export async function GET(request) {
     }
 
     const gradeSlug = getSlug(profile.grade || searchParams.get('grade') || 'lop-1')
-    const [learningMap, stats] = await Promise.all([
+    const [learningMap, stats, ranking] = await Promise.all([
       getCmsLearningMap(gradeSlug),
       buildActivityStats(profile.id),
+      buildStudentRanking({
+        parentId: session.parentId,
+        profileId: profile.id,
+        grade: gradeSlug,
+        limit: 5,
+      }),
     ])
 
     const summary = buildProgressSummary(profile.progress, profile.grade, {
@@ -59,6 +66,7 @@ export async function GET(request) {
       progress: profile.progress,
       summary,
       activityStats: stats,
+      ranking,
       missions: {
         daily: {
           title: 'Nhiệm vụ hôm nay',

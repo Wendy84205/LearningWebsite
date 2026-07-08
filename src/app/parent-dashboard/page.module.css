@@ -633,6 +633,103 @@
   gap: 16px;
 }
 
+.parentRanker {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+  border-radius: 28px;
+  border: 2px solid #dce9f1;
+  border-bottom: 7px solid #bfd6e6;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 200, 0, 0.18), transparent 34%),
+    linear-gradient(135deg, #ffffff 0%, #f4fbff 64%, #fff8df 100%);
+  box-shadow: 0 18px 38px rgba(36,49,58,0.08);
+}
+
+.parentRankerHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.parentRankerHeader span {
+  color: #1cb0f6;
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.parentRankerHeader h2 {
+  margin: 4px 0 0;
+  color: #17202a;
+  font-size: 25px;
+  line-height: 1.15;
+  font-weight: 950;
+}
+
+.parentRankerHeader > strong {
+  flex: 0 0 auto;
+  padding: 9px 12px;
+  border-radius: 999px;
+  color: #8a5c00;
+  background: #fff8df;
+  border: 2px solid #ffc800;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.parentRankerRows {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.parentRankerRow {
+  --rank-color: #1cb0f6;
+  display: grid;
+  gap: 4px;
+  min-height: 104px;
+  padding: 14px;
+  border-radius: 22px;
+  border: 2px solid color-mix(in srgb, var(--rank-color) 34%, white);
+  border-bottom: 6px solid color-mix(in srgb, var(--rank-color) 70%, #24313a);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--rank-color) 11%, white), #ffffff 78%);
+}
+
+.parentRankerRow[data-tier="gold"] { --rank-color: #ffc800; }
+.parentRankerRow[data-tier="silver"] { --rank-color: #94a3b8; }
+.parentRankerRow[data-tier="bronze"] { --rank-color: #f97316; }
+
+.parentRankerCurrent {
+  box-shadow: 0 0 0 4px rgba(28,176,246,0.12);
+}
+
+.parentRankerRow span {
+  color: var(--rank-color);
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.parentRankerRow strong {
+  color: #17202a;
+  font-size: 17px;
+  line-height: 1.2;
+  font-weight: 950;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.parentRankerRow small {
+  color: #5f6f7a;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 800;
+}
+
 .parentActionCard {
   --action-color: var(--stitch-parent-secondary, #1cb0f6);
   --action-dark: #0090d4;
@@ -1083,6 +1180,7 @@
   .parentHeroPanel { max-width: 520px; }
   .questCommand { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .childNowGrid { grid-template-columns: 1fr; }
+  .parentRankerRows { grid-template-columns: 1fr; }
   .parentActionRail { grid-template-columns: 1fr; }
 }
 

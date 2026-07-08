@@ -60,7 +60,7 @@ async function runTests() {
   console.log('🚀 KHỞI CHẠY HỆ THỐNG KIỂM TRA THỬ NGHIỆM TỰ ĐỘNG...');
   
   const email = `parent_test_${Math.floor(Math.random() * 100000)}@gmail.com`;
-  const password = 'password123';
+  const password = process.env.E2E_TEST_PASSWORD || `HocVuiTest-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   let sessionCookie = '';
 
   try {

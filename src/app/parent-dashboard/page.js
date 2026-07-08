@@ -85,6 +85,9 @@ export default function ParentDashboard() {
   const latestActivity = recentActivities[0] || null
   const primarySuggestion = suggestions[0] || null
   const todayMinutes = stats.studyMinutesToday ?? 0
+  const ranking = profile?.ranking
+  const rankingItems = ranking?.items || []
+  const currentRank = ranking?.current
 
   return (
     <div className={styles.page}>
@@ -308,6 +311,29 @@ export default function ParentDashboard() {
                     <small>{primarySuggestion?.sub || 'Chưa có gợi ý yếu rõ ràng, tiếp tục duy trì nhịp học.'}</small>
                   </div>
                 </article>
+              </div>
+            </section>
+
+            <section className={styles.parentRanker} aria-label="Xếp hạng học tập của con">
+              <div className={styles.parentRankerHeader}>
+                <div>
+                  <span>Ranker học tập</span>
+                  <h2>{currentRank ? `${profile.name} đang ở hạng #${currentRank.rank}` : 'Chưa có dữ liệu xếp hạng'}</h2>
+                </div>
+                <strong>{currentRank?.score || 0} điểm</strong>
+              </div>
+              <div className={styles.parentRankerRows}>
+                {(rankingItems.length ? rankingItems : [{ id: 'empty', name: profile.name, rank: 1, xp: 0, accuracy: 0, tier: 'gold' }]).map(item => (
+                  <div
+                    key={item.id}
+                    className={`${styles.parentRankerRow} ${item.id === currentRank?.id ? styles.parentRankerCurrent : ''}`}
+                    data-tier={item.tier}
+                  >
+                    <span>#{item.rank}</span>
+                    <strong>{item.name}</strong>
+                    <small>{item.xp || 0} XP · {item.accuracy || 0}% đúng · {item.streak || 0} streak</small>
+                  </div>
+                ))}
               </div>
             </section>
 

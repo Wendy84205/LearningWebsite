@@ -240,6 +240,9 @@ export default function GradeLandingPage() {
 
   const completedCount = summary.normalLevelsCompleted ?? 0
   const activityStats = studentDashboard?.activityStats
+  const ranking = studentDashboard?.ranking
+  const rankingItems = ranking?.items || []
+  const currentRank = ranking?.current
   const levelInfo = activityStats?.level || { level: 1, xp: 0, progressPct: 0, nextLevelXp: 80 }
   const recentActivities = activityStats?.attempts || []
   const weakSkills = activityStats?.weakSkills || []
@@ -570,6 +573,40 @@ export default function GradeLandingPage() {
                 <strong>{weakSkills.length}</strong>
                 <small>Cần ôn</small>
               </div>
+            </div>
+          </section>
+
+          <section className={styles.rankerPanel} aria-label="Bảng xếp hạng học tập">
+            <div className={styles.rankerHero}>
+              <span className={styles.rankerEyebrow}>Ranker</span>
+              <h2>{currentRank ? `Hạng #${currentRank.rank} trong lớp` : 'Bảng xếp hạng của em'}</h2>
+              <p>
+                Điểm rank tính từ XP, sao, streak, số bài đã làm và độ chính xác. Càng học đều, rank càng đẹp.
+              </p>
+              <div className={styles.rankerStats}>
+                <span>{currentRank?.xp || 0} XP</span>
+                <span>{currentRank?.accuracy || 0}% đúng</span>
+                <span>{currentRank?.streak || progress.streak} streak</span>
+              </div>
+            </div>
+            <div className={styles.rankerList}>
+              {(rankingItems.length ? rankingItems : [{ id: 'empty', name: profile.name, rank: 1, xp: 0, accuracy: 0, tier: 'gold' }]).map(item => (
+                <div
+                  key={item.id}
+                  className={`${styles.rankerRow} ${item.id === currentRank?.id ? styles.rankerRowCurrent : ''}`}
+                  data-tier={item.tier}
+                >
+                  <span className={styles.rankerPlace}>#{item.rank}</span>
+                  <span className={styles.rankerAvatar}>
+                    {item.avatar && !String(item.avatar).startsWith('/') && !String(item.avatar).startsWith('http') ? item.avatar : item.name?.charAt(0) || 'H'}
+                  </span>
+                  <span className={styles.rankerName}>
+                    <strong>{item.name}</strong>
+                    <small>Lv.{item.level || 1} · {item.stars || 0} sao</small>
+                  </span>
+                  <span className={styles.rankerScore}>{item.xp || 0} XP</span>
+                </div>
+              ))}
             </div>
           </section>
 

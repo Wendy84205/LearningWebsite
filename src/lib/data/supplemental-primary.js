@@ -152,13 +152,53 @@ export const SUPPLEMENTAL_GRADE_CONTENT = {
   }
 }
 
+const ENGLISH_FOUNDATION_BY_GRADE = {
+  'lop-2': [
+    { q: 'Từ "cat" nghĩa là gì?', options: ['con mèo', 'con chó'], correct: 0, emoji: '🐱', subject: 'Tiếng Anh', topic: 'Từ vựng con vật', skill: 'animal_vocabulary', difficulty: '1', world: 3, level: 1, explanation: 'Cat nghĩa là con mèo.' },
+    { q: 'Chọn lời chào buổi sáng:', options: ['Good morning', 'Good night'], correct: 0, emoji: '🌤️', subject: 'Tiếng Anh', topic: 'Chào hỏi', skill: 'greetings', difficulty: '1', world: 3, level: 2, explanation: 'Good morning dùng để chào buổi sáng.' },
+  ],
+  'lop-3': [
+    { q: 'Từ nào chỉ màu xanh lá?', options: ['green', 'red'], correct: 0, emoji: '🟢', subject: 'Tiếng Anh', topic: 'Màu sắc', skill: 'color_vocabulary', difficulty: '1', world: 4, level: 3, explanation: 'Green là màu xanh lá.' },
+    { q: 'Câu "I am happy" nghĩa là gì?', options: ['Tôi vui', 'Tôi đói'], correct: 0, emoji: '😊', subject: 'Tiếng Anh', topic: 'Cảm xúc', skill: 'emotion_sentence', difficulty: '1', world: 4, level: 3, explanation: 'Happy nghĩa là vui.' },
+  ],
+  'lop-4': [
+    { q: 'Từ nào nghĩa là "thư viện"?', options: ['library', 'market'], correct: 0, emoji: '📚', subject: 'Tiếng Anh', topic: 'Địa điểm', skill: 'place_vocabulary', difficulty: '1', world: 4, level: 1, explanation: 'Library nghĩa là thư viện.' },
+    { q: 'Chọn câu đúng:', options: ['She likes apples.', 'She like apples.'], correct: 0, emoji: '🍎', subject: 'Tiếng Anh', topic: 'Câu đơn', skill: 'simple_present', difficulty: '2', world: 4, level: 2, explanation: 'Với she/he/it, động từ thường thêm s/es.' },
+  ],
+  'lop-5': [
+    { q: 'Từ nào nghĩa là "năng lượng"?', options: ['energy', 'history'], correct: 0, emoji: '⚡', subject: 'Tiếng Anh', topic: 'Từ vựng khoa học', skill: 'science_vocabulary_en', difficulty: '2', world: 4, level: 3, explanation: 'Energy nghĩa là năng lượng.' },
+    { q: 'Câu nào dùng "because" đúng?', options: ['I stay home because it rains.', 'Because I stay home it rains.'], correct: 0, emoji: '☔', subject: 'Tiếng Anh', topic: 'Liên từ', skill: 'because_clause', difficulty: '2', world: 4, level: 3, explanation: 'Because nối nguyên nhân với kết quả.' },
+  ],
+}
+
+const ENGLISH_FOCUS = {
+  subject: 'Tiếng Anh',
+  topics: ['Chào hỏi', 'Từ vựng quen thuộc', 'Câu đơn ngắn', 'Nghe và phản xạ'],
+  gameTypes: ['choose_1_of_2', 'listen_select'],
+}
+
 function toInt(value, fallback = 0) {
   const parsed = Number.parseInt(value, 10)
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
 export function getSupplementalContent(gradeSlug) {
-  return SUPPLEMENTAL_GRADE_CONTENT[gradeSlug] || {
+  const content = SUPPLEMENTAL_GRADE_CONTENT[gradeSlug]
+  if (content) {
+    return {
+      ...content,
+      curriculumFocus: [
+        ...(content.curriculumFocus || []),
+        ...(ENGLISH_FOUNDATION_BY_GRADE[gradeSlug] ? [ENGLISH_FOCUS] : []),
+      ],
+      chooseQuestions: [
+        ...(content.chooseQuestions || []),
+        ...(ENGLISH_FOUNDATION_BY_GRADE[gradeSlug] || []),
+      ],
+    }
+  }
+
+  return {
     curriculumFocus: [],
     chooseQuestions: [],
     listenQuestions: [],
