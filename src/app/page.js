@@ -37,6 +37,7 @@ export default function HomePage() {
         <span />
         <span />
       </div>
+      <div className={styles.starField} aria-hidden="true" />
       <header className={styles.navBar}>
         <Link href="/" className={styles.brand} aria-label="Học Vui trang chủ">
           <span className={styles.brandMark} aria-hidden="true">
@@ -58,7 +59,10 @@ export default function HomePage() {
         <section className={styles.hero} aria-labelledby="home-title">
           <div className={styles.heroContent}>
             <span className={styles.kicker}>Dành cho học sinh tiểu học lớp 1-5</span>
-            <h1 id="home-title" className={styles.heroTitle}>Học Vui</h1>
+            <h1 id="home-title" className={styles.heroTitle}>
+              <span>Học</span>
+              <span>Vui</span>
+            </h1>
             <p className={styles.heroSub}>
               Luyện Toán, Tiếng Việt, Khoa học và kỹ năng nền tảng bằng game ngắn, lộ trình rõ và báo cáo tiến độ thật cho phụ huynh.
             </p>
@@ -92,6 +96,7 @@ export default function HomePage() {
           </div>
 
           <div className={styles.heroVisual} aria-label="Minh họa bản đồ học tập Học Vui">
+            <div className={styles.visualSpotlight} aria-hidden="true" />
             <div className={styles.orbitBadge} data-tone="green">
               <span className="material-symbols-outlined" aria-hidden="true">local_fire_department</span>
               7 ngày streak
@@ -101,6 +106,7 @@ export default function HomePage() {
               Game quest
             </div>
             <div className={styles.phoneFrame}>
+              <div className={styles.borderBeam} aria-hidden="true" />
               <div className={styles.phoneTop}>
                 <span>Hôm nay</span>
                 <strong>84%</strong>
@@ -108,6 +114,7 @@ export default function HomePage() {
               <div className={styles.lessonPath}>
                 {['Toán', 'TV', '3D', 'Boss'].map((item, index) => (
                   <div key={item} className={styles.lessonNode} data-active={index < 3}>
+                    <i aria-hidden="true" />
                     <span>{item}</span>
                   </div>
                 ))}

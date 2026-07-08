@@ -4,6 +4,12 @@
   background: linear-gradient(165deg, #c8e6ff 0%, #fbf9f8 45%, #fff8e1 100%);
 }
 
+@property --game-card-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
 .bg {
   position: fixed;
   inset: 0;
@@ -29,6 +35,17 @@
   height: 360px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(88, 204, 2, 0.18), transparent 70%);
+}
+
+.starGrid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.32;
+  background-image:
+    radial-gradient(circle, rgba(28,176,246,0.48) 1.4px, transparent 1.8px),
+    radial-gradient(circle, rgba(88,204,2,0.32) 1px, transparent 1.5px);
+  background-size: 58px 58px, 94px 94px;
+  animation: gameHubStars 24s linear infinite;
 }
 
 .header {
@@ -134,6 +151,44 @@
   text-decoration: none;
   font-weight: 950;
   box-shadow: 0 12px 28px rgba(88, 204, 2, 0.24);
+  position: relative;
+  overflow: hidden;
+}
+
+.featuredCta::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 -36%;
+  width: 28%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.38), transparent);
+  transform: skewX(-18deg);
+  transition: transform 420ms ease;
+}
+
+.featuredCta:hover::after {
+  transform: translateX(520%) skewX(-18deg);
+}
+
+.engineStrip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 18px auto 0;
+  max-width: 700px;
+}
+
+.engineStrip span {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: #35505e;
+  background: rgba(255,255,255,0.78);
+  border: 2px solid rgba(220,233,241,0.86);
+  font-size: 12px;
+  font-weight: 950;
 }
 
 .rotation {
@@ -230,10 +285,61 @@
   overflow: hidden;
   transition: transform 0.15s cubic-bezier(0.34, 1.2, 0.64, 1);
   box-shadow: 0 16px 32px rgba(0, 101, 144, 0.08);
+  isolation: isolate;
 }
 
 .card:hover {
   transform: translateY(-6px);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--card-accent) 22%, transparent), transparent 48%);
+  transition: opacity 180ms ease;
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.cardBeam {
+  position: absolute;
+  inset: -2px;
+  z-index: 0;
+  border-radius: inherit;
+  padding: 3px;
+  pointer-events: none;
+  background: conic-gradient(from var(--game-card-angle, 0deg), transparent 0 70%, color-mix(in srgb, var(--card-accent) 90%, white), #ffffff, transparent 88% 100%);
+  animation: gameCardBeam 4.6s linear infinite;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.cardPixels {
+  position: absolute;
+  inset: 10px;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  border-radius: 18px;
+  background-image:
+    linear-gradient(90deg, color-mix(in srgb, var(--card-accent) 16%, transparent) 1px, transparent 1px),
+    linear-gradient(0deg, color-mix(in srgb, var(--card-accent) 16%, transparent) 1px, transparent 1px);
+  background-size: 10px 10px;
+  transition: opacity 180ms ease;
+}
+
+.card:hover .cardPixels {
+  opacity: 1;
+}
+
+.card > *:not(.cardBeam):not(.cardPixels) {
+  position: relative;
+  z-index: 1;
 }
 
 .cardBadge {
@@ -357,6 +463,15 @@
   50% { transform: translateY(-8px); }
 }
 
+@keyframes gameHubStars {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 116px 58px, -94px 94px; }
+}
+
+@keyframes gameCardBeam {
+  to { --game-card-angle: 360deg; }
+}
+
 @media (max-width: 640px) {
   .grid { grid-template-columns: 1fr; }
   .headerBadge { display: none; }
@@ -371,7 +486,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .heroIcon, .card { animation: none; transition: none; }
+  .heroIcon,
+  .card,
+  .cardBeam,
+  .starGrid {
+    animation: none;
+    transition: none;
+  }
 }
 
 /* 2026 friendly UI refresh */

@@ -17,6 +17,7 @@ export default function GamesHubPage() {
       <div className={styles.bg} aria-hidden="true">
         <div className={styles.blobA} />
         <div className={styles.blobB} />
+        <div className={styles.starGrid} />
       </div>
 
       <header className={styles.header}>
@@ -42,6 +43,11 @@ export default function GamesHubPage() {
               Chơi đề xuất hôm nay
             </Link>
           )}
+          <div className={styles.engineStrip} aria-label="Công nghệ game">
+            {['Phaser 2D', 'Question Bank', 'XP + Streak', 'Mobile-first'].map(label => (
+              <span key={label}>{label}</span>
+            ))}
+          </div>
         </section>
 
         <div className={styles.rotation}>
@@ -77,6 +83,7 @@ export default function GamesHubPage() {
                       '--card-accent-dark': theme.accentDark,
                     }}
                   >
+                    <span className={styles.cardBeam} aria-hidden="true" />
                     <span className={styles.cardBadge}>{item.badge}</span>
                     <div className={styles.cardIconWrap}>
                       <span className="material-symbols-outlined">{theme.icon}</span>
@@ -98,6 +105,7 @@ export default function GamesHubPage() {
                       Chơi ngay
                       <span className="material-symbols-outlined">arrow_forward</span>
                     </span>
+                    <span className={styles.cardPixels} aria-hidden="true" />
                   </Link>
                 )
               })}
