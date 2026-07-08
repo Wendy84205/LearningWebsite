@@ -752,6 +752,25 @@ export default function GradeLandingPage() {
           </section>
         </main>
       </div>
+
+      <nav className={styles.mobileNav} aria-label="Điều hướng học sinh trên điện thoại">
+        <Link href={`/learning/${gradeSlug}`} className={`${styles.mobileNavItem} ${styles.mobileNavActive}`}>
+          <span className="material-symbols-outlined" aria-hidden="true">dashboard</span>
+          <span>Tổng quan</span>
+        </Link>
+        <Link href={`/learning/${gradeSlug}/map`} className={styles.mobileNavItem}>
+          <span className="material-symbols-outlined" aria-hidden="true">map</span>
+          <span>Bản đồ</span>
+        </Link>
+        <Link href={`/learning/${gradeSlug}/games`} className={styles.mobileNavItem}>
+          <span className="material-symbols-outlined" aria-hidden="true">sports_esports</span>
+          <span>Game</span>
+        </Link>
+        <Link href={`/learning/${gradeSlug}/achievements`} className={styles.mobileNavItem}>
+          <span className="material-symbols-outlined" aria-hidden="true">emoji_events</span>
+          <span>Thưởng</span>
+        </Link>
+      </nav>
     </div>
   )
 }

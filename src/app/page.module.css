@@ -29,6 +29,56 @@
   font-size: 17px;
   font-weight: 600;
   line-height: 1.45;
+  position: relative;
+  overflow: hidden;
+}
+
+.ambientLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ambientLayer span {
+  position: absolute;
+  width: 38vw;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  filter: blur(18px);
+  opacity: 0.54;
+  animation: ambientFloat 14s ease-in-out infinite;
+}
+
+.ambientLayer span:nth-child(1) {
+  top: 8%;
+  left: -12%;
+  background: radial-gradient(circle, rgba(88, 204, 2, 0.28), transparent 62%);
+}
+
+.ambientLayer span:nth-child(2) {
+  top: 20%;
+  right: -14%;
+  background: radial-gradient(circle, rgba(28, 176, 246, 0.26), transparent 62%);
+  animation-delay: -4s;
+}
+
+.ambientLayer span:nth-child(3) {
+  bottom: 4%;
+  left: 30%;
+  width: 28vw;
+  background: radial-gradient(circle, rgba(255, 200, 0, 0.2), transparent 64%);
+  animation-delay: -8s;
+}
+
+.navBar,
+.hero,
+.section,
+.parentBand,
+.footer {
+  position: relative;
+  z-index: 1;
 }
 
 .page a,
@@ -146,6 +196,25 @@
   color: #ffffff;
   background: var(--home-brand);
   box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.17);
+  position: relative;
+  overflow: hidden;
+}
+
+.navCta::after,
+.primaryButton::after,
+.emailControl button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 0 34%, rgba(255,255,255,0.34) 42%, transparent 52%);
+  transform: translateX(-120%);
+  transition: transform 520ms ease;
+}
+
+.navCta:hover::after,
+.primaryButton:hover::after,
+.emailControl button:hover::after {
+  transform: translateX(120%);
 }
 
 .navCta:hover,
@@ -195,6 +264,20 @@
   min-height: calc(100svh - 74px);
   padding: clamp(56px, 8vw, 96px) clamp(20px, 5vw, 72px);
   overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 28px clamp(20px, 5vw, 72px);
+  pointer-events: none;
+  opacity: 0.35;
+  background-image:
+    radial-gradient(circle, rgba(28, 176, 246, 0.42) 1.4px, transparent 1.8px),
+    radial-gradient(circle, rgba(88, 204, 2, 0.34) 1px, transparent 1.5px);
+  background-size: 78px 78px, 116px 116px;
+  animation: starFieldDrift 22s linear infinite;
+  mask-image: linear-gradient(90deg, transparent, black 12%, black 84%, transparent);
 }
 
 .heroContent {
@@ -332,12 +415,55 @@
 }
 
 .heroVisual {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+.orbitBadge {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 999px;
+  color: #17202a;
+  background: rgba(255,255,255,0.88);
+  border: 1px solid var(--home-border);
+  border-bottom: 4px solid #d6e7f4;
+  box-shadow: 0 16px 34px rgba(20, 64, 94, 0.12);
+  backdrop-filter: blur(14px);
+  font-size: 13px;
+  font-weight: 1000;
+  animation: orbitFloat 4.8s ease-in-out infinite;
+}
+
+.orbitBadge :global(.material-symbols-outlined) {
+  color: var(--home-brand);
+  font-size: 20px;
+  font-variation-settings: 'FILL' 1, 'wght' 800, 'GRAD' 0, 'opsz' 20;
+}
+
+.orbitBadge[data-tone='green'] {
+  top: 12%;
+  left: -10px;
+}
+
+.orbitBadge[data-tone='blue'] {
+  right: -4px;
+  bottom: 19%;
+  animation-delay: -1.8s;
+}
+
+.orbitBadge[data-tone='blue'] :global(.material-symbols-outlined) {
+  color: var(--home-blue);
+}
+
 .phoneFrame {
+  position: relative;
   width: min(100%, 430px);
   min-height: 560px;
   padding: 24px;
@@ -346,6 +472,23 @@
   border-bottom: 8px solid #d6e7f4;
   border-radius: 36px;
   box-shadow: var(--home-shadow);
+  overflow: hidden;
+}
+
+.phoneFrame::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 0 38%, rgba(255,255,255,0.78) 48%, transparent 58%);
+  transform: translateX(-120%);
+  animation: phoneShine 5.6s ease-in-out infinite;
+}
+
+.phoneFrame > * {
+  position: relative;
+  z-index: 1;
 }
 
 .phoneTop {
@@ -495,6 +638,21 @@
     transform var(--home-motion),
     border-color var(--home-motion),
     box-shadow var(--home-motion);
+  position: relative;
+  overflow: hidden;
+}
+
+.featureCard::after,
+.gradeCard::after {
+  content: '';
+  position: absolute;
+  inset: auto 18px 12px 18px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--home-brand), var(--home-blue), var(--home-yellow));
+  opacity: 0;
+  transform: scaleX(0.45);
+  transition: opacity var(--home-motion), transform var(--home-motion);
 }
 
 .featureCard:hover,
@@ -502,6 +660,12 @@
   transform: translateY(-4px);
   border-color: var(--home-border-strong);
   box-shadow: var(--home-shadow);
+}
+
+.featureCard:hover::after,
+.gradeCard:hover::after {
+  opacity: 0.78;
+  transform: scaleX(1);
 }
 
 .featureCard:focus-within,
@@ -667,6 +831,10 @@
 }
 
 @media (max-width: 760px) {
+  .ambientLayer span {
+    width: 72vw;
+  }
+
   .navBar {
     min-height: 66px;
   }
@@ -717,6 +885,10 @@
     min-height: auto;
   }
 
+  .orbitBadge {
+    display: none;
+  }
+
   .footerLinks {
     justify-content: flex-start;
   }
@@ -730,4 +902,31 @@
     transition-duration: 1ms !important;
     animation-duration: 1ms !important;
   }
+
+  .ambientLayer,
+  .hero::before,
+  .phoneFrame::before,
+  .orbitBadge {
+    animation: none !important;
+  }
+}
+
+@keyframes ambientFloat {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(4%, -3%, 0) scale(1.08); }
+}
+
+@keyframes starFieldDrift {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 156px 78px, -116px 116px; }
+}
+
+@keyframes orbitFloat {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-10px) rotate(1deg); }
+}
+
+@keyframes phoneShine {
+  0%, 58% { transform: translateX(-120%); }
+  78%, 100% { transform: translateX(120%); }
 }

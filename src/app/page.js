@@ -32,6 +32,11 @@ const STATS = [
 export default function HomePage() {
   return (
     <div className={styles.page}>
+      <div className={styles.ambientLayer} aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
       <header className={styles.navBar}>
         <Link href="/" className={styles.brand} aria-label="Học Vui trang chủ">
           <span className={styles.brandMark} aria-hidden="true">
@@ -87,6 +92,14 @@ export default function HomePage() {
           </div>
 
           <div className={styles.heroVisual} aria-label="Minh họa bản đồ học tập Học Vui">
+            <div className={styles.orbitBadge} data-tone="green">
+              <span className="material-symbols-outlined" aria-hidden="true">local_fire_department</span>
+              7 ngày streak
+            </div>
+            <div className={styles.orbitBadge} data-tone="blue">
+              <span className="material-symbols-outlined" aria-hidden="true">sports_esports</span>
+              Game quest
+            </div>
             <div className={styles.phoneFrame}>
               <div className={styles.phoneTop}>
                 <span>Hôm nay</span>
