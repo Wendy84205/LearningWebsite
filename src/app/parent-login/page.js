@@ -10,8 +10,7 @@ function ParentLoginInner() {
   const searchParams = useSearchParams()
   const nextPath = searchParams.get('next') || ''
   const [tab, setTab] = useState(searchParams.get('tab') === 'register' ? 'register' : 'login')
-  const [role, setRole] = useState(searchParams.get('role') === 'admin' ? 'admin' : 'parent')
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(searchParams.get('role') === 'admin' ? 'admin' : '')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -21,20 +20,10 @@ function ParentLoginInner() {
   const googleAuthorizedOrigin = process.env.NEXT_PUBLIC_SITE_URL || 'https://learning-website-virid.vercel.app'
 
   const switchTab = (nextTab) => {
-    if (role === 'admin' && nextTab === 'register') return
     setTab(nextTab)
     setError('')
     setSuccess('')
     setConfirmPassword('')
-  }
-
-  const switchRole = (nextRole) => {
-    setRole(nextRole)
-    setTab('login')
-    setError('')
-    setSuccess('')
-    setConfirmPassword('')
-    if (nextRole === 'admin' && !email) setEmail('admin')
   }
 
   const getAuthErrorMessage = (message, fallback) => {
@@ -47,6 +36,27 @@ function ParentLoginInner() {
     if (normalized.includes('email and password required')) return 'Vui lòng nhập đầy đủ email và mật khẩu.'
     return message || fallback
   }
+
+  const openParentHome = useCallback((data) => {
+    localStorage.setItem('parentEmail', data.email)
+
+    if (data.profiles && data.profiles.length > 0) {
+      if (data.profiles.length === 1) {
+        const profile = data.profiles[0]
+        const slug = getGradeSlug(profile.grade)
+        localStorage.setItem('profileId', profile.id)
+        localStorage.setItem('profileName', profile.name)
+        localStorage.setItem('mascotName', profile.mascotName || 'Tin Tin')
+        localStorage.setItem('mascotEmoji', profile.mascotImage || '🤖')
+        localStorage.setItem('gradeSlug', slug)
+        router.push(`/learning/${slug}`)
+      } else {
+        router.push('/profile-select')
+      }
+    } else {
+      router.push('/add-profile')
+    }
+  }, [router])
 
   const handleRegister = async (e) => {
     e.preventDefault()
@@ -75,102 +85,79 @@ function ParentLoginInner() {
   const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
+    setSuccess('')
+    const loginName = email.trim()
+    if (!loginName || !password) return setError('Vui lòng nhập đầy đủ tài khoản và mật khẩu.')
     setLoading(true)
     try {
+      if (loginName.toLowerCase() === 'admin') {
+        const adminRes = await fetch('/api/admin/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: loginName, password }),
+        })
+        const adminData = await adminRes.json()
+        setLoading(false)
+        if (!adminRes.ok) return setError(adminData.error || 'Tài khoản hoặc mật khẩu quản trị không chính xác.')
+        const safeNext = nextPath.startsWith('/') && !nextPath.startsWith('//') ? nextPath : '/admin'
+        setSuccess('Đăng nhập admin thành công. Đang mở CMS...')
+        setTimeout(() => router.push(safeNext), 250)
+        return
+      }
+
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: loginName, password }),
       })
       const data = await res.json()
       setLoading(false)
       if (!res.ok) return setError(getAuthErrorMessage(data.error, 'Đăng nhập thất bại. Vui lòng thử lại.'))
-      localStorage.setItem('parentEmail', data.email)
-      
-      if (data.profiles && data.profiles.length > 0) {
-        if (data.profiles.length === 1) {
-          const profile = data.profiles[0]
-          const slug = getGradeSlug(profile.grade)
-          localStorage.setItem('profileId', profile.id)
-          localStorage.setItem('profileName', profile.name)
-          localStorage.setItem('mascotName', profile.mascotName || 'Tin Tin')
-          localStorage.setItem('mascotEmoji', profile.mascotImage || '🤖')
-          localStorage.setItem('gradeSlug', slug)
-          router.push(`/learning/${slug}`)
-        } else {
-          router.push('/profile-select')
-        }
-      } else {
-        router.push('/add-profile')
-      }
+      openParentHome(data)
     } catch (err) {
       setLoading(false)
       setError('Đã có lỗi xảy ra. Vui lòng thử lại.')
     }
   }
 
-  const handleAdminLogin = async (e) => {
-    e.preventDefault()
-    setError('')
-    setSuccess('')
-    setLoading(true)
-    try {
-      const res = await fetch('/api/admin/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: email.trim(), password }),
-      })
-      const data = await res.json()
-      setLoading(false)
-      if (!res.ok) return setError(data.error || 'Tài khoản hoặc mật khẩu quản trị không chính xác.')
-      const safeNext = nextPath.startsWith('/') && !nextPath.startsWith('//') ? nextPath : '/admin'
-      setSuccess('Đăng nhập admin thành công. Đang mở CMS...')
-      setTimeout(() => router.push(safeNext), 250)
-    } catch (err) {
-      setLoading(false)
-      setError('Lỗi kết nối máy chủ. Vui lòng thử lại.')
-    }
-  }
-
   const handleGoogleCallback = useCallback(async (response) => {
     setError('')
+    setSuccess('')
+    if (!response?.credential) {
+      setLoading(false)
+      setError('Google không trả về thông tin đăng nhập. Vui lòng thử lại hoặc đăng nhập bằng email.')
+      return
+    }
     setLoading(true)
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 12000)
     try {
       const res = await fetch('/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credential: response.credential }),
+        signal: controller.signal,
       })
       const data = await res.json()
-      setLoading(false)
-      if (!res.ok) return setError(data.error || 'Đăng nhập Google thất bại')
-      
-      localStorage.setItem('parentEmail', data.email)
-      
-      if (data.profiles && data.profiles.length > 0) {
-        if (data.profiles.length === 1) {
-          const profile = data.profiles[0]
-          const slug = getGradeSlug(profile.grade)
-          localStorage.setItem('profileId', profile.id)
-          localStorage.setItem('profileName', profile.name)
-          localStorage.setItem('mascotName', profile.mascotName || 'Tin Tin')
-          localStorage.setItem('mascotEmoji', profile.mascotImage || '🤖')
-          localStorage.setItem('gradeSlug', slug)
-          router.push(`/learning/${slug}`)
-        } else {
-          router.push('/profile-select')
-        }
-      } else {
-        router.push('/add-profile')
+      if (!res.ok) {
+        setLoading(false)
+        return setError(data.error || 'Đăng nhập Google thất bại')
       }
+
+      openParentHome(data)
     } catch (err) {
+      setError(err.name === 'AbortError'
+        ? 'Google đăng nhập quá lâu không phản hồi. Vui lòng thử lại hoặc dùng email/mật khẩu.'
+        : 'Đã có lỗi xảy ra khi kết nối Google. Vui lòng thử lại.'
+      )
       setLoading(false)
-      setError('Đã có lỗi xảy ra khi kết nối Google. Vui lòng thử lại.')
+    } finally {
+      clearTimeout(timeout)
     }
-  }, [router])
+  }, [openParentHome])
 
   useEffect(() => {
-    if (role === 'admin') return undefined
+    if (tab !== 'login') return undefined
     let initialized = false
     const initGoogleSignIn = () => {
       if (initialized) return
@@ -202,7 +189,7 @@ function ParentLoginInner() {
     initGoogleSignIn()
     const timer = setTimeout(initGoogleSignIn, 800)
     return () => { clearTimeout(timer); initialized = true }
-  }, [tab, role, handleGoogleCallback])
+  }, [tab, handleGoogleCallback])
 
   return (
     <div className={styles.page}>
@@ -230,135 +217,25 @@ function ParentLoginInner() {
 
           {/* Auth Card */}
           <div className={styles.card}>
-            <div className={styles.roleSwitch} aria-label="Chọn loại tài khoản">
+            <div className={styles.tabs}>
               <button
-                type="button"
-                className={`${styles.roleButton} ${role === 'parent' ? styles.roleButtonActive : ''}`}
-                onClick={() => switchRole('parent')}
+                id="tab-login"
+                className={`${styles.tab} ${tab === 'login' ? styles.tabActive : styles.tabInactive}`}
+                onClick={() => switchTab('login')}
               >
-                <span className="material-symbols-outlined" aria-hidden="true">family_restroom</span>
-                Phụ huynh
+                Đăng nhập
               </button>
               <button
-                type="button"
-                className={`${styles.roleButton} ${role === 'admin' ? styles.roleButtonActive : ''}`}
-                onClick={() => switchRole('admin')}
+                id="tab-register"
+                className={`${styles.tab} ${tab === 'register' ? styles.tabActive : styles.tabInactive}`}
+                onClick={() => switchTab('register')}
               >
-                <span className="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span>
-                Admin
+                Đăng ký
               </button>
             </div>
 
-            {/* Tab Switcher */}
-            {role === 'parent' ? (
-              <div className={styles.tabs}>
-                <button
-                  id="tab-login"
-                  className={`${styles.tab} ${tab === 'login' ? styles.tabActive : styles.tabInactive}`}
-                  onClick={() => switchTab('login')}
-                >
-                  Đăng nhập
-                </button>
-                <button
-                  id="tab-register"
-                  className={`${styles.tab} ${tab === 'register' ? styles.tabActive : styles.tabInactive}`}
-                  onClick={() => switchTab('register')}
-                >
-                  Đăng ký
-                </button>
-              </div>
-            ) : (
-              <div className={styles.adminModeBanner}>
-                <span className="material-symbols-outlined" aria-hidden="true">shield_lock</span>
-                <div>
-                  <strong>Đăng nhập quản trị CMS</strong>
-                  <p>Dùng tài khoản admin mặc định hoặc cấu hình ADMIN_USERNAME và ADMIN_PASSWORD.</p>
-                </div>
-              </div>
-            )}
-
             {/* Forms */}
-            {role === 'admin' ? (
-              <form id="form-admin-login" onSubmit={handleAdminLogin} className={styles.form}>
-                <div className={styles.formIntro}>
-                  <h2 className={styles.formTitle}>Admin Dashboard CMS</h2>
-                  <p className={styles.formDesc}>Một trang đăng nhập chung cho phụ huynh và đội quản trị Học Vui.</p>
-                </div>
-
-                <div className={styles.field}>
-                  <label className={styles.label} htmlFor="admin-username">Tên đăng nhập admin</label>
-                  <div className={styles.inputWrap}>
-                    <span className={`material-symbols-outlined ${styles.inputIcon}`}>admin_panel_settings</span>
-                    <input
-                      id="admin-username"
-                      className={styles.input}
-                      type="text"
-                      placeholder="admin"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      autoComplete="username"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className={styles.field}>
-                  <label className={styles.label} htmlFor="admin-password">Mật khẩu admin</label>
-                  <div className={styles.inputWrap}>
-                    <span className={`material-symbols-outlined ${styles.inputIcon}`}>key</span>
-                    <input
-                      id="admin-password"
-                      className={styles.passwordInput}
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Nhập mật khẩu admin"
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      autoComplete="current-password"
-                      required
-                    />
-                    <button
-                      type="button"
-                      className={styles.passwordToggle}
-                      onClick={() => setShowPassword(!showPassword)}
-                      aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                    >
-                      <span className="material-symbols-outlined">
-                        {showPassword ? 'visibility_off' : 'visibility'}
-                      </span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className={styles.noticeBox}>
-                  <span className="material-symbols-outlined">verified_user</span>
-                  <span>Đăng nhập mặc định: admin / admin. Phiên admin dùng cookie HttpOnly riêng, tách biệt với phiên phụ huynh.</span>
-                </div>
-
-                {error && (
-                  <div className={styles.error}>
-                    <span className="material-symbols-outlined">warning</span>
-                    {error}
-                  </div>
-                )}
-                {success && (
-                  <div className={styles.successMsg}>
-                    <span className="material-symbols-outlined">check_circle</span>
-                    {success}
-                  </div>
-                )}
-
-                <button
-                  id="btn-admin-login"
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={loading}
-                  style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}
-                >
-                  {loading ? 'Đang xác thực...' : 'Đăng nhập Admin'}
-                </button>
-                <p className={styles.helperText}>Sau khi đăng nhập, hệ thống sẽ chuyển thẳng vào Admin Dashboard.</p>
-              </form>
-            ) : tab === 'register' ? (
+            {tab === 'register' ? (
               <form id="form-register" onSubmit={handleRegister} className={styles.form}>
                 <div className={styles.formIntro}>
                   <h2 className={styles.formTitle}>Tạo tài khoản phụ huynh</h2>
@@ -450,21 +327,22 @@ function ParentLoginInner() {
             ) : (
               <form id="form-login" onSubmit={handleLogin} className={styles.form}>
                 <div className={styles.formIntro}>
-                  <h2 className={styles.formTitle}>Đăng nhập tài khoản phụ huynh</h2>
-                  <p className={styles.formDesc}>Tiếp tục vào hồ sơ của bé, bản đồ học tập và báo cáo tiến độ đã lưu.</p>
+                  <h2 className={styles.formTitle}>Đăng nhập tài khoản</h2>
+                  <p className={styles.formDesc}>Phụ huynh dùng email đã đăng ký; quản trị viên dùng tài khoản admin.</p>
                 </div>
 
                 <div className={styles.field}>
-                  <label className={styles.label} htmlFor="login-email">Email của bố mẹ</label>
+                  <label className={styles.label} htmlFor="login-email">Email phụ huynh hoặc tài khoản admin</label>
                   <div className={styles.inputWrap}>
-                    <span className={`material-symbols-outlined ${styles.inputIcon}`}>mail</span>
+                    <span className={`material-symbols-outlined ${styles.inputIcon}`}>account_circle</span>
                     <input
                       id="input-email-login"
                       className={styles.input}
-                      type="email"
-                      placeholder="vi-du@email.com"
+                      type="text"
+                      placeholder="vi-du@email.com hoặc admin"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
+                      autoComplete="username"
                       required
                     />
                   </div>
@@ -506,6 +384,12 @@ function ParentLoginInner() {
                     {error}
                   </div>
                 )}
+                {success && (
+                  <div className={styles.successMsg}>
+                    <span className="material-symbols-outlined">check_circle</span>
+                    {success}
+                  </div>
+                )}
 
                 <button
                   id="btn-login"
@@ -516,11 +400,11 @@ function ParentLoginInner() {
                 >
                   {loading ? 'Đang xử lý...' : 'Đăng nhập'}
                 </button>
-                <p className={styles.helperText}>Nếu tài khoản có nhiều bé, bố mẹ sẽ được chọn hồ sơ trước khi vào trang học.</p>
+                <p className={styles.helperText}>Nếu nhập admin/admin, hệ thống sẽ mở CMS. Nếu là email phụ huynh, hệ thống sẽ mở hồ sơ học tập của bé.</p>
               </form>
             )}
 
-            {role === 'parent' && (
+            {tab === 'login' && (
               <>
                 {/* Divider */}
                 <div className={styles.divider}>
@@ -539,18 +423,7 @@ function ParentLoginInner() {
 
             {/* Bottom Footer Info */}
             <div className={styles.footerText}>
-              {role === 'admin' ? (
-                <>
-                  Dùng tài khoản phụ huynh?{' '}
-                  <button
-                    className={styles.footerTextLink}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                    onClick={() => switchRole('parent')}
-                  >
-                    Chuyển sang phụ huynh
-                  </button>
-                </>
-              ) : tab === 'login' ? (
+              {tab === 'login' ? (
                 <>
                   Chưa có tài khoản?{' '}
                   <button
