@@ -17,7 +17,6 @@ function ParentLoginInner() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const googleAuthorizedOrigin = process.env.NEXT_PUBLIC_SITE_URL || 'https://learning-website-virid.vercel.app'
 
   const switchTab = (nextTab) => {
     setTab(nextTab)
@@ -414,9 +413,6 @@ function ParentLoginInner() {
 
                 {/* Social Login Button */}
                 <div id="google-signin-btn" style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: '8px' }} />
-                <p className={styles.helperText}>
-                  Nếu Google báo origin_mismatch, thêm <strong>{googleAuthorizedOrigin}</strong> vào Authorized JavaScript origins trong Google Cloud Console.
-                </p>
               </>
             )}
 
