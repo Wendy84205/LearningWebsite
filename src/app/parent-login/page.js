@@ -327,11 +327,11 @@ function ParentLoginInner() {
               <form id="form-login" onSubmit={handleLogin} className={styles.form}>
                 <div className={styles.formIntro}>
                   <h2 className={styles.formTitle}>Đăng nhập tài khoản</h2>
-                  <p className={styles.formDesc}>Phụ huynh dùng email đã đăng ký; quản trị viên dùng tài khoản admin.</p>
+                  <p className={styles.formDesc}>Phụ huynh dùng email đã đăng ký; quản trị viên dùng tài khoản CMS được cấu hình.</p>
                 </div>
 
                 <div className={styles.field}>
-                  <label className={styles.label} htmlFor="login-email">Email phụ huynh hoặc tài khoản admin</label>
+                  <label className={styles.label} htmlFor="login-email">Email phụ huynh hoặc tài khoản CMS</label>
                   <div className={styles.inputWrap}>
                     <span className={`material-symbols-outlined ${styles.inputIcon}`}>account_circle</span>
                     <input
@@ -399,7 +399,7 @@ function ParentLoginInner() {
                 >
                   {loading ? 'Đang xử lý...' : 'Đăng nhập'}
                 </button>
-                <p className={styles.helperText}>Nếu nhập admin/admin, hệ thống sẽ mở CMS. Nếu là email phụ huynh, hệ thống sẽ mở hồ sơ học tập của bé.</p>
+                <p className={styles.helperText}>Nếu là tài khoản CMS, hệ thống sẽ mở trang quản trị. Nếu là email phụ huynh, hệ thống sẽ mở hồ sơ học tập của bé.</p>
               </form>
             )}
 

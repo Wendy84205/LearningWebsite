@@ -152,6 +152,118 @@ export const SUPPLEMENTAL_GRADE_CONTENT = {
   }
 }
 
+const QUESTION_BANK_EXPANSION_BY_GRADE = {
+  'lop-1': {
+    curriculumFocus: [
+      { subject: 'Toán', topics: ['Số đến 20', 'Số đến 100', 'Cộng trừ đơn giản', 'Đo độ dài và thời gian'], gameTypes: ['choose_1_of_2', 'matching'] },
+      { subject: 'Tiếng Việt', topics: ['Âm vần', 'Dấu thanh', 'Đọc từ', 'Câu ngắn'], gameTypes: ['listen_select', 'choose_1_of_2', 'matching'] },
+      { subject: 'Tự nhiên & Xã hội', topics: ['Bản thân', 'Gia đình', 'Trường học', 'Cây và con vật', 'An toàn'], gameTypes: ['choose_1_of_2'] },
+      { subject: 'Tiếng Anh', topics: ['Chào hỏi', 'Màu sắc', 'Con vật', 'Đồ vật lớp học'], gameTypes: ['choose_1_of_2', 'listen_select'] }
+    ],
+    chooseQuestions: [
+      { q: 'Số 18 gồm mấy chục và mấy đơn vị?', options: ['1 chục, 8 đơn vị', '8 chục, 1 đơn vị'], correct: 0, emoji: '🔢', subject: 'Toán', topic: 'Số đến 20', skill: 'place_value_20', difficulty: '1', world: 1, level: 4, explanation: '18 gồm 1 chục và 8 đơn vị.' },
+      { q: 'Số nào đứng liền sau 59?', options: ['60', '58'], correct: 0, emoji: '🔢', subject: 'Toán', topic: 'Số đến 100', skill: 'number_sequence_100', difficulty: '1', world: 1, level: 5, explanation: 'Sau 59 là 60.' },
+      { q: 'Vật nào có dạng khối hộp chữ nhật?', options: ['Hộp bút', 'Quả bóng'], correct: 0, emoji: '📦', subject: 'Toán', topic: 'Hình học quanh em', skill: 'solid_shapes', difficulty: '1', world: 1, level: 6, explanation: 'Hộp bút thường có dạng khối hộp chữ nhật.' },
+      { q: '14 + 5 = ?', options: ['19', '18'], correct: 0, emoji: '➕', subject: 'Toán', topic: 'Cộng trong phạm vi 20', skill: 'add_within_20', difficulty: '1', world: 4, level: 3, explanation: '14 + 5 = 19.' },
+      { q: 'Hôm nay là thứ Ba, ngày mai là thứ mấy?', options: ['Thứ Tư', 'Thứ Hai'], correct: 0, emoji: '📅', subject: 'Toán', topic: 'Thời gian', skill: 'weekday_sequence', difficulty: '1', world: 4, level: 8, explanation: 'Sau thứ Ba là thứ Tư.' },
+      { q: 'Khi qua đường, em nên làm gì?', options: ['Đi cùng người lớn và quan sát đèn tín hiệu', 'Chạy thật nhanh qua đường'], correct: 0, emoji: '🚦', subject: 'Tự nhiên & Xã hội', topic: 'An toàn giao thông', skill: 'road_safety', difficulty: '1', world: 5, level: 6, explanation: 'Qua đường cần đi cùng người lớn, quan sát tín hiệu và xe cộ.' },
+      { q: 'Hành động nào bảo vệ môi trường?', options: ['Bỏ rác đúng nơi quy định', 'Vứt rác xuống sân trường'], correct: 0, emoji: '♻️', subject: 'Tự nhiên & Xã hội', topic: 'Bảo vệ môi trường', skill: 'clean_environment', difficulty: '1', world: 5, level: 9, explanation: 'Bỏ rác đúng nơi giúp môi trường sạch đẹp.' },
+      { q: 'Từ "red" nghĩa là màu gì?', options: ['màu đỏ', 'màu xanh'], correct: 0, emoji: '🔴', subject: 'Tiếng Anh', topic: 'Màu sắc', skill: 'color_vocabulary', difficulty: '1', world: 2, level: 4, explanation: 'Red nghĩa là màu đỏ.' }
+    ],
+    listenQuestions: [
+      { word: 'an', options: ['an', 'am', 'on', 'en'], correct: 0, subject: 'Tiếng Việt', topic: 'Vần cơ bản', skill: 'rhyme_an', difficulty: '1', world: 2, level: 6 },
+      { word: 'bé đi học', options: ['Bé đi học', 'Bé đi chợ', 'Bé ngủ', 'Bé đá bóng'], correct: 0, subject: 'Tiếng Việt', topic: 'Câu ngắn', skill: 'short_sentence_listening', difficulty: '1', world: 2, level: 7 },
+      { word: 'Good morning', options: ['Chào buổi sáng', 'Chúc ngủ ngon', 'Tạm biệt', 'Cảm ơn'], correct: 0, subject: 'Tiếng Anh', topic: 'Chào hỏi', skill: 'greetings', difficulty: '1', world: 2, level: 4 }
+    ],
+    matchingPairs: [
+      { id: 1101, left: 'A', right: 'a', subject: 'Tiếng Việt', topic: 'Chữ hoa chữ thường', skill: 'letter_case', difficulty: '1', world: 3, level: 1 },
+      { id: 1102, left: '🐶 con chó', right: 'động vật nuôi', subject: 'Tự nhiên & Xã hội', topic: 'Động vật', skill: 'animal_classification', difficulty: '1', world: 5, level: 4 },
+      { id: 1103, left: 'Số 6', right: '🍎🍎🍎🍎🍎🍎', subject: 'Toán', topic: 'Số và lượng', skill: 'quantity_matching', difficulty: '1', world: 3, level: 4 },
+      { id: 1104, left: 'Hình tròn', right: 'Quả bóng', subject: 'Toán', topic: 'Hình học quanh em', skill: 'shape_object_match', difficulty: '1', world: 3, level: 5 }
+    ]
+  },
+
+  'lop-2': {
+    chooseQuestions: [
+      { q: 'Số nào lớn nhất: 308, 380, 803?', options: ['803', '380'], correct: 0, emoji: '🔢', subject: 'Toán', topic: 'So sánh số', skill: 'compare_3_digit_numbers', difficulty: '1', world: 1, level: 2, explanation: '803 có 8 trăm nên lớn nhất.' },
+      { q: '36 + 28 = ?', options: ['64', '54'], correct: 0, emoji: '➕', subject: 'Toán', topic: 'Cộng có nhớ', skill: 'add_within_100', difficulty: '2', world: 2, level: 1, explanation: '36 + 28 = 64.' },
+      { q: '4 x 7 = ?', options: ['28', '24'], correct: 0, emoji: '✖️', subject: 'Toán', topic: 'Bảng nhân 4', skill: 'multiply_by_4', difficulty: '2', world: 2, level: 5, explanation: '4 lấy 7 lần bằng 28.' },
+      { q: 'Từ nào chỉ đặc điểm?', options: ['xanh biếc', 'chạy nhảy'], correct: 0, emoji: '✏️', subject: 'Tiếng Việt', topic: 'Từ loại', skill: 'adjective_identification', difficulty: '1', world: 3, level: 5, explanation: 'Xanh biếc là từ chỉ đặc điểm.' },
+      { q: 'Loài vật nào sống dưới nước?', options: ['Cá chép', 'Gà trống'], correct: 0, emoji: '🐟', subject: 'Tự nhiên & Xã hội', topic: 'Động vật', skill: 'animal_habitat', difficulty: '1', world: 4, level: 4, explanation: 'Cá chép sống dưới nước.' },
+      { q: 'Từ "book" nghĩa là gì?', options: ['quyển sách', 'cái bàn'], correct: 0, emoji: '📘', subject: 'Tiếng Anh', topic: 'Đồ dùng học tập', skill: 'school_object_vocabulary', difficulty: '1', world: 3, level: 1, explanation: 'Book nghĩa là quyển sách.' }
+    ],
+    listenQuestions: [
+      { word: 'thân thiện', options: ['🤝 Thân thiện', '😡 Cáu giận', '🧃 Hộp sữa', '🚲 Xe đạp'], correct: 0, subject: 'Tiếng Việt', topic: 'Từ vựng phẩm chất', skill: 'trait_vocabulary', difficulty: '1', world: 3, level: 1 },
+      { word: 'Goodbye', options: ['Tạm biệt', 'Xin chào', 'Cảm ơn', 'Làm ơn'], correct: 0, subject: 'Tiếng Anh', topic: 'Chào hỏi', skill: 'greetings', difficulty: '1', world: 3, level: 2 }
+    ],
+    matchingPairs: [
+      { id: 2211, left: '4 x 3', right: '12', subject: 'Toán', topic: 'Bảng nhân', skill: 'multiplication_fact', difficulty: '1', world: 2, level: 5 },
+      { id: 2212, left: 'Câu hỏi', right: 'Kết thúc bằng dấu ?', subject: 'Tiếng Việt', topic: 'Dấu câu', skill: 'punctuation', difficulty: '1', world: 3, level: 6 },
+      { id: 2213, left: 'teacher', right: 'giáo viên', subject: 'Tiếng Anh', topic: 'Nghề nghiệp', skill: 'job_vocabulary', difficulty: '1', world: 3, level: 2 }
+    ]
+  },
+
+  'lop-3': {
+    chooseQuestions: [
+      { q: '3.456 + 2.789 = ?', options: ['6.245', '6.145'], correct: 0, emoji: '➕', subject: 'Toán', topic: 'Phép cộng', skill: 'add_within_10000', difficulty: '2', world: 2, level: 1, explanation: '3.456 + 2.789 = 6.245.' },
+      { q: 'Một hình vuông có cạnh 7cm. Chu vi là bao nhiêu?', options: ['28 cm', '14 cm'], correct: 0, emoji: '⬛', subject: 'Toán', topic: 'Chu vi', skill: 'square_perimeter', difficulty: '2', world: 3, level: 1, explanation: 'Chu vi hình vuông = 7 x 4 = 28 cm.' },
+      { q: 'Từ nào viết đúng chính tả?', options: ['chăm chỉ', 'trăm chỉ'], correct: 0, emoji: '✏️', subject: 'Tiếng Việt', topic: 'Chính tả', skill: 'ch_tr_spelling', difficulty: '1', world: 4, level: 2, explanation: 'Viết đúng là chăm chỉ.' },
+      { q: 'Dấu phẩy trong câu thường dùng để làm gì?', options: ['Ngăn cách các bộ phận trong câu', 'Kết thúc câu kể'], correct: 0, emoji: '📚', subject: 'Tiếng Việt', topic: 'Dấu câu', skill: 'comma_usage', difficulty: '2', world: 4, level: 4, explanation: 'Dấu phẩy giúp ngắt ý hoặc liệt kê.' },
+      { q: 'Bộ phận nào của cây làm nhiệm vụ quang hợp chủ yếu?', options: ['Lá', 'Rễ'], correct: 0, emoji: '🌿', subject: 'Tự nhiên & Xã hội', topic: 'Thực vật', skill: 'plant_function', difficulty: '1', world: 5, level: 3, explanation: 'Lá cây là nơi quang hợp chủ yếu.' },
+      { q: 'Từ "yellow" nghĩa là màu gì?', options: ['màu vàng', 'màu tím'], correct: 0, emoji: '🟡', subject: 'Tiếng Anh', topic: 'Màu sắc', skill: 'color_vocabulary', difficulty: '1', world: 4, level: 3, explanation: 'Yellow nghĩa là màu vàng.' }
+    ],
+    listenQuestions: [
+      { word: 'bảo vệ nguồn nước', options: ['💧 Bảo vệ nguồn nước', '🔥 Đốt rác', '🎮 Chơi game', '🍔 Ăn bánh'], correct: 0, subject: 'Tiếng Việt', topic: 'Từ vựng môi trường', skill: 'environment_vocabulary', difficulty: '2', world: 4, level: 3 },
+      { word: 'I like apples', options: ['Tôi thích táo', 'Tôi không thích táo', 'Tôi thích bóng đá', 'Tôi đang ngủ'], correct: 0, subject: 'Tiếng Anh', topic: 'Câu đơn', skill: 'simple_sentence_meaning', difficulty: '1', world: 4, level: 3 }
+    ],
+    matchingPairs: [
+      { id: 3311, left: 'Chu vi hình vuông', right: 'cạnh x 4', subject: 'Toán', topic: 'Chu vi', skill: 'geometry_formula', difficulty: '2', world: 3, level: 1 },
+      { id: 3312, left: 'Dấu hai chấm', right: 'Báo hiệu lời nói trực tiếp', subject: 'Tiếng Việt', topic: 'Dấu câu', skill: 'colon_usage', difficulty: '2', world: 4, level: 4 },
+      { id: 3313, left: 'green', right: 'màu xanh lá', subject: 'Tiếng Anh', topic: 'Màu sắc', skill: 'color_vocabulary', difficulty: '1', world: 4, level: 3 }
+    ]
+  },
+
+  'lop-4': {
+    chooseQuestions: [
+      { q: 'Giá trị của chữ số 8 trong số 5.807.123 là gì?', options: ['800.000', '8.000'], correct: 0, emoji: '🔢', subject: 'Toán', topic: 'Số tự nhiên lớn', skill: 'large_number_place_value', difficulty: '2', world: 1, level: 1, explanation: 'Chữ số 8 ở hàng trăm nghìn nên có giá trị 800.000.' },
+      { q: 'Rút gọn phân số 12/16 được phân số nào?', options: ['3/4', '4/3'], correct: 0, emoji: '➗', subject: 'Toán', topic: 'Phân số', skill: 'simplify_fraction', difficulty: '2', world: 2, level: 2, explanation: 'Chia cả tử và mẫu cho 4 được 3/4.' },
+      { q: 'Từ nào là động từ?', options: ['quan sát', 'xanh tươi'], correct: 0, emoji: '✏️', subject: 'Tiếng Việt', topic: 'Từ loại', skill: 'verb_identification', difficulty: '1', world: 4, level: 3, explanation: 'Quan sát là từ chỉ hoạt động.' },
+      { q: 'Âm thanh truyền qua môi trường nào?', options: ['Không khí, nước và chất rắn', 'Chỉ truyền qua ánh sáng'], correct: 0, emoji: '🔊', subject: 'Khoa học', topic: 'Âm thanh', skill: 'sound_medium', difficulty: '2', world: 5, level: 4, explanation: 'Âm thanh có thể truyền qua không khí, nước và chất rắn.' },
+      { q: 'Dãy Hoàng Liên Sơn nằm chủ yếu ở vùng nào?', options: ['Trung du và miền núi Bắc Bộ', 'Đồng bằng Nam Bộ'], correct: 0, emoji: '⛰️', subject: 'Địa lí', topic: 'Vùng miền Việt Nam', skill: 'regional_geography', difficulty: '2', world: 6, level: 3, explanation: 'Hoàng Liên Sơn thuộc vùng núi phía Bắc.' },
+      { q: 'Câu "They are students" nghĩa là gì?', options: ['Họ là học sinh', 'Bạn ấy là giáo viên'], correct: 0, emoji: '📚', subject: 'Tiếng Anh', topic: 'Câu đơn', skill: 'simple_sentence_meaning', difficulty: '1', world: 4, level: 1, explanation: 'They are students nghĩa là họ là học sinh.' }
+    ],
+    listenQuestions: [
+      { word: 'kiên nhẫn', options: ['🧘 Kiên nhẫn', '😡 Nóng vội', '🍎 Quả táo', '🚗 Xe hơi'], correct: 0, subject: 'Tiếng Việt', topic: 'Từ vựng phẩm chất', skill: 'trait_vocabulary', difficulty: '1', world: 4, level: 2 },
+      { word: 'water cycle', options: ['vòng tuần hoàn nước', 'bản đồ Việt Nam', 'môn lịch sử', 'hình bình hành'], correct: 0, subject: 'Tiếng Anh', topic: 'Từ vựng khoa học', skill: 'science_vocabulary_en', difficulty: '2', world: 4, level: 1 }
+    ],
+    matchingPairs: [
+      { id: 4411, left: '12/16', right: '3/4', subject: 'Toán', topic: 'Rút gọn phân số', skill: 'simplify_fraction', difficulty: '2', world: 2, level: 2 },
+      { id: 4412, left: 'Chủ ngữ', right: 'Bộ phận nêu người/vật được nói đến', subject: 'Tiếng Việt', topic: 'Chủ ngữ vị ngữ', skill: 'subject_predicate', difficulty: '2', world: 4, level: 3 },
+      { id: 4413, left: 'Sa Pa', right: 'Lào Cai', subject: 'Địa lí', topic: 'Danh lam thắng cảnh', skill: 'landmark_location', difficulty: '1', world: 6, level: 3 }
+    ]
+  },
+
+  'lop-5': {
+    chooseQuestions: [
+      { q: '4,08 + 3,7 = ?', options: ['7,78', '4,45'], correct: 0, emoji: '➕', subject: 'Toán', topic: 'Tính số thập phân', skill: 'decimal_addition', difficulty: '2', world: 1, level: 3, explanation: '4,08 + 3,70 = 7,78.' },
+      { q: '35% của 200 là bao nhiêu?', options: ['70', '35'], correct: 0, emoji: '📊', subject: 'Toán', topic: 'Tỉ số phần trăm', skill: 'find_percent_value', difficulty: '2', world: 2, level: 3, explanation: '35% x 200 = 70.' },
+      { q: 'Từ nào đồng nghĩa với "dũng cảm"?', options: ['can đảm', 'rụt rè'], correct: 0, emoji: '✏️', subject: 'Tiếng Việt', topic: 'Từ đồng nghĩa', skill: 'synonym', difficulty: '1', world: 4, level: 2, explanation: 'Can đảm đồng nghĩa với dũng cảm.' },
+      { q: 'Nguồn năng lượng nào không tái tạo?', options: ['Than đá', 'Ánh sáng mặt trời'], correct: 0, emoji: '⛏️', subject: 'Khoa học', topic: 'Năng lượng', skill: 'nonrenewable_energy', difficulty: '1', world: 5, level: 3, explanation: 'Than đá là nhiên liệu hóa thạch, không tái tạo trong thời gian ngắn.' },
+      { q: 'Chiến thắng Điện Biên Phủ diễn ra năm nào?', options: ['1954', '1945'], correct: 0, emoji: '🇻🇳', subject: 'Lịch sử', topic: 'Lịch sử Việt Nam', skill: 'historical_event_year', difficulty: '2', world: 6, level: 1, explanation: 'Chiến thắng Điện Biên Phủ diễn ra năm 1954.' },
+      { q: 'Câu nào dùng "because" đúng nghĩa nguyên nhân?', options: ['I drink water because I am thirsty.', 'I am thirsty because I drink water.'], correct: 0, emoji: '💧', subject: 'Tiếng Anh', topic: 'Liên từ', skill: 'because_clause', difficulty: '2', world: 4, level: 3, explanation: 'Ta uống nước vì khát.' }
+    ],
+    listenQuestions: [
+      { word: 'bền bỉ', options: ['💪 Bền bỉ', '😴 Bỏ cuộc', '🍔 Bữa ăn', '🚲 Xe đạp'], correct: 0, subject: 'Tiếng Việt', topic: 'Từ vựng phẩm chất', skill: 'trait_vocabulary', difficulty: '1', world: 4, level: 3 },
+      { word: 'renewable energy', options: ['năng lượng tái tạo', 'ô nhiễm đất', 'hình lập phương', 'bài văn tả cảnh'], correct: 0, subject: 'Tiếng Anh', topic: 'Từ vựng khoa học', skill: 'science_vocabulary_en', difficulty: '2', world: 4, level: 3 }
+    ],
+    matchingPairs: [
+      { id: 5511, left: '0,4', right: '40%', subject: 'Toán', topic: 'Tỉ số phần trăm', skill: 'decimal_percent', difficulty: '1', world: 2, level: 2 },
+      { id: 5512, left: 'Quan hệ từ', right: 'Nối các từ hoặc vế câu', subject: 'Tiếng Việt', topic: 'Quan hệ từ', skill: 'conjunction_pair', difficulty: '2', world: 4, level: 2 },
+      { id: 5513, left: 'Điện Biên Phủ', right: 'Năm 1954', subject: 'Lịch sử', topic: 'Lịch sử Việt Nam', skill: 'historical_event_year', difficulty: '2', world: 6, level: 1 }
+    ]
+  }
+}
+
 const ENGLISH_FOUNDATION_BY_GRADE = {
   'lop-2': [
     { q: 'Từ "cat" nghĩa là gì?', options: ['con mèo', 'con chó'], correct: 0, emoji: '🐱', subject: 'Tiếng Anh', topic: 'Từ vựng con vật', skill: 'animal_vocabulary', difficulty: '1', world: 3, level: 1, explanation: 'Cat nghĩa là con mèo.' },
@@ -182,28 +294,28 @@ function toInt(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
-export function getSupplementalContent(gradeSlug) {
-  const content = SUPPLEMENTAL_GRADE_CONTENT[gradeSlug]
-  if (content) {
-    return {
-      ...content,
-      curriculumFocus: [
-        ...(content.curriculumFocus || []),
-        ...(ENGLISH_FOUNDATION_BY_GRADE[gradeSlug] ? [ENGLISH_FOCUS] : []),
-      ],
-      chooseQuestions: [
-        ...(content.chooseQuestions || []),
-        ...(ENGLISH_FOUNDATION_BY_GRADE[gradeSlug] || []),
-      ],
-    }
-  }
-
+function mergeContentSections(...sections) {
   return {
-    curriculumFocus: [],
-    chooseQuestions: [],
-    listenQuestions: [],
-    matchingPairs: []
+    curriculumFocus: sections.flatMap(section => section?.curriculumFocus || []),
+    chooseQuestions: sections.flatMap(section => section?.chooseQuestions || []),
+    listenQuestions: sections.flatMap(section => section?.listenQuestions || []),
+    matchingPairs: sections.flatMap(section => section?.matchingPairs || [])
   }
+}
+
+export function getSupplementalContent(gradeSlug) {
+  const content = mergeContentSections(
+    SUPPLEMENTAL_GRADE_CONTENT[gradeSlug],
+    QUESTION_BANK_EXPANSION_BY_GRADE[gradeSlug],
+    ENGLISH_FOUNDATION_BY_GRADE[gradeSlug]
+      ? {
+          curriculumFocus: [ENGLISH_FOCUS],
+          chooseQuestions: ENGLISH_FOUNDATION_BY_GRADE[gradeSlug],
+        }
+      : null
+  )
+
+  return content
 }
 
 export function getSupplementalQuestionsForGame(gradeSlug, worldId, levelId, isBoss = false) {

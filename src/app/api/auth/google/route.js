@@ -2,6 +2,7 @@ import prisma from '@/lib/db'
 import { getSessionCookieOptions, hashPassword, isSameOriginRequest, signJWT } from '@/lib/auth'
 import { databaseUnavailableResponse, isDatabaseConnectionError } from '@/lib/db-errors'
 import { verifyGoogleIdToken } from '@/lib/google-id-token'
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { cookies } from 'next/headers'
 import { randomUUID } from 'crypto'
 
@@ -11,6 +12,13 @@ export async function POST(request) {
     if (!isSameOriginRequest(request)) {
       return Response.json({ error: 'Invalid request origin' }, { status: 403 })
     }
+
+    const rateLimit = checkRateLimit(request, {
+      key: 'google-login',
+      limit: 20,
+      windowMs: 15 * 60 * 1000,
+    })
+    if (!rateLimit.ok) return rateLimitResponse(rateLimit)
 
     const { credential } = await request.json()
     if (!credential) {

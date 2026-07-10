@@ -1,6 +1,7 @@
 import prisma from '@/lib/db'
 import { getSessionCookieOptions, hashPassword, isSameOriginRequest, signJWT } from '@/lib/auth'
 import { databaseUnavailableResponse, isDatabaseConnectionError } from '@/lib/db-errors'
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit'
 import { cookies } from 'next/headers'
 
 // POST /api/auth/register
@@ -9,6 +10,13 @@ export async function POST(request) {
     if (!isSameOriginRequest(request)) {
       return Response.json({ error: 'Invalid request origin' }, { status: 403 })
     }
+
+    const rateLimit = checkRateLimit(request, {
+      key: 'parent-register',
+      limit: 6,
+      windowMs: 60 * 60 * 1000,
+    })
+    if (!rateLimit.ok) return rateLimitResponse(rateLimit)
 
     const { email, password } = await request.json()
     if (!email || !password) {
